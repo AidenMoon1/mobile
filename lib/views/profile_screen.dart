@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'edit_profile_screen.dart';
 import 'activity_log_screen.dart';
+import 'terms_and_policy_screen.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
 
@@ -142,7 +143,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildMenuItem(
                     icon: Icons.lock_outline,
                     title: 'Kebijakan dan Ketentuan',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const TermsAndPolicyScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.face,
