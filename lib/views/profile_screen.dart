@@ -218,10 +218,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Completing data banner
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.description, color: accentColor, size: 20),
-                      SizedBox(width: 8),
-                      Text(
+                    children: [
+                      const Icon(Icons.description, color: accentColor, size: 20),
+                      const SizedBox(width: 8),
+                      const Text(
                         'Lengkapi Data Diri Anda',
                         style: TextStyle(color: accentColor, fontSize: 14, fontWeight: FontWeight.w500),
                       ),

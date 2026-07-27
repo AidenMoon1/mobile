@@ -249,7 +249,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'Lengkapi Data Anda',
                             style: TextStyle(
@@ -258,8 +258,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 4),
-                          Text(
+                          const SizedBox(height: 4),
+                          const Text(
                             'Informasi kontak yang akurat membantu kami memberikan pelayanan yang lebih optimal',
                             style: TextStyle(
                               color: Colors.black54,
