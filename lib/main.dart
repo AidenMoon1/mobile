@@ -67,11 +67,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _screens,
-        ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
       ),
       // # CATATAN: Menggunakan Widget Custom Bottom Navbar buatan teman Anda
       bottomNavigationBar: CustomBottomNavBar(

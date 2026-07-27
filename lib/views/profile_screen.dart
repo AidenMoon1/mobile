@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'edit_profile_screen.dart';
+import 'activity_log_screen.dart';
+import '../services/user_service.dart';
+import '../models/user_model.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -8,252 +12,238 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool _isLoggedIn = true;
-
-  void _simulateLogout() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Simulasi Logout'),
-        content: const Text('Apakah Anda yakin ingin keluar dari akun Sapawarga Sukabumi?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _isLoggedIn = false;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Simulasi Logout Berhasil!'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            },
-            child: const Text('Keluar', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _simulateLogin() {
-    setState(() {
-      _isLoggedIn = true;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Simulasi Login Berhasil!'),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
+  // Ambil instance UserService
+  final UserService _userService = UserService();
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Profil Saya',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
+    // Ambil data user terbaru dari Service
+    final UserModel user = _userService.currentUser;
 
-          if (_isLoggedIn) ...[
-            // KARTU TANDA WARGA (E-KTP Style)
+    const Color primaryColor = Color(0xFF0A1E33);
+    const Color accentColor = Color(0xFFE8A33D);
+    const Color backgroundColor = Color(0xFFF5F8FB);
+
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // HEADER SECTION
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.indigo, Colors.blue],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+              decoration: const BoxDecoration(
+                color: primaryColor,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(40),
+                  bottomRight: Radius.circular(40),
                 ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.shade200.withOpacity(0.5),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
               ),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'KARTU ANGGOTA WARGA SUKABUMI',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.1,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  // Edit Profil Button Row
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: GestureDetector(
+                      onTap: () {
+                        // Navigasi ke Edit Profil dan refresh saat kembali
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const EditProfileScreen()),
+                        ).then((_) {
+                          // REFRESH UI: Memanggil setState agar widget menggambar ulang dengan data baru
+                          setState(() {});
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.white70),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
-                          'WARGA AKTIF',
-                          style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                          'Edit Profil',
+                          style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        radius: 35,
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.person, size: 45, color: Colors.blue),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Muhammad Dzakwan',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'NIK: 3272012345670001',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Kec. Cikole, Kota Sukabumi',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // INFORMASI DETAIL
-            const Text(
-              'Informasi Akun',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: const [
-                  ListTile(
-                    leading: Icon(Icons.verified, color: Colors.green),
-                    title: Text('Status Verifikasi NIK'),
-                    trailing: Text(
-                      'Terverifikasi',
-                      style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.email_outlined, color: Colors.blue),
-                    title: Text('Email'),
-                    trailing: Text('dzakwan@example.com', style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 10),
+                  // Profile Picture
+                  const CircleAvatar(
+                    radius: 50,
+                    backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+                    backgroundColor: Colors.grey,
                   ),
-                  Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.phone_android, color: Colors.blue),
-                    title: Text('Nomor Handphone'),
-                    trailing: Text('0812-3456-7890', style: TextStyle(color: Colors.grey)),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // TOMBOL LOGOUT
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton.icon(
-                onPressed: _simulateLogout,
-                icon: const Icon(Icons.logout, color: Colors.red),
-                label: const Text('Keluar Akun', style: TextStyle(color: Colors.red)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.red),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-            ),
-          ] else ...[
-            // TAMPILAN JIKA KELUAR (Simulasi Login Form)
-            Center(
-              child: Column(
-                children: [
-                  const SizedBox(height: 50),
-                  const Icon(Icons.lock_outline, size: 80, color: Colors.grey),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Anda Telah Keluar',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  // Badge Warga
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: const Text(
+                      'Warga',
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Silakan login kembali untuk menikmati layanan pengaduan warga.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: 200,
-                    height: 45,
-                    child: ElevatedButton(
-                      onPressed: _simulateLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: const Text('Masuk Kembali'),
+                  // Name (DINAMIS DARI SERVICE)
+                  Text(
+                    user.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  // ID (DINAMIS DARI SERVICE)
+                  Text(
+                    user.id,
+                    style: const TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                  const SizedBox(height: 20),
+                  const Divider(color: Colors.white24, thickness: 1),
+                  const SizedBox(height: 16),
+                  // Completing data banner
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.description, color: accentColor, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Lengkapi Data Diri Anda',
+                        style: TextStyle(color: accentColor, fontSize: 14, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // MENU LIST SECTION
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                children: [
+                  _buildMenuItem(
+                    icon: Icons.history,
+                    title: 'Log Aktivitas',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ActivityLogScreen()),
+                      );
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.lock_outline,
+                    title: 'Kebijakan dan Ketentuan',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.face,
+                    title: 'Pusat Bantuan',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.info_outline,
+                    title: 'Tentang',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.rate_review_outlined,
+                    title: 'Kritik dan Saran',
+                    onTap: () {},
+                  ),
+                  _buildMenuItem(
+                    icon: Icons.layers_outlined,
+                    title: 'Versi Aplikasi',
+                    trailing: const Text(
+                      '5.4.3',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    onTap: () {},
+                  ),
+                  const SizedBox(height: 20),
+                  // LOGOUT BUTTON
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: accentColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: const [
+                          Text(
+                            'Keluar Akun',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          Icon(Icons.logout),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String title,
+    Widget? trailing,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Color(0xFFFDF4E7),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: const Color(0xFFE8A33D), size: 24),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
+        trailing: trailing ?? const Icon(Icons.chevron_right, color: Colors.black54),
+        onTap: onTap,
       ),
     );
   }
