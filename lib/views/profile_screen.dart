@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'edit_profile_screen.dart';
 import 'activity_log_screen.dart';
 import 'terms_and_policy_screen.dart';
+import 'about_screen.dart';
+import 'feedback_screen.dart';
+import 'help_center_screen.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
 
@@ -15,6 +18,109 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   // Ambil instance UserService
   final UserService _userService = UserService();
+
+  void _showLogoutBottomSheet(BuildContext context) {
+    const Color primaryColor = Color(0xFF0A1E33);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: primaryColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle at the top
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Title
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Keluar Akun Sukabumi One Access',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Description
+              const Text(
+                'Apakah anda yakin ingin keluar dari akun Sukabumi One Access?',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              // Info Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: Text(
+                    'Semua data Anda akan tetap tersimpan secara otomatis.',
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Primary Action Button
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Add actual logout logic here if needed
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: primaryColor,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Ya, Keluar Sekarang',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Cancel Button
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Batal Keluar',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -155,17 +261,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildMenuItem(
                     icon: Icons.face,
                     title: 'Pusat Bantuan',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HelpCenterScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.info_outline,
                     title: 'Tentang',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AboutScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.rate_review_outlined,
                     title: 'Kritik dan Saran',
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const FeedbackScreen(),
+                        ),
+                      );
+                    },
                   ),
                   _buildMenuItem(
                     icon: Icons.layers_outlined,
@@ -182,7 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => _showLogoutBottomSheet(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: accentColor,
