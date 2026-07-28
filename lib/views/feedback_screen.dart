@@ -15,9 +15,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   
   // State untuk form
   int? _selectedRating;
-  String? _selectedGender = 'Pria';
   String? _selectedFactor;
-  String? _selectedEducation;
   final TextEditingController _reasonController = TextEditingController();
 
   final List<String> _factors = [
@@ -28,16 +26,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     'Kestabilan Aplikasi'
   ];
 
-  final List<String> _educations = [
-    'SD / Sederajat',
-    'SMP / Sederajat',
-    'SMA / SMK / Sederajat',
-    'Diploma (D1/D2/D3)',
-    'Sarjana (S1)',
-    'Magister (S2)',
-    'Doktor (S3)'
-  ];
-
   @override
   void dispose() {
     _reasonController.dispose();
@@ -45,7 +33,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   void _submitFeedback() {
-    if (_selectedRating == null || _selectedFactor == null || _selectedEducation == null) {
+    if (_selectedRating == null || _selectedFactor == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Mohon lengkapi semua bidang bertanda *'),
@@ -61,8 +49,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       rating: _selectedRating!,
       factor: _selectedFactor!,
       reason: _reasonController.text,
-      gender: _selectedGender!,
-      education: _selectedEducation!,
       date: DateTime.now(),
     );
 
@@ -72,7 +58,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     setState(() {
       _selectedRating = null;
       _selectedFactor = null;
-      _selectedEducation = null;
       _reasonController.clear();
     });
 
@@ -139,38 +124,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
-          // Header Card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text(
-                  'Terima kasih!',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Pendapat Anda sangat berarti untuk meningkatkan layanan Sukabumi One Access',
-                  style: TextStyle(color: Colors.black54, fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
           // Feedback Section
           _buildSectionCard(
             title: 'Feedback Layanan',
@@ -181,14 +134,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(4, (index) => _buildRatingBox(index + 1, accentColor)),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Text('Sangat Tidak Puas', style: TextStyle(color: Colors.grey, fontSize: 10)),
-                  Text('Sangat Puas', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildRatingBoxWithLabel(1, 'Sangat Tidak Puas', accentColor),
+                  _buildRatingBoxWithLabel(2, 'Tidak Puas', accentColor),
+                  _buildRatingBoxWithLabel(3, 'Biasa Aja', accentColor),
+                  _buildRatingBoxWithLabel(4, 'Puas', accentColor),
+                  _buildRatingBoxWithLabel(5, 'Sangat Puas', accentColor),
                 ],
               ),
               const SizedBox(height: 20),
@@ -201,59 +153,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 onChanged: (val) => setState(() => _selectedFactor = val),
               ),
               const SizedBox(height: 20),
-              _buildQuestionText('3. Mengapa hal tersebut perlu ditingkatkan?'),
+              _buildQuestionText('3. Mengapa hal tersebut perlu ditingkatkan? (Opsional)'),
               const SizedBox(height: 8),
               _buildTextArea('Masukkan alasan Anda di sini...', _reasonController),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // User Data Section
-          _buildSectionCard(
-            title: 'Data Pengguna',
-            primaryColor: primaryColor,
-            accentColor: accentColor,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Perubahan pada bagian ini juga akan mengubah data di bagian profil Anda.',
-                  style: TextStyle(color: Colors.black54, fontSize: 12),
-                ),
-              ),
-              const SizedBox(height: 20),
-              _buildQuestionText('Jenis Kelamin *'),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _buildGenderOption('Pria', accentColor),
-                  const SizedBox(width: 16),
-                  _buildGenderOption('Wanita', accentColor),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildQuestionText('Pendidikan Akhir *'),
-              const SizedBox(height: 8),
-              _buildDropdown(
-                hint: 'Pilih Pendidikan Akhir',
-                items: _educations,
-                value: _selectedEducation,
-                onChanged: (val) => setState(() => _selectedEducation = val),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          const Text(
-            'Terima kasih atas penilaiannya. Dengan Mengisi Ini, Anda Menyetujui data yang diberikan digunakan untuk pengembangan layanan.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey, fontSize: 11),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
           
           // Submit Button
           GestureDetector(
@@ -332,22 +237,38 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     );
   }
 
-  Widget _buildRatingBox(int value, Color accentColor) {
+  Widget _buildRatingBoxWithLabel(int value, String label, Color accentColor) {
     bool isSelected = _selectedRating == value;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedRating = value),
-      child: Container(
-        width: 65,
-        height: 55,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          border: Border.all(color: isSelected ? accentColor : Colors.black12),
-          borderRadius: BorderRadius.circular(12),
-          color: isSelected ? accentColor.withOpacity(0.1) : Colors.transparent,
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedRating = value),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              height: 55,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                border: Border.all(color: isSelected ? accentColor : Colors.black12),
+                borderRadius: BorderRadius.circular(12),
+                color: isSelected ? accentColor.withOpacity(0.1) : Colors.transparent,
+              ),
+              child: isSelected 
+                ? Icon(Icons.star, color: accentColor) 
+                : Text('$value', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isSelected ? accentColor : Colors.grey, 
+                fontSize: 9,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
         ),
-        child: isSelected 
-          ? Icon(Icons.star, color: accentColor) 
-          : Text('$value', style: const TextStyle(color: Colors.grey)),
       ),
     );
   }
@@ -399,42 +320,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.black12),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGenderOption(String label, Color accentColor) {
-    bool isSelected = _selectedGender == label;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedGender = label),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            border: Border.all(color: isSelected ? accentColor : Colors.black12),
-            borderRadius: BorderRadius.circular(25),
-            color: isSelected ? accentColor.withOpacity(0.05) : Colors.transparent,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  shape: BoxShape.circle,
-                ),
-                child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 14) : null,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -514,7 +399,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   const Icon(Icons.star, color: Colors.amber, size: 14),
                   const SizedBox(width: 4),
                   Text(
-                    'Rating: ${item.rating}/4',
+                    'Rating: ${item.rating}/5',
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],

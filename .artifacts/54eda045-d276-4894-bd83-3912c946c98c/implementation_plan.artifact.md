@@ -1,27 +1,35 @@
-# Implementation Plan - Fix AndroidManifest.xml Warnings and Errors
+# Implementation Plan - Simplify Feedback Screen
 
-The current `AndroidManifest.xml` has several warnings and errors related to unresolved classes and unknown attributes. This plan aims to fix these by providing more explicit information to the IDE and correcting structural omissions.
+The user wants to remove the "Header Card" (Terima kasih!), the "User Data Section" (Data Pengguna), and the footer text from the Feedback screen. This will streamline the form to focus only on the rating and feedback factors.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> The `${applicationName}` placeholder is standard in Flutter projects but often shows as an error in Android Studio's static analysis. I will keep it if it's essential for the build process, or replace it with the default `io.flutter.app.FlutterApplication` if appropriate. However, for a standard Flutter v2 embedding, it might not even be necessary.
+> I will be removing the "Jenis Kelamin" (Gender) and "Pendidikan Akhir" (Education) fields from the UI and the underlying data model. If these fields are required for any backend reporting, please let me know, and I can provide default values instead of removing them entirely.
 
 ## Proposed Changes
 
-### [AndroidManifest.xml](file:///C:/src/mobile/android/app/src/main/AndroidManifest.xml)
+### [Data Model]
 
-#### [MODIFY] [AndroidManifest.xml](file:///C:/src/mobile/android/app/src/main/AndroidManifest.xml)
-- Add the XML declaration `<?xml version="1.0" encoding="utf-8"?>`.
-- Add `package="com.diskominfo.mobile"` to the `<manifest>` tag. This helps the IDE resolve relative class names, even though AGP 7+ uses `namespace` in `build.gradle`.
-- Change `android:name=".MainActivity"` to `android:name="com.diskominfo.mobile.MainActivity"` for explicit resolution.
-- Verify if `android:name="${applicationName}"` can be safely replaced or if the error can be ignored. Given the user wants to "fix" it, I will check if removing it or using a concrete class is better. For now, I will try adding `xmlns:tools="http://schemas.android.com/tools"` and potentially using `tools:ignore` if it's just a lint issue, but it's reported as a hard error by `analyze_file`.
+#### [MODIFY] [feedback_model.dart](file:///C:/src/mobile/lib/models/feedback_model.dart)
+- Remove `gender` and `education` fields from the `FeedbackModel` class and its constructor.
+
+### [Feedback Screen]
+
+#### [MODIFY] [feedback_screen.dart](file:///C:/src/mobile/lib/views/feedback_screen.dart)
+- Remove `_selectedGender`, `_selectedEducation`, and `_educations` state variables.
+- Update `_submitFeedback` to remove validation for education and simplify the model creation.
+- In `_buildFormTab`:
+    - Remove the "Header Card" containing the "Terima kasih!" message.
+    - Remove the "User Data Section" card.
+    - Remove the footer text regarding data usage and thanks.
+- Remove the `_buildGenderOption` helper method as it will no longer be used.
 
 ## Verification Plan
 
 ### Automated Tests
-- Call `analyze_file` on `AndroidManifest.xml` after changes.
-- Check for any new errors introduced.
+- N/A for UI cleanup, but I will ensure the code compiles without errors.
 
 ### Manual Verification
-- N/A (I will rely on the static analysis tool).
+- Review the `FeedbackScreen` to ensure only the "Feedback Layanan" section and the "Kirim Masukan" button remain.
+- Test the submission flow to ensure it still works correctly with the simplified model.
