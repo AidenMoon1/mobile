@@ -1,35 +1,46 @@
-# Implementation Plan - Simplify Feedback Screen
+# Implementation Plan - Notification System and Screen
 
-The user wants to remove the "Header Card" (Terima kasih!), the "User Data Section" (Data Pengguna), and the footer text from the Feedback screen. This will streamline the form to focus only on the rating and feedback factors.
+The goal is to implement a new Notification system and a dedicated Notification screen as shown in the provided image. The screen will display a list of notifications, grouped by date. Additionally, submitting feedback will now trigger a new notification.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> I will be removing the "Jenis Kelamin" (Gender) and "Pendidikan Akhir" (Education) fields from the UI and the underlying data model. If these fields are required for any backend reporting, please let me know, and I can provide default values instead of removing them entirely.
+> [!NOTE]
+> The Notification screen is designed based on the provided reference image, featuring a custom header with a search bar and filter options. I will implement a singleton service to manage notifications across the app.
 
 ## Proposed Changes
 
 ### [Data Model]
 
-#### [MODIFY] [feedback_model.dart](file:///C:/src/mobile/lib/models/feedback_model.dart)
-- Remove `gender` and `education` fields from the `FeedbackModel` class and its constructor.
+#### [NEW] [notification_model.dart](file:///C:/src/mobile/lib/models/notification_model.dart)
+- Define `NotificationModel` with `title`, `description`, `timestamp`, and `isRead` status.
 
-### [Feedback Screen]
+### [Service Layer]
+
+#### [NEW] [notification_service.dart](file:///C:/src/mobile/lib/services/notification_service.dart)
+- Implement `NotificationService` as a singleton.
+- Methods to add and retrieve notifications.
+
+### [UI Components]
+
+#### [NEW] [notification_screen.dart](file:///C:/src/mobile/lib/views/notification_screen.dart)
+- Implement the UI based on the reference image:
+    - Custom header with "Notifikasi" title and bell icon.
+    - Search bar widget.
+    - Filter tabs (e.g., "Semua Notifikasi").
+    - Grouped list view (Hari Ini, Kemarin, etc.).
+    - Notification cards with icons and timestamps.
+
+#### [MODIFY] [main.dart](file:///C:/src/mobile/lib/main.dart)
+- Replace the placeholder in `MainNavigationScreen` with the new `NotificationScreen`.
 
 #### [MODIFY] [feedback_screen.dart](file:///C:/src/mobile/lib/views/feedback_screen.dart)
-- Remove `_selectedGender`, `_selectedEducation`, and `_educations` state variables.
-- Update `_submitFeedback` to remove validation for education and simplify the model creation.
-- In `_buildFormTab`:
-    - Remove the "Header Card" containing the "Terima kasih!" message.
-    - Remove the "User Data Section" card.
-    - Remove the footer text regarding data usage and thanks.
-- Remove the `_buildGenderOption` helper method as it will no longer be used.
+- Update `_submitFeedback` to call `NotificationService.addNotification` after a successful submission.
 
 ## Verification Plan
 
-### Automated Tests
-- N/A for UI cleanup, but I will ensure the code compiles without errors.
-
 ### Manual Verification
-- Review the `FeedbackScreen` to ensure only the "Feedback Layanan" section and the "Kirim Masukan" button remain.
-- Test the submission flow to ensure it still works correctly with the simplified model.
+1.  Navigate to the "Notifikasi" tab; it should initially be empty or show a placeholder if no notifications exist.
+2.  Go to the "Kritik dan Saran" screen and submit feedback.
+3.  Observe the success dialog.
+4.  Navigate back to the "Notifikasi" tab and verify that a new notification entry exists with the title "Terima kasih telah mengisi kritik dan saran!".
+5.  Check if the grouping (e.g., "Hari Ini") works as expected.

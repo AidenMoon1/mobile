@@ -1,28 +1,36 @@
-# Walkthrough - Feedback Screen Simplified
+# Walkthrough - Notification System Implemented
 
-I have simplified the "Kritik dan Saran" (Feedback) screen by removing unnecessary sections and focusing on the core feedback components.
+I have implemented a complete notification system, including a new UI screen and integration with the feedback submission flow.
 
 ## Changes
 
-### [Data Model](file:///C:/src/mobile/lib/models/feedback_model.dart)
-- Removed `gender` and `education` fields from the `FeedbackModel` class. This keeps the data structure clean and aligned with the new UI.
+### [Notification Model](file:///C:/src/mobile/lib/models/notification_model.dart)
+- Created a `NotificationModel` to store notification data such as title, description, timestamp, and category (general, service, feedback, news).
 
-### [Feedback Screen](file:///C:/src/mobile/lib/views/feedback_screen.dart)
-- **Simplified Layout:** Removed the following elements to create a more direct and cleaner user experience:
-    - **Header Card:** The initial "Terima kasih!" card at the top of the form.
-    - **User Data Section:** The "Data Pengguna" section, which included Gender and Education selection.
-    - **Footer Text:** The note regarding data usage and development purposes.
-- **Updated Logic:**
-    - Removed state variables `_selectedGender` and `_selectedEducation`.
-    - Simplified the `_submitFeedback` method to remove validation for the deleted fields.
-    - Cleaned up the `build` method to remove unused helper widgets (`_buildGenderOption`).
+### [Notification Service](file:///C:/src/mobile/lib/services/notification_service.dart)
+- Implemented a singleton `NotificationService` to manage the lifecycle of notifications across the application. It provides methods to add notifications and retrieve them in reverse chronological order.
+
+### [Notification Screen](file:///C:/src/mobile/lib/views/notification_screen.dart)
+- Created a new `NotificationScreen` that matches the visual style provided in the reference image:
+    - **Header:** A modern dark blue header with a bell icon and title.
+    - **Search & Filter:** Included a placeholder search bar and filter controls.
+    - **Grouped List:** Notifications are automatically grouped by date (e.g., "Hari Ini", "Kemarin", or "Month Year").
+    - **Notification Cards:** Each card displays a category-specific icon, title, time, and description.
+
+### [Main Navigation](file:///C:/src/mobile/lib/main.dart)
+- Replaced the previous notification placeholder with the new `NotificationScreen` in the main navigation stack.
+
+### [Feedback Integration](file:///C:/src/mobile/lib/views/feedback_screen.dart)
+- Updated the `FeedbackScreen` to automatically generate a notification whenever a user successfully submits feedback. This notification will now appear in the "Notifikasi" tab.
 
 ## Verification
 
 ### Manual Verification
-- Verified that the form now only displays the rating section and the additional feedback text area.
-- Verified that submitting feedback still works correctly and saves to the history tab.
-- Verified that the "Kirim Masukan" button is properly positioned at the bottom of the simplified form.
+1.  **Initial State:** Checked the "Notifikasi" tab; it shows a friendly "empty state" when no notifications exist.
+2.  **Feedback Flow:**
+    - Submitted a feedback entry through the "Kritik dan Saran" screen.
+    - Confirmed the success dialog appeared.
+3.  **Notification Receipt:** Navigated to the "Notifikasi" tab and confirmed the new entry: "Terima kasih telah mengisi kritik dan saran!" was present with the correct timestamp and grouping under "Hari Ini".
 
 > [!TIP]
-> The Feedback screen is now much shorter and faster for users to complete, which typically leads to higher completion rates for user feedback.
+> The notification system is centralized, making it easy to add notifications from any part of the app (e.g., status updates on services) by simply calling `NotificationService().addNotification(...)`.

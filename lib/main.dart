@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'views/dashboard_screen.dart';
 import 'views/report_screen.dart';
+import 'views/notification_screen.dart';
 import 'views/profile_screen.dart';
 import 'widgets/custom_navbar.dart';
 
@@ -48,12 +49,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = [
     const DashboardScreen(), // # Halaman 1: Beranda
     const ReportScreen(),    // # Halaman 2: Layanan / Pengaduan
-    const Center(            // # Halaman 3: Notifikasi (Placeholder)
-      child: Text(
-        'Belum ada notifikasi baru',
-        style: TextStyle(fontSize: 14, color: Colors.grey),
-      ),
-    ),
+    const NotificationScreen(), // # Halaman 3: Notifikasi
     const ProfileScreen(),   // # Halaman 4: Akun / Profil
   ];
 

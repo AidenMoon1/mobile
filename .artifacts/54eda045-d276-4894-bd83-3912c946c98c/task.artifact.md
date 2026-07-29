@@ -1,18 +1,6 @@
-- [x] Update Build Dependencies
-    - [x] Upgrade Gradle in `gradle-wrapper.properties` to 8.13 (adjusted from 8.14)
-    - [x] Upgrade AGP and Kotlin in `settings.gradle`
-    - [x] Upgrade Java compatibility in `app/build.gradle` to Java 17
-- [x] Fix `AndroidManifest.xml`
-    - [x] Add XML declaration and package attribute
-    - [x] Use fully qualified name for `MainActivity`
-- [x] Verification
-    - [x] Run Gradle sync (gradlew help)
-- [x] Update Feedback Rating System
-    - [x] Change rating from 4 to 5 boxes in `feedback_screen.dart`
-    - [x] Add labels under each rating box
-    - [x] Update history tab to show rating out of 5
-- [x] Simplify Feedback Screen
-    - [x] Remove Header Card ("Terima kasih!")
-    - [x] Remove "Data Pengguna" section (Gender, Education)
-    - [x] Update `FeedbackModel` and screen logic
-    - [x] Remove footer text
+- [x] Notification System and Screen
+    - [x] Create `NotificationModel`
+    - [x] Create `NotificationService`
+    - [x] Create `NotificationScreen` (UI based on reference)
+    - [x] Integrate `NotificationScreen` into `main.dart`
+    - [x] Update `FeedbackScreen` to trigger notifications

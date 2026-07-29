@@ -56,7 +56,7 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
             const Text(
-              'Versi 5.4.3',
+              'Versi Terserah',
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey,
@@ -64,7 +64,7 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             const Text(
-              'Sukabumi One Access adalah aplikasi layanan publik terpadu untuk warga Kota Sukabumi. Aplikasi ini bertujuan untuk memudahkan masyarakat dalam mengakses berbagai informasi dan layanan pemerintah dalam satu genggaman.',
+              'Izin masih kosongan pak.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
@@ -84,7 +84,7 @@ class AboutScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Diskominfo Kota Sukabumi',
+              'Nabastala',
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 40),

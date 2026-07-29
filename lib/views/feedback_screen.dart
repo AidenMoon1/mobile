@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/feedback_model.dart';
+import '../models/notification_model.dart';
 import '../services/feedback_service.dart';
+import '../services/notification_service.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -33,6 +35,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   void _submitFeedback() {
+    const Color primaryColor = Color(0xFF0A1E33);
     if (_selectedRating == null || _selectedFactor == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -54,24 +57,42 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
     _feedbackService.addFeedback(newFeedback);
 
+    // Tambah Notifikasi
+    NotificationService().addNotification(
+      title: 'Terima kasih telah mengisi kritik dan saran!',
+      description: 'Masukan Anda sangat berharga bagi kami untuk terus meningkatkan kualitas layanan Sukabumi One Access.',
+      category: NotificationCategory.feedback,
+    );
+
+    // Tampilkan Dialog Sukses
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Berhasil!', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: const Text('Terima kasih! Kritik dan saran Anda telah kami terima.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Tutup Dialog
+                // Pindah ke tab riwayat (Tab Index 1) setelah klik OK
+                DefaultTabController.of(this.context).animateTo(1);
+              },
+              child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor)),
+            ),
+          ],
+        );
+      },
+    );
+
     // Reset Form
     setState(() {
       _selectedRating = null;
       _selectedFactor = null;
       _reasonController.clear();
     });
-
-    // Feedback Sukses
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Kritik dan saran Anda telah terkirim!'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-
-    // Pindah ke tab riwayat (Tab Index 1)
-    DefaultTabController.of(context).animateTo(1);
   }
 
   @override
