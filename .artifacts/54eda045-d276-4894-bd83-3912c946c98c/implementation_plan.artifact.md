@@ -1,30 +1,38 @@
-# Implementation Plan - Fix White Screen on Web
+# Implementation Plan - Production Migration Preparation
 
-The app is currently crashing on startup when running in a web browser because `sqflite` (SQLite) is not supported on the web. This plan will make the database initialization conditional.
+This plan prepares the application for production deployment by updating the API connection and generating the necessary distribution files (APK/AAB) and database exports.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> - Data persistence for Notifications and Feedback will be **disabled on Web** to prevent crashes.
-> - Data persistence will continue to work normally on **Android and iOS**.
-> - For production web persistence, a different plugin like `hive` or `drift` would be needed, but for now, we will focus on getting the app running again.
+> - **Production URL**: I am using `https://api.sukabumikota.go.id` as the production URL. Please confirm if this is correct or provide the actual URL.
+> - **Keystore/Signing**: Ensure you have configured `key.properties` and `build.gradle` for release signing, otherwise the resulting APK will be unsigned.
 
 ## Proposed Changes
 
-### [Database Layer]
+### [Flutter Frontend]
 
-#### [MODIFY] [database_helper.dart](file:///C:/src/mobile/lib/services/database_helper.dart)
-- Add `import 'package:flutter/foundation.dart' show kIsWeb;`.
-- Modify the `database` getter and `insert/query` methods to return empty results or skip execution if `kIsWeb` is true.
+#### [MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)
+- Comment out the local `baseUrl` (`http://10.0.2.2:8001/api`).
+- Add the production `baseUrl` (`https://api.sukabumikota.go.id/api`).
 
-### [Service Layer]
+### [Backend/Database]
 
-#### [MODIFY] [notification_service.dart](file:///C:/src/mobile/lib/services/notification_service.dart)
-#### [MODIFY] [feedback_service.dart](file:///C:/src/mobile/lib/services/feedback_service.dart)
-- Ensure they don't wait for database responses that will never come if on Web.
+#### [COMMAND] Export Database
+- Execute: `mysqldump -u root db_diskominfo > C:/src/mobile/db_diskominfo_production.sql`
+- This file will be created in your project root for you to manually upload to your server.
+
+### [Build Process]
+
+#### [COMMAND] Build APK
+- Execute: `flutter build apk --release`
+
+#### [COMMAND] Build App Bundle
+- Execute: `flutter build appbundle --release`
 
 ## Verification Plan
 
 ### Manual Verification
-1.  Run the app in Chrome: Verify the white screen is gone and the app renders correctly.
-2.  Run the app in Android Emulator: Verify that feedback and notifications are still being saved to the local database.
+- Check the `build/app/outputs/flutter-apk/` directory for `app-release.apk`.
+- Check the project root for `db_diskominfo_production.sql`.
+- Verify that the app code now points to the production URL.

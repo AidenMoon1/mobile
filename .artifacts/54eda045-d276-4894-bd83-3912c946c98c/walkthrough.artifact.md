@@ -1,34 +1,36 @@
-# Walkthrough - Backend Project Merged
+# Walkthrough - Production Migration Files Ready
 
-I have successfully moved your Laravel backend project into the main `mobile` project directory, creating a unified repository structure.
+I have successfully completed the local preparation for your production migration. All necessary files have been generated and are ready for upload.
 
-## Changes Made
+## Summary of Completed Tasks
 
-### 1. Unified Project Structure
-- Created a new directory: **[backend/](file:///C:/src/mobile/backend)** in the root of the project.
-- Physically moved all files and folders (including hidden files like `.env` and the large `vendor` folder) from `C:/src/PKL/diskominfo/diskominfo/` to this new location.
+### 1. API Configuration Updated
+- **[api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**: The `baseUrl` has been switched from local (`http://10.0.2.2:8001/api`) to production: **`https://api.sukabumikota.go.id/api`**.
 
-### 2. Git Configuration Updated
-- **[.gitignore](file:///C:/src/mobile/.gitignore)**: Added rules to ignore Laravel-specific files that should not be tracked by Git (e.g., `vendor`, `.env`, and private keys). This keeps your repository clean.
+### 2. Database Export Generated
+- **File**: [db_diskominfo_production.sql](file:///C:/src/mobile/db_diskominfo_production.sql)
+- **Action Required**: Upload and import this file into your production MySQL database (via phpMyAdmin or CLI).
 
-## How to Run Your Backend Now
+### 3. Distribution Files Built
+I have successfully built the release versions of the application:
+- **Release APK**: [app-release.apk](file:///C:/src/mobile/build/app/outputs/flutter-apk/app-release.apk) (51.3 MB)
+    - *Use this for direct installation on Android devices.*
+- **App Bundle (AAB)**: [app-release.aab](file:///C:/src/mobile/build/app/outputs/bundle/release/app-release.aab) (50.4 MB)
+    - *Use this for publishing to the Google Play Store.*
 
-> [!IMPORTANT]
-> Your terminal path has changed. To start the Laravel server from the main project root, run:
-> ```bash
-> cd backend
-> php artisan serve
-> ```
-
-## Verification
+## Verification Results
 
 ### Automated Checks
-- **File Integrity**: Verified that all core Laravel components (app, config, routes, storage, vendor) are present in the new `backend` folder.
-- **Hidden Files**: Confirmed that `.env` and other configuration files were successfully moved.
-- **Source Cleanup**: Verified that the original source directory is now empty.
+- **Disk Space**: Confirmed 32GB+ of free space before building.
+- **Build Status**: Both `assembleRelease` and `bundleRelease` tasks finished with `SUCCESS`.
+- **Database Export**: Verified the file was created using `mysqldump`.
 
-### Manual Verification
-- You can now see the `backend` folder directly in your Android Studio project tree, allowing you to edit both Frontend (Flutter) and Backend (Laravel) in one window.
+## Final Steps for You
+
+> [!IMPORTANT]
+> 1. **Upload Backend**: Follow the previous instructions to upload your `backend/` folder to the server.
+> 2. **Import SQL**: Import the `db_diskominfo_production.sql` file into your server's database.
+> 3. **Distribute App**: Share the `.apk` file with your users or upload the `.aab` file to the Google Play Console.
 
 > [!TIP]
-> Since the project is now in one place, you can commit both frontend and backend changes in a single Git commit, making it easier to track which backend changes belong to which frontend update.
+> If you need to make more changes locally, remember to switch the `baseUrl` back to local in `api_service.dart` to test with your local server.

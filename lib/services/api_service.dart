@@ -5,7 +5,8 @@ class ApiService {
   // GUNAKAN 10.0.2.2 UNTUK EMULATOR ANDROID (MERUJUK KE LOCALHOST KOMPUTER)
   // GANTI KE IP KOMPUTER ANDA JIKA MENGGUNAKAN HP FISIK (MISAL: 192.168.1.5)
   // GANTI KE DOMAIN JIKA SUDAH HOSTING (MISAL: https://api.sukabumi.go.id)
-  static const String baseUrl = 'http://10.0.2.2:8001/api';
+  // static const String baseUrl = 'http://10.0.2.2:8001/api'; // LOCAL
+  static const String baseUrl = 'https://api.sukabumikota.go.id/api'; // PRODUCTION
 
   // SET KE 'true' JIKA SERVER MATI AGAR APLIKASI TETAP BISA DIJALANKAN DENGAN DATA PALSU
   static const bool useMockData = false;

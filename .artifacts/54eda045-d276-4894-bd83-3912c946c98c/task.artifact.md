@@ -1,8 +1,5 @@
-- [ ] Setup Local Persistence
-    - [ ] Add `sqflite`, `path`, and `shared_preferences` to `pubspec.yaml`
-    - [ ] Create `DatabaseHelper` for SQLite management
-    - [ ] Update `NotificationService` to persist data
-    - [ ] Update `FeedbackService` to persist data
-    - [ ] Update `UserService` to cache profile in `shared_preferences`
-- [ ] Verification
-    - [ ] Verify data persistence after app restart
+- [x] Production Migration Preparation
+    - [x] Update `baseUrl` in `api_service.dart` to production URL
+    - [x] Export local MySQL database to `db_diskominfo_production.sql`
+    - [x] Build release APK (`flutter build apk --release`)
+    - [x] Build release App Bundle (`flutter build appbundle --release`)
