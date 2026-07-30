@@ -216,12 +216,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Divider(color: Colors.white24, thickness: 1),
                   const SizedBox(height: 16),
                   // Completing data banner
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.description, color: accentColor, size: 20),
-                      const SizedBox(width: 8),
-                      const Text(
+                      Icon(Icons.description, color: accentColor, size: 20),
+                      SizedBox(width: 8),
+                      Text(
                         'Lengkapi Data Diri Anda',
                         style: TextStyle(color: accentColor, fontSize: 14, fontWeight: FontWeight.w500),
                       ),
@@ -318,9 +318,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         elevation: 0,
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
+                        children: [
                           Text(
                             'Keluar Akun',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),

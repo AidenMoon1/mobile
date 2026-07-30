@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'layanan_keluarga.dart';
 
 class LayananScreen extends StatelessWidget {
   const LayananScreen({super.key});
@@ -63,6 +64,10 @@ class LayananScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF123457),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         centerTitle: false,
         title: const Text.rich(
           TextSpan(
@@ -71,7 +76,7 @@ class LayananScreen extends StatelessWidget {
                 text: 'Fase',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: 20,
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
                 ),
@@ -80,7 +85,7 @@ class LayananScreen extends StatelessWidget {
                 text: ' Kehidupan',
                 style: TextStyle(
                   color: Color(0xFFE8A33D),
-                  fontSize: 18,
+                  fontSize: 20,
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
                 ),
@@ -99,21 +104,21 @@ class LayananScreen extends StatelessWidget {
               'Kategori Layanan Sektor',
               style: TextStyle(
                 color: Color(0xFF123457),
-                fontSize: 15,
+                fontSize: 17.5,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'Poppins',
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             const Text(
               'Pilih sektor layanan yang Anda butuhkan sesuai kebutuhan kehidupan warga.',
               style: TextStyle(
                 color: Colors.grey,
-                fontSize: 11,
+                fontSize: 13,
                 fontFamily: 'Poppins',
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             // # GRID KATALOG 10 KARTU SEKTOR FASE KEHIDUPAN
             GridView.builder(
@@ -124,80 +129,108 @@ class LayananScreen extends StatelessWidget {
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 1.1,
+                childAspectRatio: 0.88,
               ),
               itemBuilder: (context, index) {
                 final item = _faseKehidupan[index];
                 return GestureDetector(
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Membuka layanan ${item['title']}...'),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
+                    if (item['title'] == 'Keluarga') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LayananKeluargaScreen()),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Membuka layanan ${item['title']}...'),
+                          duration: const Duration(seconds: 1),
+                        ),
+                      );
+                    }
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF123457),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFA5A4A4), width: 0.5),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF123457), width: 1.5),
                       boxShadow: const [
                         BoxShadow(
                           color: Color(0x20000000),
-                          blurRadius: 4,
-                          offset: Offset(0, 4),
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
                         )
                       ],
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Ikon Kartu Sektor
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFFFAC33), width: 1.5),
-                          ),
-                          child: Icon(
-                            item['icon'] as IconData,
-                            color: const Color(0xFF123457),
-                            size: 24,
+                        // # BAGIAN ATAS (BAGIAN BIRU NAVY DENGAN IKON DI TENGAH)
+                        Expanded(
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF123457),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(10),
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                item['icon'] as IconData,
+                                color: const Color(0xFFE8A33D),
+                                size: 44,
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 8),
 
-                        // Judul & Deskripsi
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['title'] as String,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Poppins',
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                        // # BAGIAN BAWAH (BAGIAN ABU-ABU DENGAN JUDUL, DESKRIPSI & PANAH DROPDOWN)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFD9D9D9),
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(10),
+                              bottomRight: Radius.circular(10),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              item['desc'] as String,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 9,
-                                fontFamily: 'Poppins',
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Judul & Deskripsi Sektor dari layanan_screen.dart
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      item['title'] as String,
+                                      style: const TextStyle(
+                                        color: Color(0xFF123457),
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      item['desc'] as String,
+                                      style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 10.5,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),

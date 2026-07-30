@@ -293,9 +293,9 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
                       child: _isSubmitting
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text(
-                              'Kirim Pengaduan',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
+                        'Kirim Pengaduan',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
@@ -307,107 +307,107 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
           _isLoadingHistory
               ? const Center(child: CircularProgressIndicator())
               : RefreshIndicator(
-                  onRefresh: _fetchHistory,
-                  child: _reports.isEmpty
-                      ? ListView(
-                          children: const [
-                            SizedBox(height: 100),
-                            Center(child: Text('Belum ada riwayat pengaduan.')),
-                          ],
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: _reports.length,
-                          itemBuilder: (context, index) {
-                            final report = _reports[index];
-                            return Card(
-                              elevation: 2,
-                              margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+            onRefresh: _fetchHistory,
+            child: _reports.isEmpty
+                ? ListView(
+              children: const [
+                SizedBox(height: 100),
+                Center(child: Text('Belum ada riwayat pengaduan.')),
+              ],
+            )
+                : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _reports.length,
+              itemBuilder: (context, index) {
+                final report = _reports[index];
+                return Card(
+                  elevation: 2,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Kategori Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(6),
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        // Kategori Badge
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.blue.shade50,
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: Text(
-                                            report['category'],
-                                            style: const TextStyle(
-                                              color: Colors.blue,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        // Status Badge
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: _getStatusColor(report['status']).withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: Text(
-                                            report['status'],
-                                            style: TextStyle(
-                                              color: _getStatusColor(report['status']),
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    // Judul
-                                    Text(
-                                      report['title'],
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    // Deskripsi
-                                    Text(
-                                      report['description'],
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    const Divider(),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'ID Aduan: #${report['id']}',
-                                          style: const TextStyle(color: Colors.grey, fontSize: 11),
-                                        ),
-                                        Text(
-                                          report['created_at'].toString().substring(0, 10),
-                                          style: const TextStyle(color: Colors.grey, fontSize: 11),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                              child: Text(
+                                report['category'],
+                                style: const TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                            // Status Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(report['status']).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                report['status'],
+                                style: TextStyle(
+                                  color: _getStatusColor(report['status']),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                ),
+                        const SizedBox(height: 12),
+                        // Judul
+                        Text(
+                          report['title'],
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        // Deskripsi
+                        Text(
+                          report['description'],
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Divider(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'ID Aduan: #${report['id']}',
+                              style: const TextStyle(color: Colors.grey, fontSize: 11),
+                            ),
+                            Text(
+                              report['created_at'].toString().substring(0, 10),
+                              style: const TextStyle(color: Colors.grey, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

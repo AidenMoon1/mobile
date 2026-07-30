@@ -205,8 +205,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(color: primaryColor.withOpacity(0.8), borderRadius: BorderRadius.circular(8)),
-            child: Row(
-              children: const [
+            child: const Row(
+              children: [
                 Text('Sukabumi, ', style: TextStyle(color: Colors.white, fontSize: 8)),
                 Text('28°C', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                 SizedBox(width: 4),
@@ -229,19 +229,19 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-            child: Row(
+            child: const Row(
               children: [
-                const Icon(Icons.notifications_active, color: Colors.red, size: 18),
-                const SizedBox(width: 8),
+                Icon(Icons.notifications_active, color: Colors.red, size: 18),
+                SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text('Potensi Cuaca', style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold)),
                     Text('Ekstrem', style: TextStyle(color: Colors.black, fontSize: 8)),
                   ],
                 ),
-                const SizedBox(width: 8),
-                const Icon(Icons.info_outline, color: Colors.green, size: 12),
+                SizedBox(width: 8),
+                Icon(Icons.info_outline, color: Colors.green, size: 12),
               ],
             ),
           ),
@@ -250,7 +250,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('Sampurasun, mrn', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                  const Text('Sampurasun, mrn', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                   Text('Jum\'at, 17 Juli 2026', style: TextStyle(color: accentColor, fontSize: 9)),
                 ],
               ),
@@ -353,7 +353,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         children: [
           Text('Ada yang bisa kami bantu?', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 12),
-          ..._faqResponses.keys.map((question) => _buildFAQItem(question)).toList(),
+          ..._faqResponses.keys.map((question) => _buildFAQItem(question)),
         ],
       ),
     );
