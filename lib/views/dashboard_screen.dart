@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 import 'package:mobile/views/instansi_screen.dart';
 
 import 'info_diskominfo.dart';
@@ -100,9 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchRealtimeWeather() async {
     try {
-      final response = await http
-          .get(Uri.parse('https://api.open-meteo.com/v1/forecast?latitude=-6.9222&longitude=106.9284&current_weather=true'))
-          .timeout(const Duration(seconds: 4));
+      final response = await ApiService.get('weather'); // Assume endpoint mapped in ApiService or handle specialized logic here
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['current_weather'] != null) {
@@ -120,18 +118,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchBeritaTerbaru() async {
     try {
-      final response = await http
-          .get(Uri.parse('https://berita-indo-api-two.vercel.app/antara/terbaru'))
-          .timeout(const Duration(seconds: 4));
+      final response = await ApiService.get('berita');
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['data'] != null && (data['data'] as List).isNotEmpty) {
           final list = (data['data'] as List).take(5).map((item) {
             return {
               'judul': item['title'] ?? 'Berita Terbaru Kota Sukabumi',
-              'kategori': 'Kesehatan',
-              'created_at': '2 Hari Lalu',
-              'gambar': item['image']?['small'] ?? 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400',
+              'kategori': item['category'] ?? 'Umum',
+              'created_at': item['date'] ?? 'Baru Saja',
+              'gambar': item['image'] ?? 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400',
             };
           }).toList();
           if (mounted) {

@@ -1,14 +1,8 @@
-- [x] Update Build Dependencies
-- [x] Fix `AndroidManifest.xml`
-- [x] Simplify Feedback Screen Rating System
-- [x] Empty Terms and Policy Content
-- [x] Add Feedback Submission Notification
-- [x] Update Notification Screen UI
-- [x] Redesign Profile Screen
-- [x] Redesign Terms and Policy Screen
-    - [x] Implement layered background (Dark Blue + Rounded White Container)
-    - [x] Add Header (Title, Version Badge, Update Date)
-    - [x] Add Intro Description Text
-    - [x] Implement interactive Policy List items
-- [x] Verification
-    - [x] Check UI consistency with reference image
+- [ ] Setup Local Persistence
+    - [ ] Add `sqflite`, `path`, and `shared_preferences` to `pubspec.yaml`
+    - [ ] Create `DatabaseHelper` for SQLite management
+    - [ ] Update `NotificationService` to persist data
+    - [ ] Update `FeedbackService` to persist data
+    - [ ] Update `UserService` to cache profile in `shared_preferences`
+- [ ] Verification
+    - [ ] Verify data persistence after app restart
