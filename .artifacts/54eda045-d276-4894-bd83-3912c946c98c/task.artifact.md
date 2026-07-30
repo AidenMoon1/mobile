@@ -1,6 +1,8 @@
-- [x] Notification System and Screen
-    - [x] Create `NotificationModel`
-    - [x] Create `NotificationService`
-    - [x] Create `NotificationScreen` (UI based on reference)
-    - [x] Integrate `NotificationScreen` into `main.dart`
-    - [x] Update `FeedbackScreen` to trigger notifications
+- [ ] Implement Advanced Notification Header
+    - [ ] Add Logo & Weather Top Bar
+    - [ ] Create layered background with yellow divider
+    - [ ] Position search bar to overlap divider
+    - [ ] Implement filter row in dark blue section
+- [ ] Verification
+    - [ ] Check layout on various screen sizes (simulated)
+    - [ ] Verify interactability of search and icons

@@ -259,7 +259,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   }
 
   Widget _buildRatingBoxWithLabel(int value, String label, Color accentColor) {
-    bool isSelected = _selectedRating == value;
+    bool isSelected = (_selectedRating ?? 0) >= value;
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedRating = value),

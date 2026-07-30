@@ -12,10 +12,16 @@ class NotificationScreen extends StatefulWidget {
 
 class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notificationService = NotificationService();
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF0A1E33);
     const Color accentColor = Color(0xFFE8A33D);
 
     final notifications = _notificationService.notifications;
@@ -24,90 +30,233 @@ class _NotificationScreenState extends State<NotificationScreen> {
       backgroundColor: const Color(0xFFF5F8FB),
       body: Column(
         children: [
-          _buildHeader(primaryColor, accentColor),
+          _buildHeader(accentColor),
           Expanded(
             child: notifications.isEmpty
                 ? _buildEmptyState()
-                : _buildNotificationList(notifications, primaryColor, accentColor),
+                : _buildNotificationList(notifications, accentColor),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(Color primaryColor, Color accentColor) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
-      decoration: const BoxDecoration(
-        color: Color(0xFF123457),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Icon(Icons.notifications_none_rounded, color: Colors.white70, size: 32),
-              const Text(
-                'Notifikasi',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+  Widget _buildHeader(Color accentColor) {
+    return Column(
+      children: [
+        // 1. TOP BAR (Logo & Weather)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          color: Colors.white,
+          child: SafeArea(
+            bottom: false,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Logo Section
+                Row(
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.png',
+                      width: 40,
+                      height: 36,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.location_city, color: Color(0xFF123457), size: 32),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          'Sukabumi',
+                          style: TextStyle(
+                            color: Color(0xFF0A1E33),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'ONE ACCESS',
+                          style: TextStyle(
+                            color: Color(0xFFE8A33D),
+                            fontSize: 7,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.settings_outlined, color: Colors.white70),
-                onPressed: () {},
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          // Search Bar
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+                // Weather Section
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text(
+                      'Sukabumi,',
+                      style: TextStyle(color: Color(0xFF0A1E33), fontSize: 8, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF123457),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Column(
+                            children: const [
+                              Text(
+                                '28°C',
+                                style: TextStyle(color: Color(0xFFE8A33D), fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Terasa seperti 31°C',
+                                style: TextStyle(color: Colors.white, fontSize: 6),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.wb_sunny_rounded, color: Color(0xFFE8A33D), size: 16),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            child: const TextField(
-              decoration: InputDecoration(
-                hintText: 'Cari Notifikasi...',
-                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
-                border: InputBorder.none,
-                suffixIcon: Icon(Icons.search, color: Colors.grey),
-              ),
-            ),
           ),
-          const SizedBox(height: 20),
-          // Filter Tabs
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+
+        // 2. LAYERED HEADER WITH SEARCH
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Column(
+              children: [
+                // Light Blue Layer (Title)
+                Container(
+                  width: double.infinity,
+                  height: 70,
+                  color: const Color(0xFFC5D9ED),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.notifications_none_rounded, color: Color(0xFF123457), size: 32),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Notifikasi',
+                          style: TextStyle(
+                            color: Color(0xFF123457),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Yellow Divider Line
+                Container(
+                  width: double.infinity,
+                  height: 4,
+                  color: accentColor,
+                ),
+                // Dark Blue Layer (Filters)
+                Container(
+                  width: double.infinity,
+                  height: 80,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF123457),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(24),
+                      bottomRight: Radius.circular(24),
+                    ),
+                  ),
+                  padding: const EdgeInsets.fromLTRB(16, 32, 16, 12),
+                  child: Row(
+                    children: [
+                      _buildFilterTab(accentColor),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.tune, color: Colors.white70, size: 22),
+                        onPressed: () {},
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.more_vert, color: accentColor, size: 22),
+                        onPressed: () {},
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            // Floating Search Bar
+            Positioned(
+              top: 50, // Center over the yellow line (70-20ish)
+              left: 24,
+              right: 24,
+              child: Container(
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: const Text(
-                  'Semua Notifikasi',
-                  style: TextStyle(
-                    color: Color(0xFF123457),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                child: TextField(
+                  controller: _searchController,
+                  style: const TextStyle(fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: 'Cari Notifikasi...',
+                    hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
               ),
-              const Spacer(),
-              const Icon(Icons.tune, color: Colors.white70, size: 20),
-              const SizedBox(width: 12),
-              const Icon(Icons.more_vert, color: Colors.white70, size: 20),
-            ],
+            ),
+            // Info Icon (Top Right of Light Blue)
+            Positioned(
+              top: 15,
+              right: 16,
+              child: Icon(Icons.info_outline, color: const Color(0xFF123457).withOpacity(0.7), size: 24),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterTab(Color accentColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Semua Notifikasi',
+            style: TextStyle(
+              color: Color(0xFF123457),
+              fontWeight: FontWeight.bold,
+              fontSize: 11,
+            ),
           ),
+          const SizedBox(width: 6),
+          Icon(Icons.chevron_right, color: accentColor, size: 14),
         ],
       ),
     );
@@ -129,8 +278,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
-  Widget _buildNotificationList(List<NotificationModel> notifications, Color primaryColor, Color accentColor) {
-    // Group notifications by date
+  Widget _buildNotificationList(List<NotificationModel> notifications, Color accentColor) {
     final Map<String, List<NotificationModel>> grouped = {};
     for (var n in notifications) {
       String groupKey = _getGroupKey(n.timestamp);
@@ -141,7 +289,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       itemCount: grouped.keys.length,
       itemBuilder: (context, index) {
         String groupTitle = grouped.keys.elementAt(index);
@@ -157,7 +305,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
             ),
-            ...items.map((n) => _buildNotificationCard(n, primaryColor, accentColor)),
+            ...items.map((n) => _buildNotificationCard(n, const Color(0xFF123457), accentColor)),
             const SizedBox(height: 16),
           ],
         );
@@ -173,8 +321,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     if (notificationDate == today) return 'Hari Ini';
     if (notificationDate == yesterday) return 'Kemarin';
-    
-    // For older, just use Month Year or specific Logic
     return DateFormat('MMMM yyyy').format(date);
   }
 
@@ -194,42 +340,37 @@ class _NotificationScreenState extends State<NotificationScreen> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCategoryIcon(notification.category, primaryColor),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          _buildCategoryIcon(notification.category, primaryColor),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            notification.title,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                        ),
-                        Text(
-                          DateFormat('HH.mm').format(notification.timestamp),
-                          style: const TextStyle(color: Colors.grey, fontSize: 10),
-                        ),
-                      ],
+                    Expanded(
+                      child: Text(
+                        notification.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
                     ),
-                    const SizedBox(height: 8),
                     Text(
-                      notification.description,
-                      style: const TextStyle(color: Colors.black54, fontSize: 12, height: 1.4),
+                      DateFormat('HH.mm').format(notification.timestamp),
+                      style: const TextStyle(color: Colors.grey, fontSize: 10),
                     ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  notification.description,
+                  style: const TextStyle(color: Colors.black54, fontSize: 12, height: 1.4),
+                ),
+              ],
+            ),
           ),
         ],
       ),

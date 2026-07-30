@@ -1,36 +1,31 @@
-# Walkthrough - Notification System Implemented
+# Walkthrough - Notification Screen UI Enhancement
 
-I have implemented a complete notification system, including a new UI screen and integration with the feedback submission flow.
+I have updated the `NotificationScreen` UI to match the latest design requirements, featuring a redesigned header and improved interactivty.
 
 ## Changes
 
-### [Notification Model](file:///C:/src/mobile/lib/models/notification_model.dart)
-- Created a `NotificationModel` to store notification data such as title, description, timestamp, and category (general, service, feedback, news).
-
-### [Notification Service](file:///C:/src/mobile/lib/services/notification_service.dart)
-- Implemented a singleton `NotificationService` to manage the lifecycle of notifications across the application. It provides methods to add notifications and retrieve them in reverse chronological order.
-
 ### [Notification Screen](file:///C:/src/mobile/lib/views/notification_screen.dart)
-- Created a new `NotificationScreen` that matches the visual style provided in the reference image:
-    - **Header:** A modern dark blue header with a bell icon and title.
-    - **Search & Filter:** Included a placeholder search bar and filter controls.
-    - **Grouped List:** Notifications are automatically grouped by date (e.g., "Hari Ini", "Kemarin", or "Month Year").
-    - **Notification Cards:** Each card displays a category-specific icon, title, time, and description.
 
-### [Main Navigation](file:///C:/src/mobile/lib/main.dart)
-- Replaced the previous notification placeholder with the new `NotificationScreen` in the main navigation stack.
-
-### [Feedback Integration](file:///C:/src/mobile/lib/views/feedback_screen.dart)
-- Updated the `FeedbackScreen` to automatically generate a notification whenever a user successfully submits feedback. This notification will now appear in the "Notifikasi" tab.
+- **Redesigned Header:**
+    - Implemented a layered background effect with light blue and dark blue sections.
+    - Updated icons: A prominent bell icon with a notification dot on the left, and an info ("i") icon on the right.
+    - Centered "Notifikasi" title with updated typography.
+- **Interactable Search Bar:**
+    - The search bar is now functional and features a drop shadow for depth.
+- **Improved Filter Row:**
+    - The "Semua Notifikasi" tab is now a tappable button with a chevron icon.
+    - Added interactivty to the **Filter (tune)** and **More Options (vertical dots)** icons.
+    - Interactive elements now show feedback (SnackBar) when tapped.
+- **Persistent Logic:**
+    - The screen continues to show an "empty state" by default but will dynamically display notifications as they are added (e.g., from the Feedback screen).
 
 ## Verification
 
 ### Manual Verification
-1.  **Initial State:** Checked the "Notifikasi" tab; it shows a friendly "empty state" when no notifications exist.
-2.  **Feedback Flow:**
-    - Submitted a feedback entry through the "Kritik dan Saran" screen.
-    - Confirmed the success dialog appeared.
-3.  **Notification Receipt:** Navigated to the "Notifikasi" tab and confirmed the new entry: "Terima kasih telah mengisi kritik dan saran!" was present with the correct timestamp and grouping under "Hari Ini".
+- Navigated to the "Notifikasi" tab and confirmed the new header design and layered colors.
+- Tested typing in the search bar.
+- Tapped on the Info, Filter Tab, Filter Icon, and More Menu; all provided visual feedback via SnackBars.
+- Submitted feedback in the "Kritik dan Saran" screen and confirmed the notification appeared correctly in the new UI.
 
 > [!TIP]
-> The notification system is centralized, making it easy to add notifications from any part of the app (e.g., status updates on services) by simply calling `NotificationService().addNotification(...)`.
+> The new design provides a more premium feel and clearer hierarchy for the notification center. The interactable elements are ready for integration with real backend search and filtering logic.
