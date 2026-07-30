@@ -1,31 +1,27 @@
-# Walkthrough - Notification Screen UI Enhancement
+# Walkthrough - Privacy Policy Screen Redesign
 
-I have updated the `NotificationScreen` UI to match the latest design requirements, featuring a redesigned header and improved interactivty.
+I have completely redesigned the **Kebijakan dan Ketentuan** (Privacy Policy) screen to match the detailed layout and content provided in the reference image.
 
 ## Changes
 
-### [Notification Screen](file:///C:/src/mobile/lib/views/notification_screen.dart)
+### [Terms and Policy Screen](file:///C:/src/mobile/lib/views/terms_and_policy_screen.dart)
 
-- **Redesigned Header:**
-    - Implemented a layered background effect with light blue and dark blue sections.
-    - Updated icons: A prominent bell icon with a notification dot on the left, and an info ("i") icon on the right.
-    - Centered "Notifikasi" title with updated typography.
-- **Interactable Search Bar:**
-    - The search bar is now functional and features a drop shadow for depth.
-- **Improved Filter Row:**
-    - The "Semua Notifikasi" tab is now a tappable button with a chevron icon.
-    - Added interactivty to the **Filter (tune)** and **More Options (vertical dots)** icons.
-    - Interactive elements now show feedback (SnackBar) when tapped.
-- **Persistent Logic:**
-    - The screen continues to show an "empty state" by default but will dynamically display notifications as they are added (e.g., from the Feedback screen).
+#### 1. **Structured Header**
+- **Dynamic Background**: Added a dark blue background behind the main content area, with a rounded white container on top to create a modern "card" aesthetic.
+- **Clear Information**: Included the "KEBIJAKAN PRIVASI" title, a "Versi 5.4.3" badge in orange, and the specific update date with a calendar icon.
+- **Introduction**: Added the official description regarding the collection and protection of user data.
+
+#### 2. **Policy Section List**
+- **Interactive Menu**: Implemented a vertical list of all 12 policy sections (from "Dasar Hukum" to "Persetujuan").
+- **Clean Styling**: Each item features bold black text for readability, a chevron icon on the right, and a subtle divider line between items.
+- **Consistent Icons**: Used standardized Material Icons for the back button, calendar, and chevrons to match the app's overall design system.
 
 ## Verification
 
 ### Manual Verification
-- Navigated to the "Notifikasi" tab and confirmed the new header design and layered colors.
-- Tested typing in the search bar.
-- Tapped on the Info, Filter Tab, Filter Icon, and More Menu; all provided visual feedback via SnackBars.
-- Submitted feedback in the "Kritik dan Saran" screen and confirmed the notification appeared correctly in the new UI.
+- Verified that all 12 policy items are present in the list.
+- Confirmed that the "Versi 5.4.3" badge and update date match the reference image exactly.
+- Checked that the layout is scrollable and looks clean on mobile screen dimensions.
 
 > [!TIP]
-> The new design provides a more premium feel and clearer hierarchy for the notification center. The interactable elements are ready for integration with real backend search and filtering logic.
+> The screen now uses a `ListView.separated` within a `SingleChildScrollView` for the policy list, which provides high performance and consistent spacing between menu items.

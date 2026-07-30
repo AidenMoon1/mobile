@@ -146,106 +146,107 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   bottomRight: Radius.circular(40),
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
+              padding: const EdgeInsets.fromLTRB(24, 40, 24, 20),
               child: Column(
                 children: [
-                  // Edit Profil Button Row
+                  // Row: Edit Profil Button
                   Align(
                     alignment: Alignment.topRight,
                     child: GestureDetector(
                       onTap: () {
-                        // Navigasi ke Edit Profil dan refresh saat kembali
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const EditProfileScreen()),
                         ).then((_) {
-                          // REFRESH UI: Memanggil setState agar widget menggambar ulang dengan data baru
                           setState(() {});
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white70),
-                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white60),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
                           'Edit Profil',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // Profile Picture
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage('https://via.placeholder.com/150'),
-                    backgroundColor: Colors.grey,
-                  ),
-                  const SizedBox(height: 16),
-                  // Badge Warga
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white24),
-                    ),
-                    child: const Text(
-                      'Warga',
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Name (DINAMIS DARI SERVICE)
-                  Text(
-                    user.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  // ID (DINAMIS DARI SERVICE)
-                  Text(
-                    user.id,
-                    style: const TextStyle(color: Colors.white54, fontSize: 14),
-                  ),
-                  const SizedBox(height: 20),
-                  const Divider(color: Colors.white24, thickness: 1),
-                  const SizedBox(height: 16),
-                  // Completing data banner
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  // Row: Profile Info (Photo | Badge, Name, ID)
+                  Row(
                     children: [
-                      Icon(Icons.description, color: accentColor, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Lengkapi Data Diri Anda',
-                        style: TextStyle(color: accentColor, fontSize: 14, fontWeight: FontWeight.w500),
+                      const CircleAvatar(
+                        radius: 45,
+                        backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+                        backgroundColor: Colors.grey,
+                      ),
+                      const SizedBox(width: 20),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white24),
+                            ),
+                            child: const Text(
+                              'Warga',
+                              style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(
+                                user.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.verified, color: Colors.blueAccent, size: 24),
+                            ],
+                          ),
+                          Text(
+                            user.id,
+                            style: const TextStyle(color: Color(0xFFE8A33D), fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                        ],
                       ),
                     ],
                   ),
+                  const SizedBox(height: 24),
+                  const Divider(color: Colors.white24, thickness: 1.5),
+                  const SizedBox(height: 16),
+                  // "Data Sudah Lengkap" Banner
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.description, color: accentColor, size: 22),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Data Sudah Lengkap',
+                        style: TextStyle(color: accentColor, fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
 
             // MENU LIST SECTION
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30),
               child: Column(
                 children: [
-                  _buildMenuItem(
-                    icon: Icons.history,
-                    title: 'Log Aktivitas',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ActivityLogScreen()),
-                      );
-                    },
-                  ),
                   _buildMenuItem(
                     icon: Icons.lock_outline,
                     title: 'Kebijakan dan Ketentuan',
@@ -299,33 +300,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Versi Aplikasi',
                     trailing: const Text(
                       '5.4.3',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                     onTap: () {},
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 60),
                   // LOGOUT BUTTON
                   SizedBox(
                     width: double.infinity,
-                    height: 55,
+                    height: 52,
                     child: ElevatedButton(
                       onPressed: () => _showLogoutBottomSheet(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        foregroundColor: accentColor,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 0,
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
+                        children: const [
                           Text(
                             'Keluar Akun',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                           ),
-                          Icon(Icons.logout),
+                          Icon(Icons.logout_rounded, color: Color(0xFFE8A33D)),
                         ],
                       ),
                     ),
@@ -347,33 +348,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required VoidCallback onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withOpacity(0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: const BoxDecoration(
-            color: Color(0xFFFDF4E7),
+            color: Color(0xFFE8A33D),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: const Color(0xFFE8A33D), size: 24),
+          child: Icon(icon, color: Colors.white, size: 22),
         ),
         title: Text(
           title,
           style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
         ),

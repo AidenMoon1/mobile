@@ -1,8 +1,14 @@
-- [ ] Implement Advanced Notification Header
-    - [ ] Add Logo & Weather Top Bar
-    - [ ] Create layered background with yellow divider
-    - [ ] Position search bar to overlap divider
-    - [ ] Implement filter row in dark blue section
-- [ ] Verification
-    - [ ] Check layout on various screen sizes (simulated)
-    - [ ] Verify interactability of search and icons
+- [x] Update Build Dependencies
+- [x] Fix `AndroidManifest.xml`
+- [x] Simplify Feedback Screen Rating System
+- [x] Empty Terms and Policy Content
+- [x] Add Feedback Submission Notification
+- [x] Update Notification Screen UI
+- [x] Redesign Profile Screen
+- [x] Redesign Terms and Policy Screen
+    - [x] Implement layered background (Dark Blue + Rounded White Container)
+    - [x] Add Header (Title, Version Badge, Update Date)
+    - [x] Add Intro Description Text
+    - [x] Implement interactive Policy List items
+- [x] Verification
+    - [x] Check UI consistency with reference image

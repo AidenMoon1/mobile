@@ -1,32 +1,33 @@
-# Implementation Plan - Advanced Notification Header UI
+# Implementation Plan - Update Privacy Policy Screen UI
 
-The goal is to match the `NotificationScreen` header with the detailed reference image, including a top logo bar, a weather widget, and a layered background with an overlapping search bar.
+Update the `TermsAndPolicyScreen` to match the detailed design in the provided reference image, featuring grouped policy sections and a structured header.
 
 ## User Review Required
 
 > [!NOTE]
-> I will be extracting the Logo and Weather widget design from `DashboardScreen` to ensure visual consistency across the app. The search bar will be precisely positioned using a `Stack` to overlap the yellow divider line.
+> - The policy sections (e.g., "Dasar Hukum", "Data Pribadi Pengguna") will be implemented as static list items for now. Clicking them can show a dummy message or be prepared for future detailed views.
+> - I will use the established color palette (`primaryColor: 0xFF0A1E33`, `accentColor: 0xFFE8A33D`).
 
 ## Proposed Changes
 
-### [Notification Screen]
+### [Kebijakan dan Ketentuan Screen]
 
-#### [MODIFY] [notification_screen.dart](file:///C:/src/mobile/lib/views/notification_screen.dart)
-- **Top Bar**: Add a white container at the top containing:
-    - App Logo and "Sukabumi ONE ACCESS" text.
-    - Weather widget with temperature, "Terasa seperti", and sun icon.
-- **Layered Background**:
-    - Light blue section for the "Notifikasi" title.
-    - A 4px yellow/orange divider line.
-    - Dark blue section with rounded bottom corners.
-- **Search Bar**: Position a white capsule-shaped `TextField` to sit on top of the yellow line.
-- **Filter Row**: Implement the "Semua Notifikasi" pill button and the right-aligned `tune` and `more_vert` icons inside the dark blue area.
-- **Interactivity**: Use `TextEditingController` for the search bar and add tap handlers for icons.
+#### [MODIFY] [terms_and_policy_screen.dart](file:///C:/src/mobile/lib/views/terms_and_policy_screen.dart)
+- **Background**: Update body to have a dark blue background behind the rounded white container to create the "card" effect shown in the image.
+- **Header Section**:
+    - Title: "KEBIJAKAN PRIVASI" (Uppercase, bold).
+    - Version Badge: "Versi 5.4.3" in an orange rounded box.
+    - Update Date: Calendar icon + "Diperbarui per tanggal 23 Desember 2026".
+    - Intro Text: The paragraph explaining data collection and usage.
+- **Policy Sections List**:
+    - Implement a list of items: "Dasar Hukum", "Data Pribadi Pengguna", "Data Non-Pribadi Pengguna", "Cookies", "Bagaimana Kami Menggunakan Data", etc.
+    - Each item will have a chevron-right icon and a bottom divider.
+    - Styling will match the image (bold text, clean spacing).
 
 ## Verification Plan
 
 ### Manual Verification
-- Verify the logo and weather widget are correctly aligned.
-- Confirm the search bar overlaps the yellow line as per the design.
-- Ensure the "Semua Notifikasi" button and other icons respond to taps.
-- Verify that sending feedback still populates the notification list correctly within this new UI.
+- Navigate to the "Kebijakan dan Ketentuan" screen from the Profile screen.
+- Verify the header elements (Version, Date, Title) are correctly placed.
+- Ensure the list of policy sections is complete and matches the reference image.
+- Verify that the layout remains responsive on scroll.
