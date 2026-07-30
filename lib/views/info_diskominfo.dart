@@ -1,47 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'form_pengajuan_screen.dart';
 
-class InfoDiskominfo extends StatelessWidget {
+class InfoDiskominfo extends StatefulWidget {
   const InfoDiskominfo({super.key});
+
+  @override
+  State<InfoDiskominfo> createState() => _InfoDiskominfoState();
+}
+
+class _InfoDiskominfoState extends State<InfoDiskominfo> {
+  bool _isTentangExpanded = true;
 
   final List<Map<String, dynamic>> _layananTersedia = const [
     {
-      'title': 'PPID',
-      'desc': 'Informasi Publik',
-      'icon': Icons.info_rounded,
+      'title': 'PPID\nInformasi',
+      'rawTitle': 'PPID Informasi',
+      'icon': Icons.info_outlined,
     },
     {
-      'title': 'Kemitraan Media',
-      'desc': 'Kerjasama Pers',
-      'icon': Icons.newspaper_rounded,
+      'title': 'Kemitraan\nMedia',
+      'rawTitle': 'Kemitraan Media',
+      'icon': Icons.newspaper_outlined,
     },
     {
-      'title': 'Infrastruktur IT',
-      'desc': 'Jaringan & Wi-Fi',
-      'icon': Icons.wifi_rounded,
+      'title': 'Infrastruktur\nIT',
+      'rawTitle': 'Infrastruktur IT',
+      'icon': Icons.wifi_outlined,
     },
     {
-      'title': 'Sertifikat Elektronik',
-      'desc': 'Tanda Tangan Digital',
-      'icon': Icons.security_rounded,
+      'title': 'TTD\nDigital',
+      'rawTitle': 'Sertifikat TTD Digital',
+      'icon': Icons.security_outlined,
     },
     {
-      'title': 'Domain & Hosting',
-      'desc': 'Subdomain Pemkot',
-      'icon': Icons.language_rounded,
+      'title': 'Domain &\nHosting',
+      'rawTitle': 'Domain & Hosting',
+      'icon': Icons.language_outlined,
     },
     {
-      'title': 'Aduan LAPOR!',
-      'desc': 'Layanan Aspirasi',
-      'icon': Icons.campaign_rounded,
+      'title': 'Aduan\nLAPOR!',
+      'rawTitle': 'Aduan LAPOR!',
+      'icon': Icons.campaign_outlined,
     },
   ];
 
+  Future<void> _bukaGoogleMaps() async {
+    final Uri uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=Diskominfo+Kota+Sukabumi');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF123457);
+    const Color accentColor = Color(0xFFE8A33D);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF123457),
+        backgroundColor: primaryColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
@@ -61,59 +81,90 @@ class InfoDiskominfo extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // # 1. HEADER HERO KARTU DISKOMINFO (NAVY)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              color: const Color(0xFF123457),
-              child: Row(
-                children: [
-                  Container(
-                    width: 68,
-                    height: 68,
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFFAC33), width: 1.5),
-                    ),
-                    child: Image.asset(
-                      'assets/images/diskominfo.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.hub_rounded,
-                        color: Color(0xFF123457),
-                        size: 36,
+              height: 124,
+              color: primaryColor,
+              child: ClipRect(
+                child: Stack(
+                  children: [
+                    Positioned(
+                      child: Align(
+                        alignment: const Alignment(0.4, 0.0),
+                        child: Opacity(
+                          opacity: 0.22,
+                          child: Image.asset(
+                            'assets/images/diskominfo.png',
+                            width: 720,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => const SizedBox(),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'DISKOMINFO',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 100,
+                            height: 72,
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x25000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4),
+                                )
+                              ],
+                            ),
+                            child: Image.asset(
+                              'assets/images/diskominfo.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => const Icon(
+                                Icons.computer_rounded,
+                                color: primaryColor,
+                                size: 48,
+                              ),
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          'Dinas Komunikasi dan Informatika',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13.5,
-                            fontFamily: 'Poppins',
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'DISKOMINFO',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                SizedBox(height: 3),
+                                Text(
+                                  'Dinas Komunikasi dan Informatika',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontFamily: 'Poppins',
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
@@ -122,28 +173,16 @@ class InfoDiskominfo extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // # 2. INFORMASI INSTANSI (KARTU DETAIL ALAMAT, JAM, KONTAK)
-                  const Text(
-                    'Informasi Instansi',
-                    style: TextStyle(
-                      color: Color(0xFF123457),
-                      fontSize: 16.5,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF123457).withOpacity(0.15), width: 1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade300, width: 1.2),
                       boxShadow: const [
                         BoxShadow(
-                          color: Color(0x15000000),
+                          color: Color(0x0C000000),
                           blurRadius: 6,
                           offset: Offset(0, 3),
                         )
@@ -152,217 +191,372 @@ class InfoDiskominfo extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Alamat
-                        _buildInfoRow(
-                          icon: Icons.location_on_rounded,
-                          label: 'ALAMAT',
-                          value: 'Jl. Syamsudin S.H. No. 25, Cikole, Kota Sukabumi, Jawa Barat 43113',
-                        ),
-                        const Divider(height: 20),
-
-                        // Jam Operasional
-                        _buildInfoRow(
-                          icon: Icons.access_time_filled_rounded,
-                          label: 'JAM OPERASIONAL',
-                          value: 'Senin-Jum’at, 08:00 - 15:30 WIB',
-                        ),
-                        const Divider(height: 20),
-
-                        // Kontak
-                        _buildInfoRow(
-                          icon: Icons.phone_rounded,
-                          label: 'KONTAK',
-                          value: '(0266) 221123 / diskominfo@sukabumikota.go.id',
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Tombol Buka di Maps
-                        GestureDetector(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Membuka petunjuk arah di Google Maps...'),
-                                duration: Duration(seconds: 1),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: accentColor.withOpacity(0.18),
+                                shape: BoxShape.circle,
                               ),
-                            );
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF5083B8).withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF5083B8), width: 1),
+                              child: const Icon(
+                                Icons.info_outline_rounded,
+                                color: accentColor,
+                                size: 20,
+                              ),
                             ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.map_rounded, color: Color(0xFF5083B8), size: 20),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Buka di Maps',
-                                  style: TextStyle(
-                                    color: Color(0xFF5083B8),
-                                    fontSize: 13,
-                                    fontFamily: 'Poppins',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 10),
+                            const Text(
+                              'Informasi Instansi',
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
                             ),
-                          ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildInfoItem(
+                          icon: Icons.location_on_outlined,
+                          label: 'ALAMAT',
+                          content: 'Jl. Syamsudin S.H. No. 25, Kota Sukabumi, Jawa Barat',
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+                        ),
+                        _buildInfoItem(
+                          icon: Icons.access_time_rounded,
+                          label: 'JAM OPERASIONAL',
+                          content: 'Senin–Jum\'at, 08:00 – 16:00 WIB',
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+                        ),
+                        _buildInfoItem(
+                          icon: Icons.phone_outlined,
+                          label: 'KONTAK',
+                          content: '(0266) 221034',
                         ),
                       ],
                     ),
                   ),
 
+                  const SizedBox(height: 18),
+
+                  GestureDetector(
+                    onTap: _bukaGoogleMaps,
+                    child: Container(
+                      width: double.infinity,
+                      height: 175,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade300, width: 1.2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0C000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          )
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              color: const Color(0xFFE8ECEF),
+                              child: CustomPaint(
+                                painter: MapPatternPainterDiskominfo(),
+                              ),
+                            ),
+                            Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: primaryColor,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'Diskominfo Kota Sukabumi',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Icon(
+                                    Icons.location_on_rounded,
+                                    color: Colors.redAccent,
+                                    size: 40,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: 12,
+                              left: 12,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: primaryColor.withOpacity(0.2)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Buka di Maps',
+                                      style: TextStyle(
+                                        color: primaryColor,
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                    SizedBox(width: 6),
+                                    Icon(
+                                      Icons.open_in_new_rounded,
+                                      color: primaryColor,
+                                      size: 16,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 22),
 
-                  // # 3. LAYANAN TERSEDIA (GRID KARTU KECIL)
                   const Text(
                     'Layanan Tersedia',
                     style: TextStyle(
-                      color: Color(0xFF123457),
-                      fontSize: 16.5,
+                      color: primaryColor,
+                      fontSize: 17.5,
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _layananTersedia.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: 0.95,
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = _layananTersedia[index];
-                      return GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Membuka layanan ${item['title']} Diskominfo...'),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF123457),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFFFAC33), width: 1),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x20000000),
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              )
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                item['icon'] as IconData,
-                                color: const Color(0xFFE8A33D),
-                                size: 32,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                item['title'] as String,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Poppins',
+                  SizedBox(
+                    height: 108,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _layananTersedia.length,
+                      separatorBuilder: (context, index) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final item = _layananTersedia[index];
+                        final String displayTitle = item['title'] as String;
+                        final String rawTitle = (item['rawTitle'] ?? item['title']) as String;
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FormPengajuanScreen(
+                                  judulLayanan: 'Pengajuan $rawTitle',
+                                  deskripsi: 'Layanan Resmi Diskominfo Kota Sukabumi',
+                                  icon: item['icon'] as IconData,
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
+                            );
+                          },
+                          child: Container(
+                            width: 92,
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade300, width: 1.3),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x0C000000),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 3),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  item['icon'] as IconData,
+                                  color: primaryColor,
+                                  size: 38,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  displayTitle,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: primaryColor,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                    height: 1.15,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
 
                   const SizedBox(height: 22),
 
-                  // # 4. TENTANG INSTANSI (KARTU DESKRIPSI LENGKAP)
-                  const Text(
-                    'Tentang Instansi',
-                    style: TextStyle(
-                      color: Color(0xFF123457),
-                      fontSize: 16.5,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF123457).withOpacity(0.15), width: 1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade300, width: 1.2),
                       boxShadow: const [
                         BoxShadow(
-                          color: Color(0x15000000),
+                          color: Color(0x0C000000),
                           blurRadius: 6,
                           offset: Offset(0, 3),
                         )
                       ],
                     ),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Column(
                       children: [
-                        Text(
-                          'Dinas Komunikasi dan Informatika (Diskominfo) Kota Sukabumi bertugas mengelola komunikasi publik, informatika, statistik, dan persandian untuk mewujudkan Sistem Pemerintahan Berbasis Elektronik (SPBE) serta pelayanan informasi publik yang transparan.',
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 13.5,
-                            fontFamily: 'Poppins',
-                            height: 1.5,
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isTentangExpanded = !_isTentangExpanded;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Tentang Instansi',
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                Icon(
+                                  _isTentangExpanded
+                                      ? Icons.keyboard_arrow_up_rounded
+                                      : Icons.keyboard_arrow_down_rounded,
+                                  color: Colors.black87,
+                                  size: 28,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        SizedBox(height: 12),
-                        Text(
-                          'Tugas dan Fungsi Utama :',
-                          style: TextStyle(
-                            color: Color(0xFF123457),
-                            fontSize: 13.5,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
+                        if (_isTentangExpanded)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                                const SizedBox(height: 14),
+                                Text(
+                                  'Diskominfo Kota Sukabumi adalah Dinas Komunikasi dan Informatika yang bertugas mengelola komunikasi publik, insfrastruktur teknologi informasi, keamanan siber, pers, dan sistem pengaduan warga.',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade800,
+                                    fontSize: 13,
+                                    height: 1.5,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Text(
+                                  'Tugas dan Fungsi Utama :',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade800,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildBulletPoint(
+                                  title: 'Komunikasi & Informasi Publik',
+                                  desc:
+                                      'Menyampaikan berita resmi Kota Sukabumi, transparansi publik PPID, dan fasilitasi pers/media.',
+                                ),
+                                _buildBulletPoint(
+                                  title: 'Infrastruktur & SPBE',
+                                  desc:
+                                      'Mengembangkan Sistem Pemerintahan Berbasis Elektronik (SPBE), jaringan internet publik, dan keamanan siber daerah.',
+                                ),
+                                _buildBulletPoint(
+                                  title: 'Layanan Pengaduan LAPOR!',
+                                  desc:
+                                      'Mengelola kanal pengaduan dan aspirasi warga terpadu untuk peningkatan kualitas pelayanan publik.',
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        BuildBulletPoint(
-                          title: 'Komunikasi & Informasi Publik',
-                          desc: 'Mengelola penyebaran informasi pembangunan daerah, PPID, serta liputan kegiatan pemerintah kota.',
-                        ),
-                        SizedBox(height: 6),
-                        BuildBulletPoint(
-                          title: 'Aplikasi & SPBE',
-                          desc: 'Mengembangkan sistem pemerintahan berbasis elektronik, jaringan intra pemerintah, dan infrastruktur TI.',
-                        ),
-                        SizedBox(height: 6),
-                        BuildBulletPoint(
-                          title: 'Statistik & Persandian',
-                          desc: 'Mengelola data statistik sektoral serta menjamin keamanan informasi dan sertifikat elektronik pemerintah daerah.',
-                        ),
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final Uri url = Uri.parse('https://diskominfo.sukabumikota.go.id');
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        }
+                      },
+                      icon: const Icon(Icons.language_rounded, color: Colors.white),
+                      label: const Text(
+                        'Kunjungi Website Resmi',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
@@ -372,16 +566,60 @@ class InfoDiskominfo extends StatelessWidget {
     );
   }
 
-  // # HELPER WIDGET BARIS INFORMASI
-  static Widget _buildInfoRow({
+  Widget _buildBulletPoint({required String title, required String desc}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '• ',
+            style: TextStyle(
+              color: Colors.grey.shade800,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$title: ',
+                    style: TextStyle(
+                      color: Colors.grey.shade900,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  TextSpan(
+                    text: desc,
+                    style: TextStyle(
+                      color: Colors.grey.shade800,
+                      fontSize: 12.5,
+                      height: 1.5,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({
     required IconData icon,
     required String label,
-    required String value,
+    required String content,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: const Color(0xFF123457), size: 22),
+        Icon(icon, color: Colors.grey.shade700, size: 22),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -389,21 +627,23 @@ class InfoDiskominfo extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFFA5A4A4),
-                  fontSize: 11,
-                  fontFamily: 'Poppins',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 10.5,
                   fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                  fontFamily: 'Poppins',
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 2),
               Text(
-                value,
+                content,
                 style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 13.5,
+                  color: Colors.black87,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w500,
+                  height: 1.35,
                 ),
               ),
             ],
@@ -414,56 +654,30 @@ class InfoDiskominfo extends StatelessWidget {
   }
 }
 
-// # HELPER WIDGET BULLET POINT
-class BuildBulletPoint extends StatelessWidget {
-  final String title;
-  final String desc;
+class MapPatternPainterDiskominfo extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final roadPaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 6
+      ..style = PaintingStyle.stroke;
 
-  const BuildBulletPoint({
-    super.key,
-    required this.title,
-    required this.desc,
-  });
+    final mainRoadPaint = Paint()
+      ..color = const Color(0xFF4A90E2).withOpacity(0.5)
+      ..strokeWidth = 8
+      ..style = PaintingStyle.stroke;
+
+    final path1 = Path();
+    path1.moveTo(0, size.height * 0.3);
+    path1.lineTo(size.width, size.height * 0.7);
+    canvas.drawPath(path1, mainRoadPaint);
+
+    final path2 = Path();
+    path2.moveTo(size.width * 0.4, 0);
+    path2.lineTo(size.width * 0.6, size.height);
+    canvas.drawPath(path2, roadPaint);
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '• ',
-          style: TextStyle(
-            color: Color(0xFF123457),
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Expanded(
-          child: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: '$title: ',
-                  style: const TextStyle(
-                    color: Color(0xFF123457),
-                    fontSize: 13,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextSpan(
-                  text: desc,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 13,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

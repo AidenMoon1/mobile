@@ -1,47 +1,98 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'detail_layanan_usaha.dart';
 
-class InfoDpmpstp extends StatelessWidget {
+class InfoDpmpstp extends StatefulWidget {
   const InfoDpmpstp({super.key});
+
+  @override
+  State<InfoDpmpstp> createState() => _InfoDpmpstpState();
+}
+
+class _InfoDpmpstpState extends State<InfoDpmpstp> {
+  bool _isTentangExpanded = true;
 
   final List<Map<String, dynamic>> _layananTersedia = const [
     {
-      'title': 'Izin Usaha (OSS)',
-      'desc': 'NIB & Izin Berusaha',
-      'icon': Icons.assignment_rounded,
+      'title': 'Izin\nReklame',
+      'rawTitle': 'Perizinan Reklame',
+      'icon': Icons.assignment_turned_in_outlined,
+      'subjudul': 'Layanan SAKTI – DPMPTSP',
+      'deskripsiTentang':
+          'PBG & Reklame adalah izin dan retribusi yang harus dikeluarkan atas keberadaan media reklame atau bangunan yang memberi nilai ekonomi di Kota Sukabumi.',
+      'persyaratan': [
+        'Fotokopi KTP Pemohon',
+        'Jenis Reklame & Desain/Konstruksi',
+        'Nomor Induk Berusaha (NIB)',
+        'Surat Kuasa (Jika dikuasakan)',
+        'Foto Lokasi Penempatan Reklame',
+        'Bukti Pelunasan PBB Terakhir',
+        'Dokumen Perjanjian Sewa Lahan',
+      ],
+      'urlPortal': 'https://dpmptsp.sukabumikota.go.id',
     },
     {
-      'title': 'Izin Bangunan (PBG)',
-      'desc': 'Persetujuan Bangunan',
-      'icon': Icons.apartment_rounded,
+      'title': 'PBG\nBangunan',
+      'rawTitle': 'Izin Bangunan Usaha',
+      'icon': Icons.business_outlined,
+      'subjudul': 'Persetujuan Bangunan Gedung (PBG)',
+      'deskripsiTentang':
+          'Perizinan yang diberikan kepada pemilik bangunan gedung untuk membangun, mengubah, memelihara, atau membongkar bangunan gedung tempat usaha.',
+      'persyaratan': [
+        'KTP Pemohon',
+        'Sertifikat Hak Atas Tanah',
+        'Gambar Rencana Teknis Bangunan',
+        'Dokumen Lingkungan (SPPL/UKL-UPL)',
+      ],
+      'urlPortal': 'https://simbg.pu.go.id',
     },
     {
-      'title': 'Izin Reklame',
-      'desc': 'Pemasangan Reklame',
-      'icon': Icons.featured_video_rounded,
+      'title': 'NIB\nOSS',
+      'rawTitle': 'NIB (OSS RBA)',
+      'icon': Icons.storefront_outlined,
+      'subjudul': 'Nomor Induk Berusaha Perorangan',
+      'deskripsiTentang':
+          'Penerbitan NIB untuk usahawan perorangan dan UMKM secara mudah dan instan terintegrasi dengan OSS Nasional.',
+      'persyaratan': [
+        'KTP Pemohon',
+        'NPWP Pemohon (Jika ada)',
+        'Alamat Email & No HP Aktif',
+      ],
+      'urlPortal': 'https://oss.go.id',
     },
     {
-      'title': 'Izin Kesehatan',
-      'desc': 'SIP Tenaga Medis',
-      'icon': Icons.medical_services_rounded,
-    },
-    {
-      'title': 'Konsultasi Modal',
-      'desc': 'Kemitraan Investasi',
-      'icon': Icons.trending_up_rounded,
-    },
-    {
-      'title': 'Aduan Perizinan',
-      'desc': 'Layanan Pengaduan',
-      'icon': Icons.report_problem_rounded,
+      'title': 'Sertifikat\nHalal',
+      'rawTitle': 'Sertifikasi Halal',
+      'icon': Icons.verified_outlined,
+      'subjudul': 'Fasilitasi Sertifikat Halal UMKM',
+      'deskripsiTentang':
+          'Layanan pendampingan proses produk halal (PPH) bagi pelaku usaha makanan dan minuman skala mikro dan kecil di Kota Sukabumi.',
+      'persyaratan': [
+        'KTP Pemilik Usaha',
+        'NIB Terbitan OSS',
+        'Daftar Bahan & Komposisi Produk',
+      ],
+      'urlPortal': 'https://halal.go.id',
     },
   ];
 
+  Future<void> _bukaGoogleMaps() async {
+    final Uri uri = Uri.parse(
+        'https://www.google.com/maps/search/?api=1&query=DPMPTSP+Kota+Sukabumi');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF123457);
+    const Color accentColor = Color(0xFFE8A33D);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF123457),
+        backgroundColor: primaryColor,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
@@ -61,59 +112,90 @@ class InfoDpmpstp extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // # 1. HEADER HERO KARTU DPMPTSP (NAVY)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              color: const Color(0xFF123457),
-              child: Row(
-                children: [
-                  Container(
-                    width: 68,
-                    height: 68,
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFFAC33), width: 1.5),
-                    ),
-                    child: Image.asset(
-                      'assets/images/dpmptsp.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.assignment_rounded,
-                        color: Color(0xFF123457),
-                        size: 36,
+              height: 124,
+              color: primaryColor,
+              child: ClipRect(
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Align(
+                        alignment: const Alignment(0.4, 0.0),
+                        child: Opacity(
+                          opacity: 0.22,
+                          child: Image.asset(
+                            'assets/images/dpmptsp.png',
+                            width: 320,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => const SizedBox(),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'DPMPTSP',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 86,
+                            height: 86,
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x25000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4),
+                                )
+                              ],
+                            ),
+                            child: Image.asset(
+                              'assets/images/dpmptsp.png',
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => const Icon(
+                                Icons.store_rounded,
+                                color: primaryColor,
+                                size: 48,
+                              ),
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          'Dinas Penanaman Modal dan Pelayanan Terpadu Satu Pintu',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13.5,
-                            fontFamily: 'Poppins',
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'DPMPTSP',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                SizedBox(height: 3),
+                                Text(
+                                  'Dinas Penanaman Modal dan Pelayanan Terpadu Satu Pintu',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 13,
+                                    fontFamily: 'Poppins',
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
@@ -122,28 +204,16 @@ class InfoDpmpstp extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // # 2. INFORMASI INSTANSI (KARTU DETAIL ALAMAT, JAM, KONTAK)
-                  const Text(
-                    'Informasi Instansi',
-                    style: TextStyle(
-                      color: Color(0xFF123457),
-                      fontSize: 16.5,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF123457).withOpacity(0.15), width: 1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade300, width: 1.2),
                       boxShadow: const [
                         BoxShadow(
-                          color: Color(0x15000000),
+                          color: Color(0x0C000000),
                           blurRadius: 6,
                           offset: Offset(0, 3),
                         )
@@ -152,216 +222,341 @@ class InfoDpmpstp extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Alamat
-                        _buildInfoRow(
-                          icon: Icons.location_on_rounded,
-                          label: 'ALAMAT',
-                          value: 'Jl. Mayjend. A. Yani No. 227, Kebonjati, Cikole, Kota Sukabumi, Jawa Barat 43111',
-                        ),
-                        const Divider(height: 20),
-
-                        // Jam Operasional
-                        _buildInfoRow(
-                          icon: Icons.access_time_filled_rounded,
-                          label: 'JAM OPERASIONAL',
-                          value: 'Senin-Jum’at, 08:00 - 15:30 WIB',
-                        ),
-                        const Divider(height: 20),
-
-                        // Kontak
-                        _buildInfoRow(
-                          icon: Icons.phone_rounded,
-                          label: 'KONTAK',
-                          value: '(0266) 222567 / dpmptsp@sukabumikota.go.id',
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Tombol Buka di Maps
-                        GestureDetector(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Membuka petunjuk arah di Google Maps...'),
-                                duration: Duration(seconds: 1),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: accentColor.withOpacity(0.18),
+                                shape: BoxShape.circle,
                               ),
-                            );
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF5083B8).withOpacity(0.12),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF5083B8), width: 1),
+                              child: const Icon(
+                                Icons.info_outline_rounded,
+                                color: accentColor,
+                                size: 20,
+                              ),
                             ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.map_rounded, color: Color(0xFF5083B8), size: 20),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Buka di Maps',
-                                  style: TextStyle(
-                                    color: Color(0xFF5083B8),
-                                    fontSize: 13,
-                                    fontFamily: 'Poppins',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 10),
+                            const Text(
+                              'Informasi Instansi',
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 16.5,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
                             ),
-                          ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildInfoItem(
+                          icon: Icons.location_on_outlined,
+                          label: 'ALAMAT',
+                          content: 'Jl. Mayjend S. Parman No. 6, Kota Sukabumi, Jawa Barat',
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+                        ),
+                        _buildInfoItem(
+                          icon: Icons.access_time_rounded,
+                          label: 'JAM OPERASIONAL',
+                          content: 'Senin–Jum\'at, 08:00 – 15:30 WIB',
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                          child: Divider(height: 1, color: Color(0xFFEEEEEE)),
+                        ),
+                        _buildInfoItem(
+                          icon: Icons.phone_outlined,
+                          label: 'KONTAK',
+                          content: '(0266) 221764',
                         ),
                       ],
                     ),
                   ),
 
+                  const SizedBox(height: 18),
+
+                  GestureDetector(
+                    onTap: _bukaGoogleMaps,
+                    child: Container(
+                      width: double.infinity,
+                      height: 175,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade300, width: 1.2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x0C000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          )
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              color: const Color(0xFFE8ECEF),
+                              child: CustomPaint(
+                                painter: MapPatternPainterDPMPTSP(),
+                              ),
+                            ),
+                            Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color: primaryColor,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'DPMPTSP Kota Sukabumi',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Icon(
+                                    Icons.location_on_rounded,
+                                    color: Colors.redAccent,
+                                    size: 40,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: 12,
+                              left: 12,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: primaryColor.withOpacity(0.2)),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Buka di Maps',
+                                      style: TextStyle(
+                                        color: primaryColor,
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                    SizedBox(width: 6),
+                                    Icon(
+                                      Icons.open_in_new_rounded,
+                                      color: primaryColor,
+                                      size: 16,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 22),
 
-                  // # 3. LAYANAN TERSEDIA (GRID KARTU KECIL)
                   const Text(
                     'Layanan Tersedia',
                     style: TextStyle(
-                      color: Color(0xFF123457),
-                      fontSize: 16.5,
+                      color: primaryColor,
+                      fontSize: 17.5,
                       fontFamily: 'Poppins',
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _layananTersedia.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      childAspectRatio: 0.95,
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = _layananTersedia[index];
-                      return GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Membuka layanan ${item['title']} DPMPTSP...'),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF123457),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFFFAC33), width: 1),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x20000000),
-                                blurRadius: 4,
-                                offset: Offset(0, 2),
-                              )
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                item['icon'] as IconData,
-                                color: const Color(0xFFE8A33D),
-                                size: 32,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                item['title'] as String,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Poppins',
+                  SizedBox(
+                    height: 108,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _layananTersedia.length,
+                      separatorBuilder: (context, index) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        final item = _layananTersedia[index];
+                        final String displayTitle = item['title'] as String;
+                        final String rawTitle = (item['rawTitle'] ?? item['title']) as String;
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailLayananUsahaScreen(
+                                  judulLayanan: rawTitle,
+                                  subjudul: item['subjudul'] as String,
+                                  deskripsiTentang: item['deskripsiTentang'] as String,
+                                  persyaratan: List<String>.from(item['persyaratan'] as List),
+                                  urlMitra: item['urlPortal'] as String,
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ],
+                            );
+                          },
+                          child: Container(
+                            width: 92,
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade300, width: 1.3),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x0C000000),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 3),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  item['icon'] as IconData,
+                                  color: primaryColor,
+                                  size: 38,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  displayTitle,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    color: primaryColor,
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                    height: 1.15,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
 
                   const SizedBox(height: 22),
 
-                  // # 4. TENTANG INSTANSI (KARTU DESKRIPSI LENGKAP)
-                  const Text(
-                    'Tentang Instansi',
-                    style: TextStyle(
-                      color: Color(0xFF123457),
-                      fontSize: 16.5,
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF123457).withOpacity(0.15), width: 1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade300, width: 1.2),
                       boxShadow: const [
                         BoxShadow(
-                          color: Color(0x15000000),
+                          color: Color(0x0C000000),
                           blurRadius: 6,
                           offset: Offset(0, 3),
                         )
                       ],
                     ),
-                    child: const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Column(
                       children: [
-                        Text(
-                          'DPMPTSP Kota Sukabumi memiliki tugas perumusan kebijakan teknis serta penyelenggaraan urusan pemerintahan di bidang penanaman modal dan pelayanan perizinan terpadu satu pintu demi kemudahan berusaha masyarakat.',
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 13.5,
-                            fontFamily: 'Poppins',
-                            height: 1.5,
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isTentangExpanded = !_isTentangExpanded;
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Tentang Instansi',
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                Icon(
+                                  _isTentangExpanded
+                                      ? Icons.keyboard_arrow_up_rounded
+                                      : Icons.keyboard_arrow_down_rounded,
+                                  color: Colors.black87,
+                                  size: 28,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        SizedBox(height: 12),
-                        Text(
-                          'Tugas dan Fungsi Utama :',
-                          style: TextStyle(
-                            color: Color(0xFF123457),
-                            fontSize: 13.5,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
+                        if (_isTentangExpanded)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                                const SizedBox(height: 14),
+                                Text(
+                                  'DPMPTSP Kota Sukabumi adalah instansi pemerintah yang menyelenggarakan pelayanan perizinan non-perizinan secara terpadu satu pintu serta memfasilitasi penanaman modal dan investasi daerah.',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade800,
+                                    fontSize: 13,
+                                    height: 1.5,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Text(
+                                  'Tugas dan Fungsi Utama :',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade800,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildBulletPoint(
+                                  title: 'Pelayanan Perizinan Terpadu',
+                                  desc:
+                                      'Menerbitkan izin usaha, NIB (OSS RBA), Izin Reklame, PBG Bangunan, serta izin tenaga medis secara cepat dan transparan.',
+                                ),
+                                _buildBulletPoint(
+                                  title: 'Fasilitasi Penanaman Modal',
+                                  desc:
+                                      'Mendorong pertumbuhan investasi daerah dan mendampingi kemitraan usaha mikro, kecil, hingga skala besar.',
+                                ),
+                                _buildBulletPoint(
+                                  title: 'Pengawasan & Pengaduan',
+                                  desc:
+                                      'Melakukan pengendalian perizinan usaha dan mengelola pengaduan perizinan warga Kota Sukabumi.',
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        BuildBulletPoint(
-                          title: 'Penanaman Modal',
-                          desc: 'Promosi investasi, fasilitasi kemudahan berinvestasi, serta pengawasan realisasi penanaman modal daerah.',
-                        ),
-                        SizedBox(height: 6),
-                        BuildBulletPoint(
-                          title: 'Perizinan Berusaha (OSS)',
-                          desc: 'Penyelenggaraan penerbitan izin usaha terintegrasi secara elektronik serta pendampingan pelaku UMKM.',
-                        ),
-                        SizedBox(height: 6),
-                        BuildBulletPoint(
-                          title: 'Non-Perizinan & PBG',
-                          desc: 'Pelayanan persetujuan bangunan gedung, izin operasional tenaga kesehatan, serta verifikasi kelayakan perizinan.',
-                        ),
                       ],
                     ),
                   ),
+
                   const SizedBox(height: 20),
                 ],
               ),
@@ -372,16 +567,60 @@ class InfoDpmpstp extends StatelessWidget {
     );
   }
 
-  // # HELPER WIDGET BARIS INFORMASI
-  static Widget _buildInfoRow({
+  Widget _buildBulletPoint({required String title, required String desc}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '• ',
+            style: TextStyle(
+              color: Colors.grey.shade800,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Expanded(
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: '$title: ',
+                    style: TextStyle(
+                      color: Colors.grey.shade900,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  TextSpan(
+                    text: desc,
+                    style: TextStyle(
+                      color: Colors.grey.shade800,
+                      fontSize: 12.5,
+                      height: 1.5,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem({
     required IconData icon,
     required String label,
-    required String value,
+    required String content,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: const Color(0xFF123457), size: 22),
+        Icon(icon, color: Colors.grey.shade700, size: 22),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -389,21 +628,23 @@ class InfoDpmpstp extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFFA5A4A4),
-                  fontSize: 11,
-                  fontFamily: 'Poppins',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 10.5,
                   fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                  fontFamily: 'Poppins',
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 2),
               Text(
-                value,
+                content,
                 style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 13.5,
+                  color: Colors.black87,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                   fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w500,
+                  height: 1.35,
                 ),
               ),
             ],
@@ -414,56 +655,30 @@ class InfoDpmpstp extends StatelessWidget {
   }
 }
 
-// # HELPER WIDGET BULLET POINT
-class BuildBulletPoint extends StatelessWidget {
-  final String title;
-  final String desc;
+class MapPatternPainterDPMPTSP extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final roadPaint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 6
+      ..style = PaintingStyle.stroke;
 
-  const BuildBulletPoint({
-    super.key,
-    required this.title,
-    required this.desc,
-  });
+    final mainRoadPaint = Paint()
+      ..color = const Color(0xFF4A90E2).withOpacity(0.5)
+      ..strokeWidth = 8
+      ..style = PaintingStyle.stroke;
+
+    final path1 = Path();
+    path1.moveTo(0, size.height * 0.5);
+    path1.lineTo(size.width, size.height * 0.4);
+    canvas.drawPath(path1, mainRoadPaint);
+
+    final path2 = Path();
+    path2.moveTo(size.width * 0.5, 0);
+    path2.lineTo(size.width * 0.5, size.height);
+    canvas.drawPath(path2, roadPaint);
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '• ',
-          style: TextStyle(
-            color: Color(0xFF123457),
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Expanded(
-          child: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: '$title: ',
-                  style: const TextStyle(
-                    color: Color(0xFF123457),
-                    fontSize: 13,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextSpan(
-                  text: desc,
-                  style: const TextStyle(
-                    color: Colors.black87,
-                    fontSize: 13,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

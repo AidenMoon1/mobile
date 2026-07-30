@@ -10,6 +10,9 @@ import 'info_dpmpstp.dart';
 import 'info_dkp3.dart';
 import 'layanan_screen.dart';
 import 'layanan_keluarga.dart';
+import 'layanan_usaha.dart';
+import 'layanan_lingkungan.dart';
+import 'detail_berita_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -756,7 +759,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 title: 'Usaha',
                                 icon: Icons.storefront_rounded,
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDpmpstp()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananUsahaScreen()));
                                 },
                               ),
                               _buildLifePhaseCard(
@@ -764,7 +767,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 title: 'Lingkungan & Tempat ...',
                                 icon: Icons.home_work_rounded,
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananLingkunganScreen()));
                                 },
                               ),
                               _buildLifePhaseCard(
@@ -884,8 +887,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         context: context,
                         title: 'Lainnya',
                         fallbackIcon: Icons.grid_view_rounded,
-                        width: 48,
-                        height: 32,
+                        width: 54,
+                        height: 38,
                         isExpanded: false,
                         onTap: () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const InstansiScreen()));
@@ -942,7 +945,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       if (_daftarBerita.isNotEmpty)
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDiskominfo()));
+                            final currentBerita = _daftarBerita[_currentNewsIndex];
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DetailBeritaScreen(
+                                  judul: currentBerita['judul'].toString(),
+                                  kategori: currentBerita['kategori'].toString(),
+                                  tanggal: currentBerita['created_at'].toString(),
+                                  gambar: currentBerita['gambar'].toString(),
+                                ),
+                              ),
+                            );
                           },
                           child: Container(
                             height: 190,
@@ -1049,7 +1063,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           final item = _daftarBerita[index % _daftarBerita.length];
                           return InkWell(
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDiskominfo()));
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => DetailBeritaScreen(
+                                    judul: item['judul'].toString(),
+                                    kategori: item['kategori'].toString(),
+                                    tanggal: item['created_at'].toString(),
+                                    gambar: item['gambar'].toString(),
+                                  ),
+                                ),
+                              );
                             },
                             child: Container(
                               padding: const EdgeInsets.all(10),
@@ -1274,8 +1298,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Container(
             width: width,
-            height: height ?? 48,
-            padding: const EdgeInsets.all(4),
+            height: height ?? 58,
+            padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
@@ -1289,13 +1313,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       errorBuilder: (context, error, stackTrace) => Icon(
                         fallbackIcon,
                         color: const Color(0xFF0A1E33),
-                        size: height != null ? (height * 0.55) : 24,
+                        size: height != null ? (height * 0.65) : 32,
                       ),
                     )
                   : Icon(
                       fallbackIcon,
                       color: const Color(0xFF0A1E33),
-                      size: height != null ? (height * 0.55) : 24,
+                      size: height != null ? (height * 0.65) : 32,
                     ),
             ),
           ),

@@ -1,92 +1,45 @@
 import 'package:flutter/material.dart';
-import 'detail_layanan_keluarga.dart';
+import 'detail_layanan_lingkungan.dart';
 
-class LayananKeluargaScreen extends StatelessWidget {
-  const LayananKeluargaScreen({super.key});
+class LayananLingkunganScreen extends StatelessWidget {
+  const LayananLingkunganScreen({super.key});
 
-  final List<Map<String, dynamic>> _subLayanan = const [
+  final List<Map<String, dynamic>> _subLayananLingkungan = const [
     {
-      'title': 'KTP',
-      'desc': 'Kartu Identitas Warga',
-      'icon': Icons.badge_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'title': 'Pajak Tanah & Bangunan',
+      'desc': 'PBB - Layanan PANTAS BPKPD',
+      'icon': Icons.receipt_long_rounded,
+      'subjudul': 'Layanan PANTAS – BPKPD',
       'deskripsiTentang':
-          'Layanan pencetakan ulang KTP-el karena rusak/hilang, pembaharuan data elemen KTP, dan registrasi Identitas Kependudukan Digital (IKD).',
+          'Pajak tahunan yang wajib dibayar oleh pemilik tanah dan/atau bangunan di Kota Sukabumi. Dikenal juga dengan istilah resmi PBB, dikelola melalui sistem SIMPBB.',
       'persyaratan': [
-        'Fotokopi Kartu Keluarga (KK) Terbaru',
-        'KTP Lama (Jika Rusak / Ganti Elemen)',
-        'Surat Keterangan Kehilangan dari Kepolisian (Jika KTP Hilang)',
-        'Foto Bukti Fisik KTP Rusak (Jika Rusak)',
+        'Fotocopy KTP Pemilik',
+        'Surat Kuasa (apabila bukan dari subjek pajak)',
+        'Mengisi formulir SPOP dan LSPOP',
+        'Fotocopy Sertifikat Tanah / SKT Tanah',
+        'Akta Jual Beli',
+        'Surat Penunjukan Kasting',
+        'Surat Pengantar dari Kelurahan atau Desa',
+        'Fotocopy Izin Mendirikan Bangunan (bila ada bangunan)',
+        'Surat Keterangan lainnya sebagai pendukung',
       ],
+      'urlPortal': 'https://bpkpd.sukabumikota.go.id',
     },
     {
-      'title': 'KK',
-      'desc': 'Kartu Keluarga',
-      'icon': Icons.family_restroom_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'title': 'Pajak Jual-Beli Properti',
+      'desc': 'BPHTB - Layanan PANTAS BPKPD',
+      'icon': Icons.real_estate_agent_rounded,
+      'subjudul': 'Layanan PANTAS – BPKPD',
       'deskripsiTentang':
-          'Layanan penerbitan Kartu Keluarga (KK) baru untuk keluarga baru, penambahan anggota keluarga (kelahiran), atau pengurangan anggota keluarga.',
+          'Bea Perolehan Hak atas Tanah dan Bangunan (BPHTB) adalah pajak yang dikenakan atas perolehan hak atas tanah dan/atau bangunan di wilayah Kota Sukabumi.',
       'persyaratan': [
-        'Surat Pengantar RT / RW / Kelurahan',
-        'Buku Nikah / Kutipan Akta Perkawinan (Orang Tua)',
-        'Surat Keterangan Lahir (Untuk Penambahan Anggota)',
-        'KK Lama (Jika ada pembaharuan data)',
+        'Fotocopy KTP Pembeli & Penjual',
+        'Fotocopy Sertifikat Tanah',
+        'Fotocopy SPPT PBB Tahun Berjalan',
+        'Surat Setoran Bukan Pajak (SSBP)',
+        'Akta Jual Beli / Hibah / Waris',
       ],
-    },
-    {
-      'title': 'KIA',
-      'desc': 'Kartu Identitas Anak',
-      'icon': Icons.child_care_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
-      'deskripsiTentang':
-          'Kartu Identitas Anak (KIA) merupakan identitas resmi anak usia 0 hingga kurang dari 17 tahun untuk memenuhi hak kependudukan anak.',
-      'persyaratan': [
-        'Fotokopi Akta Kelahiran Anak',
-        'Fotokopi Kartu Keluarga (KK) Orang Tua',
-        'Fotokopi KTP Kedua Orang Tua',
-        'Pas Foto Anak Ukuran 2x3 (Untuk Anak Usia > 5 Tahun)',
-      ],
-    },
-    {
-      'title': 'Akta Kelahiran',
-      'desc': 'Akta Lahir Digital',
-      'icon': Icons.child_friendly_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
-      'deskripsiTentang':
-          'Penerbitan Akta Kelahiran resmi dari Disdukcapil sebagai bukti sah status hukum kependudukan anak di Kota Sukabumi.',
-      'persyaratan': [
-        'Surat Keterangan Lahir dari Bidan / Rumah Sakit',
-        'Fotokopi Buku Nikah / Akta Perkawinan Orang Tua',
-        'Fotokopi Kartu Keluarga (KK)',
-        'Fotokopi KTP Orang Tua & 2 Orang Saksi',
-      ],
-    },
-    {
-      'title': 'Surat Pindah',
-      'desc': 'Pindah Domisili',
-      'icon': Icons.move_to_inbox_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
-      'deskripsiTentang':
-          'Layanan pengurusan Surat Keterangan Pindah Datang WNI (SKPWNI) untuk kepindahan antar kelurahan, kecamatan, kota, maupun provinsi.',
-      'persyaratan': [
-        'Kartu Keluarga (KK) Asli & Fotokopi',
-        'KTP-el Asli yang Berpindah',
-        'Alamat Lengkap Tujuan Pindah (RT/RW, Desa, Kec, Kab/Kota)',
-      ],
-    },
-    {
-      'title': 'Akta Kematian',
-      'desc': 'Bukti Sah Kematian',
-      'icon': Icons.description_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
-      'deskripsiTentang':
-          'Penerbitan Akta Kematian sebagai bukti sah kematian warga untuk kepengurusan ahli waris, perbankan, dan pemutakhiran data KK.',
-      'persyaratan': [
-        'Surat Keterangan Kematian dari Dokter / Rumah Sakit / Kelurahan',
-        'Kartu Keluarga (KK) Asli Almarhum/Almarhumah',
-        'KTP-el Asli Almarhum/Almarhumah',
-        'Fotokopi KTP Pelapor & 2 Saksi Kematian',
-      ],
+      'urlPortal': 'https://bpkpd.sukabumikota.go.id',
     },
   ];
 
@@ -102,12 +55,12 @@ class LayananKeluargaScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Sektor Keluarga',
+          'LINGKUNGAN & TEMPAT TINGGAL',
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Poppins',
             fontWeight: FontWeight.bold,
-            fontSize: 20,
+            fontSize: 16,
           ),
         ),
       ),
@@ -115,7 +68,7 @@ class LayananKeluargaScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER HERO KELUARGA
+            // HEADER HERO LINGKUNGAN (SAMA PERSIS DENGAN KELUARGA & USAHA)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
@@ -132,7 +85,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                       border: Border.all(color: const Color(0xFFFFAC33), width: 1.5),
                     ),
                     child: const Icon(
-                      Icons.family_restroom_rounded,
+                      Icons.home_work_rounded,
                       color: Color(0xFF123457),
                       size: 38,
                     ),
@@ -143,20 +96,20 @@ class LayananKeluargaScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'KELUARGA',
+                          'LINGKUNGAN & TEMPAT TINGGAL',
                           style: TextStyle(
                             color: Color(0xFFFFAC33),
-                            fontSize: 18,
+                            fontSize: 15,
                             fontFamily: 'Poppins',
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         SizedBox(height: 3),
                         Text(
-                          'Layanan Administrasi Kependudukan, Pernikahan, KK, KTP & Akta Sipil',
+                          'Pajak PBB, BPHTB, Perizinan Bangunan (PBG), Kebersihan & Lingkungan BPKPD',
                           style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 13,
+                            fontSize: 12.5,
                             fontFamily: 'Poppins',
                           ),
                         ),
@@ -173,7 +126,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Pilih Jenis Layanan Keluarga',
+                    'Pilih Layanan Lingkungan & Tempat Tinggal',
                     style: TextStyle(
                       color: Color(0xFF123457),
                       fontSize: 16.5,
@@ -183,7 +136,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Setiap pengajuan dapat dipantau statusnya secara real-time melalui sistem digital.',
+                    'Setiap pengajuan dan cek tagihan pajak diproses secara online terintegrasi PANTAS BPKPD.',
                     style: TextStyle(
                       color: Colors.grey,
                       fontSize: 12.5,
@@ -192,11 +145,11 @@ class LayananKeluargaScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
 
-                  // GRID SUB-LAYANAN KELUARGA (2-PART CARD DESIGN DENGAN SEJAJAR 64PX)
+                  // GRID SUB-LAYANAN LINGKUNGAN (2-PART CARD DESIGN)
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _subLayanan.length,
+                    itemCount: _subLayananLingkungan.length,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
@@ -204,18 +157,19 @@ class LayananKeluargaScreen extends StatelessWidget {
                       childAspectRatio: 0.88,
                     ),
                     itemBuilder: (context, index) {
-                      final item = _subLayanan[index];
+                      final item = _subLayananLingkungan[index];
 
                       return GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => DetailLayananKeluargaScreen(
+                              builder: (context) => DetailLayananLingkunganScreen(
                                 judulLayanan: item['title'] as String,
                                 subjudul: item['subjudul'] as String,
                                 deskripsiTentang: item['deskripsiTentang'] as String,
                                 persyaratan: List<String>.from(item['persyaratan'] as List),
+                                urlMitra: item['urlPortal'] as String,
                               ),
                             ),
                           );
@@ -255,7 +209,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                                 ),
                               ),
 
-                              // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 64PX)
+                              // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 64PX AGAR SEJAJAR 100%)
                               Container(
                                 width: double.infinity,
                                 height: 64,
@@ -318,7 +272,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                         SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Setiap pengajuan dapat dipantau statusnya secara real-time melalui menu riwayat.',
+                            'Setiap tagihan PBB & BPHTB dapat dipantau status pelunasannya secara online.',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 12.5,

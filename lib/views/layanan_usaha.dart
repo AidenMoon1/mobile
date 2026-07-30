@@ -1,92 +1,100 @@
 import 'package:flutter/material.dart';
-import 'detail_layanan_keluarga.dart';
+import 'detail_layanan_usaha.dart';
 
-class LayananKeluargaScreen extends StatelessWidget {
-  const LayananKeluargaScreen({super.key});
+class LayananUsahaScreen extends StatelessWidget {
+  const LayananUsahaScreen({super.key});
 
-  final List<Map<String, dynamic>> _subLayanan = const [
+  final List<Map<String, dynamic>> _subLayananUsaha = const [
     {
-      'title': 'KTP',
-      'desc': 'Kartu Identitas Warga',
-      'icon': Icons.badge_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'title': 'Perizinan Reklame',
+      'desc': 'Layanan SAKTI – DPMPTSP',
+      'icon': Icons.assignment_turned_in_rounded,
+      'subjudul': 'Layanan SAKTI – DPMPTSP',
       'deskripsiTentang':
-          'Layanan pencetakan ulang KTP-el karena rusak/hilang, pembaharuan data elemen KTP, dan registrasi Identitas Kependudukan Digital (IKD).',
+          'PBG & Reklame adalah izin dan retribusi yang harus dikeluarkan atas keberadaan media reklame atau bangunan yang memberi nilai ekonomi di Kota Sukabumi.',
       'persyaratan': [
-        'Fotokopi Kartu Keluarga (KK) Terbaru',
-        'KTP Lama (Jika Rusak / Ganti Elemen)',
-        'Surat Keterangan Kehilangan dari Kepolisian (Jika KTP Hilang)',
-        'Foto Bukti Fisik KTP Rusak (Jika Rusak)',
+        'Fotokopi KTP Pemohon',
+        'Jenis Reklame & Desain/Konstruksi',
+        'Nomor Induk Berusaha (NIB)',
+        'Surat Kuasa (Jika dikuasakan)',
+        'Foto Lokasi Penempatan Reklame',
+        'Bukti Pelunasan PBB Terakhir',
+        'Dokumen Perjanjian Sewa Lahan',
       ],
+      'urlPortal': 'https://dpmptsp.sukabumikota.go.id',
     },
     {
-      'title': 'KK',
-      'desc': 'Kartu Keluarga',
-      'icon': Icons.family_restroom_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'title': 'Kesehatan Hewan',
+      'desc': 'Layanan DKP3 Peternakan',
+      'icon': Icons.pets_rounded,
+      'subjudul': 'Layanan DKP3 – Peternakan',
       'deskripsiTentang':
-          'Layanan penerbitan Kartu Keluarga (KK) baru untuk keluarga baru, penambahan anggota keluarga (kelahiran), atau pengurangan anggota keluarga.',
+          'Layanan pemeriksaan kesehatan, surat keterangan kesehatan hewan (SKKH), serta vaksinasi hewan ternak dan hewan peliharaan dari DKP3 Kota Sukabumi.',
       'persyaratan': [
-        'Surat Pengantar RT / RW / Kelurahan',
-        'Buku Nikah / Kutipan Akta Perkawinan (Orang Tua)',
-        'Surat Keterangan Lahir (Untuk Penambahan Anggota)',
-        'KK Lama (Jika ada pembaharuan data)',
+        'Fotokopi KTP Pemilik Hewan',
+        'Buku Catatan Kesehatan Hewan',
+        'Surat Pengantar dari Kelurahan',
+        'Bukti Vaksinasi Terakhir',
       ],
+      'urlPortal': 'https://dkp3.sukabumikota.go.id',
     },
     {
-      'title': 'KIA',
-      'desc': 'Kartu Identitas Anak',
-      'icon': Icons.child_care_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'title': 'NIB (OSS RBA)',
+      'desc': 'Izin Usaha Perorangan',
+      'icon': Icons.storefront_rounded,
+      'subjudul': 'Nomor Induk Berusaha Perorangan',
       'deskripsiTentang':
-          'Kartu Identitas Anak (KIA) merupakan identitas resmi anak usia 0 hingga kurang dari 17 tahun untuk memenuhi hak kependudukan anak.',
+          'Penerbitan NIB untuk usahawan perorangan dan UMKM secara mudah dan instan terintegrasi dengan OSS Nasional.',
       'persyaratan': [
-        'Fotokopi Akta Kelahiran Anak',
-        'Fotokopi Kartu Keluarga (KK) Orang Tua',
-        'Fotokopi KTP Kedua Orang Tua',
-        'Pas Foto Anak Ukuran 2x3 (Untuk Anak Usia > 5 Tahun)',
+        'KTP Pemohon',
+        'NPWP Pemohon (Jika ada)',
+        'Alamat Email & No HP Aktif',
       ],
+      'urlPortal': 'https://oss.go.id',
     },
     {
-      'title': 'Akta Kelahiran',
-      'desc': 'Akta Lahir Digital',
-      'icon': Icons.child_friendly_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'title': 'Sertifikasi Halal',
+      'desc': 'Pendampingan PPH UMKM',
+      'icon': Icons.verified_rounded,
+      'subjudul': 'Fasilitasi Sertifikat Halal UMKM',
       'deskripsiTentang':
-          'Penerbitan Akta Kelahiran resmi dari Disdukcapil sebagai bukti sah status hukum kependudukan anak di Kota Sukabumi.',
+          'Layanan pendampingan proses produk halal (PPH) bagi pelaku usaha makanan dan minuman skala mikro dan kecil di Kota Sukabumi.',
       'persyaratan': [
-        'Surat Keterangan Lahir dari Bidan / Rumah Sakit',
-        'Fotokopi Buku Nikah / Akta Perkawinan Orang Tua',
-        'Fotokopi Kartu Keluarga (KK)',
-        'Fotokopi KTP Orang Tua & 2 Orang Saksi',
+        'KTP Pemilik Usaha',
+        'NIB Terbitan OSS',
+        'Daftar Bahan & Komposisi Produk',
       ],
+      'urlPortal': 'https://halal.go.id',
     },
     {
-      'title': 'Surat Pindah',
-      'desc': 'Pindah Domisili',
-      'icon': Icons.move_to_inbox_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'title': 'Izin PIRT',
+      'desc': 'Industri Rumah Tangga',
+      'icon': Icons.clean_hands_rounded,
+      'subjudul': 'Izin Pangan Industri Rumah Tangga',
       'deskripsiTentang':
-          'Layanan pengurusan Surat Keterangan Pindah Datang WNI (SKPWNI) untuk kepindahan antar kelurahan, kecamatan, kota, maupun provinsi.',
+          'Sertifikat Produksi Pangan Industri Rumah Tangga (P-IRT) untuk izin edar produk makanan minuman olahan rumahan.',
       'persyaratan': [
-        'Kartu Keluarga (KK) Asli & Fotokopi',
-        'KTP-el Asli yang Berpindah',
-        'Alamat Lengkap Tujuan Pindah (RT/RW, Desa, Kec, Kab/Kota)',
+        'KTP Pemilik Usaha',
+        'Pas Foto 3x4 (2 Lembar)',
+        'Denah Lokasi Dapur Produksi',
+        'Sertifikat Penyuluhan Keamanan Pangan',
       ],
+      'urlPortal': 'https://sppirt.pom.go.id',
     },
     {
-      'title': 'Akta Kematian',
-      'desc': 'Bukti Sah Kematian',
-      'icon': Icons.description_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'title': 'Izin Bangunan Usaha',
+      'desc': 'PBG Tempat Usaha',
+      'icon': Icons.business_rounded,
+      'subjudul': 'Persetujuan Bangunan Gedung (PBG)',
       'deskripsiTentang':
-          'Penerbitan Akta Kematian sebagai bukti sah kematian warga untuk kepengurusan ahli waris, perbankan, dan pemutakhiran data KK.',
+          'Perizinan yang diberikan kepada pemilik bangunan gedung untuk membangun, mengubah, memelihara, atau membongkar bangunan gedung tempat usaha.',
       'persyaratan': [
-        'Surat Keterangan Kematian dari Dokter / Rumah Sakit / Kelurahan',
-        'Kartu Keluarga (KK) Asli Almarhum/Almarhumah',
-        'KTP-el Asli Almarhum/Almarhumah',
-        'Fotokopi KTP Pelapor & 2 Saksi Kematian',
+        'KTP Pemohon',
+        'Sertifikat Hak Atas Tanah',
+        'Gambar Rencana Teknis Bangunan',
+        'Dokumen Lingkungan (SPPL/UKL-UPL)',
       ],
+      'urlPortal': 'https://simbg.pu.go.id',
     },
   ];
 
@@ -102,7 +110,7 @@ class LayananKeluargaScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Sektor Keluarga',
+          'Sektor Usaha',
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Poppins',
@@ -115,7 +123,7 @@ class LayananKeluargaScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HEADER HERO KELUARGA
+            // HEADER HERO USAHA (SAMA PERSIS DENGAN KELUARGA)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(18),
@@ -132,7 +140,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                       border: Border.all(color: const Color(0xFFFFAC33), width: 1.5),
                     ),
                     child: const Icon(
-                      Icons.family_restroom_rounded,
+                      Icons.storefront_rounded,
                       color: Color(0xFF123457),
                       size: 38,
                     ),
@@ -143,7 +151,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'KELUARGA',
+                          'USAHA & UMKM',
                           style: TextStyle(
                             color: Color(0xFFFFAC33),
                             fontSize: 18,
@@ -153,7 +161,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 3),
                         Text(
-                          'Layanan Administrasi Kependudukan, Pernikahan, KK, KTP & Akta Sipil',
+                          'Layanan Perizinan Usaha, NIB, Reklame, Halal & Peternakan DKP3',
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 13,
@@ -173,7 +181,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Pilih Jenis Layanan Keluarga',
+                    'Pilih Jenis Layanan Usaha',
                     style: TextStyle(
                       color: Color(0xFF123457),
                       fontSize: 16.5,
@@ -192,11 +200,11 @@ class LayananKeluargaScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
 
-                  // GRID SUB-LAYANAN KELUARGA (2-PART CARD DESIGN DENGAN SEJAJAR 64PX)
+                  // GRID SUB-LAYANAN USAHA (2-PART CARD DESIGN SAMA PERSIS KELUARGA)
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _subLayanan.length,
+                    itemCount: _subLayananUsaha.length,
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
@@ -204,18 +212,19 @@ class LayananKeluargaScreen extends StatelessWidget {
                       childAspectRatio: 0.88,
                     ),
                     itemBuilder: (context, index) {
-                      final item = _subLayanan[index];
+                      final item = _subLayananUsaha[index];
 
                       return GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => DetailLayananKeluargaScreen(
+                              builder: (context) => DetailLayananUsahaScreen(
                                 judulLayanan: item['title'] as String,
                                 subjudul: item['subjudul'] as String,
                                 deskripsiTentang: item['deskripsiTentang'] as String,
                                 persyaratan: List<String>.from(item['persyaratan'] as List),
+                                urlMitra: item['urlPortal'] as String,
                               ),
                             ),
                           );
@@ -255,7 +264,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                                 ),
                               ),
 
-                              // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 64PX)
+                              // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 64PX AGAR SEJAJAR 100%)
                               Container(
                                 width: double.infinity,
                                 height: 64,

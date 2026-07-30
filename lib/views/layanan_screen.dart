@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'layanan_keluarga.dart';
+import 'layanan_usaha.dart';
+import 'layanan_lingkungan.dart';
+import 'form_pengajuan_screen.dart';
 
 class LayananScreen extends StatelessWidget {
   const LayananScreen({super.key});
@@ -140,11 +143,25 @@ class LayananScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(builder: (context) => const LayananKeluargaScreen()),
                       );
+                    } else if (item['title'] == 'Usaha') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LayananUsahaScreen()),
+                      );
+                    } else if (item['title'] == 'Lingkungan & Tempat Tinggal') {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LayananLingkunganScreen()),
+                      );
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Membuka layanan ${item['title']}...'),
-                          duration: const Duration(seconds: 1),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FormPengajuanScreen(
+                            judulLayanan: 'Layanan ${item['title']}',
+                            deskripsi: item['desc'] as String,
+                            icon: item['icon'] as IconData,
+                          ),
                         ),
                       );
                     }
@@ -184,10 +201,11 @@ class LayananScreen extends StatelessWidget {
                           ),
                         ),
 
-                        // # BAGIAN BAWAH (BAGIAN ABU-ABU DENGAN JUDUL, DESKRIPSI & PANAH DROPDOWN)
+                        // # BAGIAN BAWAH (BAGIAN ABU-ABU DENGAN TINGGI PRESISI 64PX AGAR SEJAJAR 100%)
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          height: 64,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: const BoxDecoration(
                             color: Color(0xFFD9D9D9),
                             borderRadius: BorderRadius.only(
@@ -202,7 +220,7 @@ class LayananScreen extends StatelessWidget {
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       item['title'] as String,
