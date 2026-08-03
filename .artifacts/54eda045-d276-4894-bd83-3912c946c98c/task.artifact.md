@@ -1,8 +1,7 @@
-- [ ] Implement Advanced Notification Header
-    - [ ] Add Logo & Weather Top Bar
-    - [ ] Create layered background with yellow divider
-    - [ ] Position search bar to overlap divider
-    - [ ] Implement filter row in dark blue section
-- [ ] Verification
-    - [ ] Check layout on various screen sizes (simulated)
-    - [ ] Verify interactability of search and icons
+- [x] Configure App for Physical Device Connection
+    - [x] Update `AndroidManifest.xml` to allow cleartext traffic
+    - [x] Update `api_service.dart` with local IP `13.13.13.216`
+- [x] Build New APK
+    - [x] Run `flutter build apk --release`
+- [x] Verification
+    - [x] Provide instructions for starting server with `--host=0.0.0.0`

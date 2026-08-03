@@ -1,32 +1,46 @@
-# Implementation Plan - Advanced Notification Header UI
+# Implementation Plan - Connect Mobile APK to Local Database
 
-The goal is to match the `NotificationScreen` header with the detailed reference image, including a top logo bar, a weather widget, and a layered background with an overlapping search bar.
+This plan configures the Flutter application to connect to the backend server running on your laptop when installed as an APK on a physical phone.
 
-## User Review Required
+## Prerequisites
 
-> [!NOTE]
-> I will be extracting the Logo and Weather widget design from `DashboardScreen` to ensure visual consistency across the app. The search bar will be precisely positioned using a `Stack` to overlap the yellow divider line.
+> [!IMPORTANT]
+> 1. Your **Phone and Laptop MUST be on the same Wi-Fi network**.
+> 2. You must start the Laravel server using the `--host` flag to allow external connections.
 
 ## Proposed Changes
 
-### [Notification Screen]
+### [Android Configuration]
 
-#### [MODIFY] [notification_screen.dart](file:///C:/src/mobile/lib/views/notification_screen.dart)
-- **Top Bar**: Add a white container at the top containing:
-    - App Logo and "Sukabumi ONE ACCESS" text.
-    - Weather widget with temperature, "Terasa seperti", and sun icon.
-- **Layered Background**:
-    - Light blue section for the "Notifikasi" title.
-    - A 4px yellow/orange divider line.
-    - Dark blue section with rounded bottom corners.
-- **Search Bar**: Position a white capsule-shaped `TextField` to sit on top of the yellow line.
-- **Filter Row**: Implement the "Semua Notifikasi" pill button and the right-aligned `tune` and `more_vert` icons inside the dark blue area.
-- **Interactivity**: Use `TextEditingController` for the search bar and add tap handlers for icons.
+#### [MODIFY] [AndroidManifest.xml](file:///C:/src/mobile/android/app/src/main/AndroidManifest.xml)
+- Add `android:usesCleartextTraffic="true"` to the `<application>` tag. This allows the app to communicate with your laptop over `http://` (non-secure), which is required for local testing.
+
+### [Flutter Configuration]
+
+#### [MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)
+- Update `baseUrl` to use your laptop's local IP address: **`http://13.13.13.216:8001/api`**.
+
+## How to Test
+
+### 1. Start the Server correctly
+Open your terminal in the `backend/` folder and run:
+```bash
+php artisan serve --host=0.0.0.0 --port=8001
+```
+*Using `--host=0.0.0.0` tells Laravel to listen for connections from any device on your Wi-Fi, not just your laptop.*
+
+### 2. Build the new APK
+Once the code changes are applied, run:
+```bash
+flutter build apk --release
+```
+
+### 3. Install and Run
+Transfer the new `app-release.apk` to your phone, install it, and the app will now be able to save feedback and fetch news directly from your laptop's MySQL database.
 
 ## Verification Plan
 
 ### Manual Verification
-- Verify the logo and weather widget are correctly aligned.
-- Confirm the search bar overlaps the yellow line as per the design.
-- Ensure the "Semua Notifikasi" button and other icons respond to taps.
-- Verify that sending feedback still populates the notification list correctly within this new UI.
+- Install the APK on a phone connected to the same Wi-Fi.
+- Open the app and verify that "Berita" (News) is loaded from the server.
+- Submit a "Kritik dan Saran" and verify it appears in your laptop's phpMyAdmin.
