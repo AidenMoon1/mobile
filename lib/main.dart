@@ -5,7 +5,18 @@ import 'views/notification_screen.dart';
 import 'views/profile_screen.dart';
 import 'widgets/custom_navbar.dart';
 
-void main() {
+import 'services/notification_service.dart';
+import 'services/feedback_service.dart';
+import 'services/user_service.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inisialisasi Service dan Database Lokal
+  await UserService().init();
+  await NotificationService().init();
+  await FeedbackService().init();
+  
   runApp(const MyApp());
 }
 

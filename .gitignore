@@ -41,3 +41,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Laravel specific
+/backend/vendor/
+/backend/.env
+/backend/storage/*.key
+/backend/public/storage
+/backend/.phpunit.result.cache

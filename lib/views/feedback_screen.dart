@@ -34,7 +34,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     super.dispose();
   }
 
-  void _submitFeedback() {
+  void _submitFeedback() async {
     const Color primaryColor = Color(0xFF0A1E33);
     if (_selectedRating == null || _selectedFactor == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -55,7 +55,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       date: DateTime.now(),
     );
 
-    _feedbackService.addFeedback(newFeedback);
+    await _feedbackService.addFeedback(newFeedback);
 
     // Tambah Notifikasi
     NotificationService().addNotification(

@@ -66,9 +66,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           const Icon(Icons.location_city, color: Color(0xFF123457), size: 32),
                     ),
                     const SizedBox(width: 8),
-                    Column(
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
+                      children: [
                         Text(
                           'Sukabumi',
                           style: TextStyle(
@@ -105,10 +105,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         color: const Color(0xFF123457),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
                           Column(
-                            children: const [
+                            children: [
                               Text(
                                 '28°C',
                                 style: TextStyle(color: Color(0xFFE8A33D), fontSize: 10, fontWeight: FontWeight.bold),
@@ -119,8 +119,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.wb_sunny_rounded, color: Color(0xFFE8A33D), size: 16),
+                          SizedBox(width: 4),
+                          Icon(Icons.wb_sunny_rounded, color: Color(0xFFE8A33D), size: 16),
                         ],
                       ),
                     ),
@@ -142,13 +142,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   width: double.infinity,
                   height: 70,
                   color: const Color(0xFFC5D9ED),
-                  child: Center(
+                  child: const Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.notifications_none_rounded, color: Color(0xFF123457), size: 32),
-                        const SizedBox(width: 8),
-                        const Text(
+                        Icon(Icons.notifications_none_rounded, color: Color(0xFF123457), size: 32),
+                        SizedBox(width: 8),
+                        Text(
                           'Notifikasi',
                           style: TextStyle(
                             color: Color(0xFF123457),

@@ -2,11 +2,18 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
+import 'package:mobile/views/instansi_screen.dart';
 
-// # ============================================================================
-// # HALAMAN UTAMA / BERANDA (DASHBOARD SCREEN / FIGMA HOME)
-// # ============================================================================
+import 'info_diskominfo.dart';
+import 'info_dpmpstp.dart';
+import 'info_dkp3.dart';
+import 'layanan_screen.dart';
+import 'layanan_keluarga.dart';
+import 'layanan_usaha.dart';
+import 'layanan_lingkungan.dart';
+import 'detail_berita_screen.dart';
+
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -16,77 +23,42 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
-  // # CATATAN: Variabel State untuk menyimpan data waktu dan cuaca realtime
   String _currentDate = "";
-  String _temperature = "28°C";
-  String _feelsLike = "Terasa seperti 31°C";
+  String _temperature = "26°C";
+  String _feelsLike = "Terasa seperti 28°C";
 
-  // # CATATAN: Variabel State untuk menyimpan data berita update (dengan data default Sukabumi & gambar)
   List<dynamic> _daftarBerita = [
     {
       'judul': 'KDM Ajak Orang Tua Batasi Penggunaan Gawai pada Anak Demi Kesehatan',
       'kategori': 'Kesehatan',
       'created_at': 'Kamis 16 Juli 2026',
-      'gambar': 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=150',
+      'gambar': 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400',
     },
     {
-      'judul': 'KDM Ajak Orang Tua Batasi Penggunaan Gawai pada Anak Demi Kesehatan',
-      'kategori': 'Kesehatan',
+      'judul': 'Diskominfo Kota Sukabumi Gelar Pelatihan Literasi Digital Warga',
+      'kategori': 'Teknologi',
       'created_at': '2 Hari Lalu',
-      'gambar': 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150',
+      'gambar': 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400',
     },
     {
-      'judul': 'KDM Ajak Orang Tua Batasi Penggunaan Gawai pada Anak Demi Kesehatan',
-      'kategori': 'Kesehatan',
-      'created_at': '2 Hari Lalu',
-      'gambar': 'https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?w=150',
+      'judul': 'Peningkatan Pelayanan Publik melalui Sistem Pengaduan Online Terpadu',
+      'kategori': 'Pelayanan',
+      'created_at': '3 Hari Lalu',
+      'gambar': 'https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?w=400',
     },
     {
-      'judul': 'KDM Ajak Orang Tua Batasi Penggunaan Gawai pada Anak Demi Kesehatan',
-      'kategori': 'Kesehatan',
-      'created_at': '2 Hari Lalu',
-      'gambar': 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=150',
+      'judul': 'Kota Sukabumi Raih Penghargaan Transparansi Publik 2026',
+      'kategori': 'Prestasi',
+      'created_at': '4 Hari Lalu',
+      'gambar': 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=400',
     },
   ];
 
-  String _getJudulBerita(int index) {
-    if (_daftarBerita.length > index && _daftarBerita[index]['judul'] != null) {
-      return _daftarBerita[index]['judul'].toString();
-    }
-    return 'KDM Ajak Orang Tua Batasi Penggunaan Gawai pada Anak Demi Kesehatan';
-  }
-
-  String _getKategoriBerita(int index) {
-    if (_daftarBerita.length > index && _daftarBerita[index]['kategori'] != null) {
-      return _daftarBerita[index]['kategori'].toString();
-    }
-    return 'Kesehatan';
-  }
-
-  String _getWaktuBerita(int index) {
-    if (_daftarBerita.length > index && _daftarBerita[index]['created_at'] != null) {
-      return _daftarBerita[index]['created_at'].toString();
-    }
-    return '2 Hari Lalu';
-  }
-
-  String _getGambarBerita(int index) {
-    if (_daftarBerita.length > index && _daftarBerita[index]['gambar'] != null) {
-      return _daftarBerita[index]['gambar'].toString();
-    }
-    final defaultImages = [
-      "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=150",
-      "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=150",
-      "https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?w=150",
-      "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=150",
-    ];
-    return defaultImages[index % defaultImages.length];
-  }
-
-  // # CATATAN: State & Timer untuk Slide Show Berita (Topik Hangat)
-  int _currentNewsPageIndex = 0;
+  int _currentNewsIndex = 0;
   Timer? _newsTimer;
+  Timer? _clockTimer;
 
   @override
   void initState() {
@@ -99,95 +71,91 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void dispose() {
-    _newsTimer?.cancel();
     _scrollController.dispose();
+    _searchController.dispose();
+    _newsTimer?.cancel();
+    _clockTimer?.cancel();
     super.dispose();
   }
 
-  // # CATATAN: Fungsi untuk memutar slide berita otomatis
+  void _startClock() {
+    _updateFormattedDate();
+    _clockTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _updateFormattedDate();
+    });
+  }
+
+  void _updateFormattedDate() {
+    final now = DateTime.now();
+    final hariMap = {1: 'Senin', 2: 'Selasa', 3: 'Rabu', 4: 'Kamis', 5: 'Jum’at', 6: 'Sabtu', 7: 'Minggu'};
+    final bulanMap = {
+      1: 'Januari', 2: 'Februari', 3: 'Maret', 4: 'April', 5: 'Mei', 6: 'Juni',
+      7: 'Juli', 8: 'Agustus', 9: 'September', 10: 'Oktober', 11: 'November', 12: 'Desember'
+    };
+    final String hari = hariMap[now.weekday] ?? '';
+    final String bulan = bulanMap[now.month] ?? '';
+    if (mounted) {
+      setState(() {
+        _currentDate = "$hari, ${now.day} $bulan ${now.year}";
+      });
+    }
+  }
+
+  Future<void> _fetchRealtimeWeather() async {
+    try {
+      final response = await ApiService.get('weather'); // Assume endpoint mapped in ApiService or handle specialized logic here
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['current_weather'] != null) {
+          final temp = data['current_weather']['temperature'];
+          if (mounted) {
+            setState(() {
+              _temperature = "${temp.round()}°C";
+              _feelsLike = "Terasa seperti ${(temp + 2).round()}°C";
+            });
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _fetchBeritaTerbaru() async {
+    try {
+      final response = await ApiService.get('berita');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['data'] != null && (data['data'] as List).isNotEmpty) {
+          final list = (data['data'] as List).take(5).map((item) {
+            return {
+              'judul': item['title'] ?? 'Berita Terbaru Kota Sukabumi',
+              'kategori': item['category'] ?? 'Umum',
+              'created_at': item['date'] ?? 'Baru Saja',
+              'gambar': item['image'] ?? 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400',
+            };
+          }).toList();
+          if (mounted) {
+            setState(() {
+              _daftarBerita = list;
+            });
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
   void _startNewsAutoSlide() {
-    _newsTimer?.cancel();
-    _newsTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (mounted) {
+    _newsTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted && _daftarBerita.isNotEmpty) {
         setState(() {
-          _currentNewsPageIndex = (_currentNewsPageIndex + 1) % 3;
+          _currentNewsIndex = (_currentNewsIndex + 1) % _daftarBerita.length;
         });
       }
     });
   }
 
-  // # CATATAN: Memanggil API Berita Backend Laravel
-  Future<void> _fetchBeritaTerbaru() async {
-    final url = Uri.parse('http://10.0.2.2:8000/api/berita');
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final listBerita = data['data'] as List<dynamic>;
-        if (mounted && listBerita.isNotEmpty) {
-          setState(() {
-            _daftarBerita = listBerita;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Eror berita API Laravel: $e (Aplikasi menggunakan berita update bawaan)");
-    }
-  }
-
-  // # CATATAN: Timer Tanggal dan Jam Realtime
-  void _startClock() {
-    _updateDate();
-    Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted) {
-        _updateDate();
-      }
-    });
-  }
-
-  void _updateDate() {
-    final now = DateTime.now();
-    final days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
-    final months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-
-    setState(() {
-      _currentDate = "${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]} ${now.year}";
-    });
-  }
-
-  // # CATATAN: Memanggil API Cuaca Realtime Kota Sukabumi
-  Future<void> _fetchRealtimeWeather() async {
-    final url = Uri.parse("https://api.open-meteo.com/v1/forecast?latitude=-6.9222&longitude=106.9267&current_weather=true");
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final temp = (data['current_weather']['temperature'] as num).round();
-        if (mounted) {
-          setState(() {
-            _temperature = "$temp°C";
-            _feelsLike = "Terasa seperti ${temp + 2}°C";
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Eror cuaca: $e");
-    }
-  }
-
-  // # CATATAN: Pull to refresh handler
   Future<void> _handleRefresh() async {
-    _fetchRealtimeWeather();
+    await _fetchRealtimeWeather();
     await _fetchBeritaTerbaru();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Berita dan Cuaca berhasil diperbarui!'),
-          backgroundColor: Color(0xFF123457),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   void _scrollToTop() {
@@ -200,748 +168,685 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      color: const Color(0xFFE8A33D),
-      backgroundColor: const Color(0xFF123457),
-      onRefresh: _handleRefresh,
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Container(
-          color: Colors.white,
-          child: Column(
-            children: [
-              // # 1. BARIS ATAS PUTIH (LOGO SUKABUMI & WIDGET CUACA KANAN)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                color: Colors.white,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // LOGO SUKABUMI CITY ONE ACCESS (SEJAJAR DENGAN KARTU CUACA)
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/logo.png',
-                          width: 44,
-                          height: 40,
-                          alignment: Alignment.centerLeft,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.location_city, color: Color(0xFF123457), size: 36);
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Text(
-                              'Sukabumi',
-                              style: TextStyle(
-                                color: Color(0xFF0A1E33),
-                                fontSize: 15,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.bold,
-                              ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _handleRefresh,
+          color: const Color(0xFF0A1E33),
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // =========================================================
+                // 1. TOP WHITE HEADER (LOGO SUKABUMI & WEATHER BADGE)
+                // =========================================================
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  color: Colors.white,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // LOGO SUKABUMI ONE ACCESS
+                      Row(
+                        children: [
+                          Image.asset(
+                            'assets/images/logo.png',
+                            height: 38,
+                            errorBuilder: (context, error, stackTrace) => const Icon(
+                              Icons.account_balance_rounded,
+                              color: Color(0xFF0A1E33),
+                              size: 32,
                             ),
-                            Text(
-                              'ONE ACCESS',
-                              style: TextStyle(
-                                color: Color(0xFFE8A33D),
-                                fontSize: 8,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
+                          ),
+                          const SizedBox(width: 8),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Sukabumi',
+                                style: TextStyle(
+                                  color: Color(0xFF0A1E33),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  fontFamily: 'Poppins',
+                                ),
                               ),
+                              Text(
+                                'ONE ACCESS',
+                                style: TextStyle(
+                                  color: Color(0xFFE8A33D),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      // NAVY BLUE WEATHER PILL BADGE
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0A1E33),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                const Text(
+                                  'SUKABUMI',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.5,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                Text(
+                                  _temperature,
+                                  style: const TextStyle(
+                                    color: Color(0xFFE8A33D),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                Text(
+                                  _feelsLike,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8.5,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.wb_sunny_rounded,
+                              color: Color(0xFFE8A33D),
+                              size: 24,
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                    // KARTU CUACA BIRU & TEKS SUKABUMI
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'SUKABUMI',
-                          style: TextStyle(
-                            color: Color(0xFF0A1E33),
-                            fontSize: 8,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // =========================================================
+                // 2. NAVY BANNER (POTENSI CUACA EKSTREAM & USER GREETING)
+                // =========================================================
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  color: const Color(0xFF0A1E33),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // KARTU POTENSI CUACA EKSTREAM
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 2),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF123457),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
-                              )
+                        child: const Row(
+                          children: [
+                            Icon(Icons.notifications_active_rounded, color: Colors.redAccent, size: 22),
+                            SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Potensi Cuaca',
+                                  style: TextStyle(
+                                    color: Color(0xFF0A1E33),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                Text(
+                                  'Ekstream',
+                                  style: TextStyle(
+                                    color: Colors.black87,
+                                    fontSize: 10,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // GREETING & TANGGAL & FOTO PROFIL
+                      Row(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Sampurasun, mrn',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              Text(
+                                _currentDate.isEmpty ? 'Rabu, 29 Juli 2026' : _currentDate,
+                                style: const TextStyle(
+                                  color: Color(0xFFE8A33D),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                          const SizedBox(width: 8),
+                          const CircleAvatar(
+                            radius: 18,
+                            backgroundColor: Colors.white,
+                            child: Icon(Icons.person, color: Color(0xFF0A1E33), size: 24),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // =========================================================
+                // 3. HERO IMAGE BANNER & FLOATING SEARCH BAR
+                // =========================================================
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    // BACKGROUND HERO IMAGE BANNER
+                    Container(
+                      width: double.infinity,
+                      height: 220,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage("https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800"),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF0A1E33).withOpacity(0.85),
+                              const Color(0xFF0A1E33).withOpacity(0.92),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text(
+                              'SUKABUMI ONE ACCESS',
+                              style: TextStyle(
+                                color: Color(0xFFE8A33D),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.0,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            RichText(
+                              textAlign: TextAlign.center,
+                              text: const TextSpan(
                                 children: [
-                                  Text(
-                                    _temperature,
-                                    style: const TextStyle(
-                                      color: Color(0xFFE8A33D),
-                                      fontSize: 11,
+                                  TextSpan(
+                                    text: 'Pusat Layanan ',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                       fontFamily: 'Poppins',
                                     ),
                                   ),
-                                  Text(
-                                    _feelsLike,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 6.5,
+                                  TextSpan(
+                                    text: 'Kota Sukabumi.',
+                                    style: TextStyle(
+                                      color: Color(0xFFE8A33D),
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
                                       fontFamily: 'Poppins',
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(width: 6),
-                              const Icon(
-                                Icons.wb_sunny_rounded,
-                                color: Color(0xFFE8A33D),
-                                size: 20,
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Temukan kemudahan mengakses berbagai layanan informasi dari seluruh instansi Pemerintah Kota Sukabumi dalam satu pintu.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11.5,
+                                height: 1.4,
+                                fontFamily: 'Poppins',
                               ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(height: 18),
+                          ],
                         ),
-                      ],
+                      ),
+                    ),
+
+                    // FLOATING SEARCH BAR (Cari Layanan...)
+                    Positioned(
+                      bottom: -22,
+                      left: 16,
+                      right: 16,
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: const Color(0xFFE8A33D), width: 1.5),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x20000000),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                          decoration: InputDecoration(
+                            hintText: 'Cari Layanan...',
+                            hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontFamily: 'Poppins'),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            suffixIcon: const Icon(Icons.search_rounded, color: Color(0xFF0A1E33), size: 24),
+                          ),
+                          onSubmitted: (value) {
+                            if (value.isNotEmpty) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LayananScreen()),
+                              );
+                            }
+                          },
+                        ),
+                      ),
                     ),
                   ],
                 ),
-              ),
 
-              // # 2. BARIS KEDUA NAVY GELAP (POTENSI CUACA & GREETING)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                color: const Color(0xFF0A1E33),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // KARTU POTENSI CUACA EKSTREAM
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          )
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.notifications_active_rounded, color: Colors.redAccent, size: 18),
-                          const SizedBox(width: 6),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                'Potensi Cuaca',
-                                style: TextStyle(color: Colors.black87, fontSize: 7.5, fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'Ekstream',
-                                style: TextStyle(color: Colors.black87, fontSize: 7.5),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // GREETING & TANGGAL & FOTO PROFIL
-                    Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                const SizedBox(height: 38),
+
+                // =========================================================
+                // 4. SEKSI LAYANAN FAVORIT (HEADER NAVY & CARD KELUARGA)
+                // =========================================================
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: const Color(0xFF0A1E33),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.thumb_up_rounded, color: Colors.white, size: 20),
+                      SizedBox(width: 10),
+                      Text.rich(
+                        TextSpan(
                           children: [
-                            const Text(
-                              'Sampurasun, mrn',
+                            TextSpan(
+                              text: 'Layanan ',
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 11,
+                                fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                fontFamily: 'Inter',
+                                fontFamily: 'Poppins',
                               ),
                             ),
-                            Text(
-                              _currentDate.isEmpty ? 'Jum’at, 17 Juli 2026' : _currentDate,
-                              style: const TextStyle(
-                                color: Color(0xFFE8A33D),
-                                fontSize: 8,
-                                fontWeight: FontWeight.w600,
-                                fontFamily: 'Inter',
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 8),
-                        const CircleAvatar(
-                          radius: 16,
-                          backgroundColor: Colors.white,
-                          child: Icon(Icons.person, color: Color(0xFF123457), size: 22),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // # 3. BANNER UTAMA HERO & KOLOM PENCARIAN
-              Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: 190,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF4A6572),
-                      image: DecorationImage(
-                        image: NetworkImage("https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?w=600"),
-                        fit: BoxFit.cover,
-                        opacity: 0.35,
-                      ),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'SUKABUMI ONE ACCESS',
-                            style: TextStyle(
-                              color: Color(0xFFE8A33D),
-                              fontSize: 9,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text.rich(
                             TextSpan(
-                              children: const [
-                                TextSpan(
-                                  text: 'Pusat Layanan ',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 19,
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: 'Kota Sukabumi.',
-                                  style: TextStyle(
-                                    color: Color(0xFFE8A33D),
-                                    fontSize: 19,
-                                    fontFamily: 'Inter',
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Temukan kemudahan mengakses berbagai layanan informasi dari seluruh instansi Pemerintah Kota Sukabumi dalam satu pintu.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.85),
-                              fontSize: 8.5,
-                              fontFamily: 'Inter',
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // # SEARCH BAR (CARI LAYANAN)
-              Transform.translate(
-                offset: const Offset(0, -18),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Container(
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE8A33D), width: 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        )
-                      ],
-                    ),
-                    child: Row(
-                      children: const [
-                        SizedBox(width: 14),
-                        Expanded(
-                          child: Text(
-                            'Cari Layanan...',
-                            style: TextStyle(
-                              color: Color(0xFF123457),
-                              fontSize: 10,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ),
-                        Icon(Icons.search, color: Color(0xFF123457), size: 18),
-                        SizedBox(width: 14),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // # 4. BILAH NAVY - LAYANAN FAVORIT
-              _buildSectionHeader(
-                icon: Icons.thumb_up_rounded,
-                titleNormal: 'Layanan ',
-                titleHighlight: 'Favorit',
-              ),
-              const SizedBox(height: 12),
-
-              // KOTAK KELUARGA (LAYANAN FAVORIT) DENGAN CYAN/BLUE BORDER
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Container(
-                    width: 76,
-                    height: 54,
-                    decoration: ShapeDecoration(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        side: const BorderSide(color: Color(0xFF00A3FF), width: 2),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      shadows: const [
-                        BoxShadow(
-                          color: Color(0x38000000),
-                          blurRadius: 5,
-                          offset: Offset(0, 3),
-                        )
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.family_restroom_rounded, color: Color(0xFF123457), size: 24),
-                        SizedBox(height: 2),
-                        Text(
-                          'Keluarga',
-                          style: TextStyle(
-                            color: Color(0xFF123457),
-                            fontSize: 7.5,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // SLIDER BANNER LAYANAN FAVORIT (DARK NAVY CONTAINER WITH DOTS)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  width: double.infinity,
-                  height: 110,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A1E33),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Stack(
-                    children: [
-                      const Center(
-                        child: Text(
-                          'Layanan Informasi Utama Kota Sukabumi',
-                          style: TextStyle(color: Colors.white70, fontSize: 10, fontFamily: 'Poppins'),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 8,
-                        left: 0,
-                        right: 0,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _buildDot(true),
-                            _buildDot(false),
-                            _buildDot(false),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // # 5. BILAH NAVY - FASE KEHIDUPAN (DENGAN GREEN BORDER OUTER CONTAINER)
-              _buildSectionHeader(
-                icon: Icons.receipt_long_rounded,
-                titleNormal: 'Fase ',
-                titleHighlight: 'Kehidupan',
-              ),
-              const SizedBox(height: 12),
-
-              // SEKTOR KATEGORI (Fase Kehidupan) DENGAN GREEN OUTLINE `#00A859`
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A1E33),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF00A859), width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
-                      )
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: const BoxDecoration(
+                              text: 'Favorit',
+                              style: TextStyle(
                                 color: Color(0xFFE8A33D),
-                                borderRadius: BorderRadius.only(
-                                  topLeft: Radius.circular(5),
-                                  bottomRight: Radius.circular(5),
-                                ),
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
                               ),
-                              child: const Text(
-                                '10 Sektor',
-                                style: TextStyle(
-                                  color: Color(0xFF123457),
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-
-                            // GRID 6 KARTU WHITE (Keluarga, Pendidikan, Usaha, Lingkungan, Kendaraan, Tanggap Darurat)
-                            GridView.count(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              crossAxisCount: 3,
-                              childAspectRatio: 1.45,
-                              crossAxisSpacing: 8,
-                              mainAxisSpacing: 8,
-                              children: [
-                                _buildSectorCard('Keluarga', Icons.family_restroom_rounded, hasDropdown: true),
-                                _buildSectorCard('Pendidikan', Icons.school_rounded),
-                                _buildSectorCard('Usaha', Icons.store_rounded),
-                                _buildSectorCard('Lingkungan & Tempat Tinggal', Icons.home_work_rounded),
-                                _buildSectorCard('Kendaraan', Icons.directions_car_rounded),
-                                _buildSectorCard('Tanggap Darurat', Icons.shield_rounded),
-                              ],
                             ),
                           ],
-                        ),
-                      ),
-                      // BOTTOM BAR ORANGE "Lihat Semua Sektor"
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 7),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE8A33D),
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(6),
-                            bottomRight: Radius.circular(6),
-                          ),
-                        ),
-                        child: const Text(
-                          'Lihat Semua Sektor',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins',
-                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
 
-              // # 6. BILAH NAVY - INSTANSI
-              _buildSectionHeader(
-                icon: Icons.account_balance_rounded,
-                titleNormal: 'Instansi',
-                titleHighlight: '',
-              ),
-              const SizedBox(height: 12),
-
-              // 5 KOTAK KARTU INSTANSI (Diskominfo, DPMPTSP, DKP3, Lainnya)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildInstansiCard('Diskominfo', 'assets/images/diskominfo.png', Icons.hub_rounded),
-                    _buildInstansiCard('DPMPTSP', 'assets/images/dpmptsp.png', Icons.assignment_rounded),
-                    _buildInstansiCard('DKP3', 'assets/images/dkp3.png', Icons.eco_rounded),
-                    _buildInstansiCard('Lainnya', null, Icons.grid_view_rounded),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // # 7. BILAH NAVY - SUKABUMI HARI INI (BERITA & TOPIK HANGAT)
-              _buildSectionHeader(
-                icon: Icons.newspaper_rounded,
-                titleNormal: 'Sukabumi ',
-                titleHighlight: 'Hari Ini',
-              ),
-              const SizedBox(height: 12),
-
-              // TOPIK HANGAT SLIDE SHOW & LIST BERITA
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A1E33),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // BANNER SLIDE SHOW BERITA (TOPIK HANGAT)
-                      ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                        child: SizedBox(
-                          height: 140,
-                          child: Stack(
+                      // KARTU LAYANAN KELUARGA (BLUE OUTLINE CONTAINER)
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const LayananKeluargaScreen()),
+                          );
+                        },
+                        child: Container(
+                          width: 100,
+                          height: 95,
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFF00A3FF), width: 2),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x1500A3FF),
+                                blurRadius: 6,
+                                offset: Offset(0, 3),
+                              )
+                            ],
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 500),
-                                child: Image.network(
-                                  _getGambarBerita(_currentNewsPageIndex),
-                                  key: ValueKey<String>(_getGambarBerita(_currentNewsPageIndex)),
-                                  width: double.infinity,
-                                  height: 140,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Container(
-                                    color: const Color(0xFF123457),
-                                  ),
-                                ),
+                              Icon(
+                                Icons.family_restroom_rounded,
+                                color: Color(0xFF0A1E33),
+                                size: 36,
                               ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.transparent,
-                                      const Color(0xFF0B1621).withOpacity(0.92),
-                                    ],
-                                  ),
+                              SizedBox(height: 6),
+                              Text(
+                                'Keluarga',
+                                style: TextStyle(
+                                  color: Color(0xFF0A1E33),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
                                 ),
-                              ),
-                              Positioned(
-                                left: 10,
-                                top: 10,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE8A33D),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'Topik Hangat',
-                                    style: TextStyle(
-                                      color: Color(0xFF123457),
-                                      fontSize: 8,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                right: 10,
-                                top: 10,
-                                child: Text(
-                                  '${_getKategoriBerita(_currentNewsPageIndex)} • ${_getWaktuBerita(_currentNewsPageIndex)}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 7.5,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                left: 12,
-                                bottom: 20,
-                                right: 12,
-                                child: Text(
-                                  _getJudulBerita(_currentNewsPageIndex),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 6,
-                                left: 0,
-                                right: 0,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(3, (index) {
-                                    return Container(
-                                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                                      width: 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: _currentNewsPageIndex == index
-                                            ? const Color(0xFFE8A33D)
-                                            : Colors.white30,
-                                      ),
-                                    );
-                                  }),
-                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
 
-                      // LIST BERITA BAWAH (CARDS)
-                      Padding(
-                        padding: const EdgeInsets.all(10),
+                      // BANNER SLIDESHOW LAYANAN UTAMA (DARK NAVY CARD WITH DOTS)
+                      Container(
+                        width: double.infinity,
+                        height: 150,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0A1E33),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _buildNewsCard(1),
-                            const SizedBox(height: 8),
-                            _buildNewsCard(2),
-                            const SizedBox(height: 8),
-                            _buildNewsCard(3),
+                            const Expanded(
+                              child: Center(
+                                child: Text(
+                                  'Layanan Informasi Utama Kota Sukabumi',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFE8A33D),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.3),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.3),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
 
-              // # 8. BANNER PERTANYAAN & KEMBALI KE ATAS (FOOTER)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8A33D),
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
-                      )
-                    ],
-                  ),
-                  child: Row(
+                // =========================================================
+                // 5. SEKSI FASE KEHIDUPAN (DARK NAVY BOX WITH 10 SEKTOR & 7 CARDS)
+                // =========================================================
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: const Color(0xFF0A1E33),
+                  child: const Row(
                     children: [
-                      const CircleAvatar(
-                        radius: 14,
-                        backgroundColor: Color(0xFF123457),
-                        child: Icon(Icons.question_answer_rounded, color: Color(0xFFE8A33D), size: 16),
-                      ),
-                      const SizedBox(width: 10),
-                      const Expanded(
-                        child: Text(
-                          'Sampaikan pertanyaan terkait Sukabumi One Access atau layanan publik di Kota Sukabumi',
-                          style: TextStyle(
-                            color: Color(0xFF123457),
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins',
-                          ),
+                      Icon(Icons.assignment_rounded, color: Colors.white, size: 20),
+                      SizedBox(width: 10),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Fase ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'Kehidupan',
+                              style: TextStyle(
+                                color: Color(0xFFE8A33D),
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, color: Color(0xFF123457), size: 24),
                     ],
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 14),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0A1E33),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // BADGE 10 SEKTOR
+                        Padding(
+                          padding: const EdgeInsets.all(14.0),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8A33D),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              '10 Sektor',
+                              style: TextStyle(
+                                color: Color(0xFF0A1E33),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ),
+                        ),
 
-              // TOMBOL KEMBALI KE ATAS
-              GestureDetector(
-                onTap: _scrollToTop,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0A1E33),
-                    borderRadius: BorderRadius.circular(6),
+                        // GRID 7 KARTU FASE KEHIDUPAN (MATCH SCREENSHOT 2)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                          child: GridView.count(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.92,
+                            children: [
+                              _buildLifePhaseCard(
+                                context: context,
+                                title: 'Keluarga',
+                                imagePath: 'assets/icon/keluarga.png',
+                                fallbackIcon: Icons.family_restroom_rounded,
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananKeluargaScreen()));
+                                },
+                              ),
+                              _buildLifePhaseCard(
+                                context: context,
+                                title: 'Pendidikan',
+                                imagePath: 'assets/icon/pendidikan.png',
+                                fallbackIcon: Icons.school_rounded,
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                },
+                              ),
+                              _buildLifePhaseCard(
+                                context: context,
+                                title: 'Usaha',
+                                imagePath: 'assets/icon/usaha.png',
+                                fallbackIcon: Icons.storefront_rounded,
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananUsahaScreen()));
+                                },
+                              ),
+                              _buildLifePhaseCard(
+                                context: context,
+                                title: 'Lingkungan & Tempat ...',
+                                imagePath: 'assets/icon/lingkungan.png',
+                                fallbackIcon: Icons.home_work_rounded,
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananLingkunganScreen()));
+                                },
+                              ),
+                              _buildLifePhaseCard(
+                                context: context,
+                                title: 'Kendaraan',
+                                imagePath: 'assets/icon/kendaraan.png',
+                                fallbackIcon: Icons.directions_car_rounded,
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                },
+                              ),
+                              _buildLifePhaseCard(
+                                context: context,
+                                title: 'Kesehatan',
+                                imagePath: 'assets/icon/kesehatan.png',
+                                fallbackIcon: Icons.local_hospital_rounded,
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // TOMBOL KUNING LIHAT SEMUA SEKTOR
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE8A33D),
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(16),
+                                bottomRight: Radius.circular(16),
+                              ),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                'Lihat Semua Sektor',
+                                style: TextStyle(
+                                  color: Color(0xFF0A1E33),
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(Icons.unfold_less_rounded, color: Color(0xFFE8A33D), size: 16),
-                      SizedBox(width: 6),
+                ),
+
+                // =========================================================
+                // 6. SEKSI INSTANSI (OPD DINAS)
+                // =========================================================
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: const Color(0xFF0A1E33),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.account_balance_rounded, color: Colors.white, size: 20),
+                      SizedBox(width: 10),
                       Text(
-                        'Kembali ke atas',
+                        'Instansi',
                         style: TextStyle(
-                          color: Color(0xFFE8A33D),
-                          fontSize: 9,
+                          color: Colors.white,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Poppins',
                         ),
@@ -949,222 +854,510 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ],
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // # WIDGET HELPER: BUILDER BILAH JUDUL NAVY
-  Widget _buildSectionHeader({
-    required IconData icon,
-    required String titleNormal,
-    required String titleHighlight,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: const Color(0xFF0A1E33),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 8),
-          Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: titleNormal,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.bold,
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      _buildInstansiItem(
+                        context: context,
+                        title: 'Diskominfo',
+                        imagePath: 'assets/images/diskominfo.png',
+                        fallbackIcon: Icons.computer_rounded,
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDiskominfo()));
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      _buildInstansiItem(
+                        context: context,
+                        title: 'DPMPTSP',
+                        imagePath: 'assets/images/dpmptsp.png',
+                        fallbackIcon: Icons.store_rounded,
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDpmpstp()));
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      _buildInstansiItem(
+                        context: context,
+                        title: 'DKP3',
+                        imagePath: 'assets/images/dkp3.png',
+                        fallbackIcon: Icons.grass_rounded,
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDkp3()));
+                        },
+                      ),
+                      const SizedBox(width: 6),
+                      _buildInstansiItem(
+                        context: context,
+                        title: 'Lainnya',
+                        fallbackIcon: Icons.grid_view_rounded,
+                        width: 54,
+                        height: 38,
+                        isExpanded: false,
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const InstansiScreen()));
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                if (titleHighlight.isNotEmpty)
-                  TextSpan(
-                    text: titleHighlight,
-                    style: const TextStyle(
-                      color: Color(0xFFE8A33D),
-                      fontSize: 11,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.bold,
+
+                // =========================================================
+                // 7. SEKSI SUKABUMI HARI INI (BERITA UPDATE & SLIDER)
+                // =========================================================
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: const Color(0xFF0A1E33),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.calendar_today_rounded, color: Colors.white, size: 20),
+                      SizedBox(width: 10),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Sukabumi ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            TextSpan(
+                              text: 'Hari Ini',
+                              style: TextStyle(
+                                color: Color(0xFFE8A33D),
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      // FEATURED NEWS SLIDER CARD (MATCH SCREENSHOT 3)
+                      if (_daftarBerita.isNotEmpty)
+                        GestureDetector(
+                          onTap: () {
+                            final currentBerita = _daftarBerita[_currentNewsIndex];
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DetailBeritaScreen(
+                                  judul: currentBerita['judul'].toString(),
+                                  kategori: currentBerita['kategori'].toString(),
+                                  tanggal: currentBerita['created_at'].toString(),
+                                  gambar: currentBerita['gambar'].toString(),
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            height: 190,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              image: DecorationImage(
+                                image: NetworkImage(_daftarBerita[_currentNewsIndex]['gambar'].toString()),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                gradient: const LinearGradient(
+                                  colors: [Colors.transparent, Colors.black87],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE8A33D),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Text(
+                                          'Topik Hangat',
+                                          style: TextStyle(
+                                            color: Color(0xFF0A1E33),
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_daftarBerita[_currentNewsIndex]['kategori']} • ${_daftarBerita[_currentNewsIndex]['created_at']}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _daftarBerita[_currentNewsIndex]['judul'].toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: List.generate(_daftarBerita.length, (index) {
+                                          return Container(
+                                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                                            width: 7,
+                                            height: 7,
+                                            decoration: BoxDecoration(
+                                              color: index == _currentNewsIndex
+                                                  ? const Color(0xFFE8A33D)
+                                                  : Colors.white.withOpacity(0.4),
+                                              shape: BoxShape.circle,
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                      const SizedBox(height: 14),
+
+                      // DAFTAR 3 KARTU BERITA DARK NAVY (MATCH SCREENSHOT 3)
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 3,
+                        separatorBuilder: (context, index) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final item = _daftarBerita[index % _daftarBerita.length];
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => DetailBeritaScreen(
+                                    judul: item['judul'].toString(),
+                                    kategori: item['kategori'].toString(),
+                                    tanggal: item['created_at'].toString(),
+                                    gambar: item['gambar'].toString(),
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0A1E33),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      item['gambar'].toString(),
+                                      width: 64,
+                                      height: 54,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => Container(
+                                        width: 64,
+                                        height: 54,
+                                        color: Colors.blueGrey,
+                                        child: const Icon(Icons.newspaper, color: Colors.white, size: 20),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item['judul'].toString(),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${item['kategori']} • ${item['created_at']}',
+                                          style: const TextStyle(
+                                            color: Color(0xFFE8A33D),
+                                            fontSize: 10,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // =========================================================
+                // 8. CALL TO ACTION KUNING (BANER PERTANYAAN SUKABUMI ONE ACCESS)
+                // =========================================================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8A33D),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF0A1E33),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Sampaikan pertanyaan terkait Sukabumi One Access atau layanan publik di Kota Sukabumi',
+                            style: TextStyle(
+                              color: Color(0xFF0A1E33),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded, color: Color(0xFF0A1E33), size: 24),
+                      ],
                     ),
                   ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // =========================================================
+                // 9. TOMBOL KEMBALI KE ATAS (DARK NAVY BUTTON)
+                // =========================================================
+                Center(
+                  child: ElevatedButton.icon(
+                    onPressed: _scrollToTop,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0A1E33),
+                      foregroundColor: const Color(0xFFE8A33D),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    ),
+                    icon: const Icon(Icons.unfold_less_rounded, size: 18),
+                    label: const Text(
+                      'Kembali ke atas',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  // # WIDGET HELPER: DOT INDICATOR
-  Widget _buildDot(bool isActive) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 3),
-      width: 6,
-      height: 6,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isActive ? const Color(0xFFE8A33D) : Colors.white30,
+  Widget _buildLifePhaseCard({
+    required BuildContext context,
+    required String title,
+    String? imagePath,
+    required IconData fallbackIcon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Center(
+                child: imagePath != null
+                    ? Image.asset(
+                        imagePath,
+                        width: 38,
+                        height: 38,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          fallbackIcon,
+                          color: const Color(0xFF0A1E33),
+                          size: 38,
+                        ),
+                      )
+                    : Icon(
+                        fallbackIcon,
+                        color: const Color(0xFF0A1E33),
+                        size: 38,
+                      ),
+              ),
+            ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF123457).withOpacity(0.12),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8A33D),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 8),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // # WIDGET HELPER: KARTU SEKTOR WHITE (DENGAN ARROW ATAS/KANAN)
-  Widget _buildSectorCard(String title, IconData icon, {bool hasDropdown = false}) {
-    return Container(
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-      ),
+  Widget _buildInstansiItem({
+    required BuildContext context,
+    required String title,
+    String? imagePath,
+    required IconData fallbackIcon,
+    required VoidCallback onTap,
+    double? width,
+    double? height,
+    bool isExpanded = true,
+  }) {
+    final Widget content = GestureDetector(
+      onTap: onTap,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: const Color(0xFF123457), size: 20),
-            ],
+          Container(
+            width: width,
+            height: height ?? 58,
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF0A1E33), width: 1.2),
+            ),
+            child: Center(
+              child: imagePath != null
+                  ? Image.asset(
+                      imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        fallbackIcon,
+                        color: const Color(0xFF0A1E33),
+                        size: height != null ? (height * 0.65) : 32,
+                      ),
+                    )
+                  : Icon(
+                      fallbackIcon,
+                      color: const Color(0xFF0A1E33),
+                      size: height != null ? (height * 0.65) : 32,
+                    ),
+            ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF123457),
-                    fontSize: 6.5,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Poppins',
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 2),
-              CircleAvatar(
-                radius: 6,
-                backgroundColor: const Color(0xFFE8A33D),
-                child: Icon(
-                  hasDropdown ? Icons.arrow_drop_down : Icons.arrow_forward_rounded,
-                  color: Colors.black,
-                  size: 9,
-                ),
-              ),
-            ],
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.black87,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
-  }
 
-  // # WIDGET HELPER: KARTU INSTANSI
-  Widget _buildInstansiCard(String title, String? assetPath, IconData fallbackIcon) {
-    return Column(
-      children: [
-        Container(
-          width: 58,
-          height: 40,
-          padding: const EdgeInsets.all(5),
-          decoration: ShapeDecoration(
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              side: const BorderSide(color: Color(0xFF123457), width: 1.5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            shadows: const [
-              BoxShadow(
-                color: Color(0x38000000),
-                blurRadius: 4,
-                offset: Offset(0, 3),
-              )
-            ],
-          ),
-          child: assetPath != null
-              ? Image.asset(
-                  assetPath,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => Icon(fallbackIcon, color: const Color(0xFF123457)),
-                )
-              : Icon(fallbackIcon, color: const Color(0xFF123457), size: 22),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Color(0xFF0A1E33),
-            fontSize: 7.5,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // # WIDGET HELPER: KARTU BERITA BAWAH
-  Widget _buildNewsCard(int index) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF123457),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: Image.network(
-              _getGambarBerita(index),
-              width: 62,
-              height: 42,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 62,
-                height: 42,
-                color: Colors.blueGrey,
-                child: const Icon(Icons.newspaper, color: Colors.white, size: 18),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _getJudulBerita(index),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${_getKategoriBerita(index)} • ${_getWaktuBerita(index)}',
-                  style: const TextStyle(
-                    color: Color(0xFFE8A33D),
-                    fontSize: 7.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return isExpanded ? Expanded(child: content) : content;
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
-import '../models/user_model.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -246,7 +245,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: const Icon(Icons.description_outlined, color: Colors.white),
                     ),
                     const SizedBox(width: 16),
-                    Expanded(
+                    const Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -258,8 +257,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          const Text(
+                          SizedBox(height: 4),
+                          Text(
                             'Informasi kontak yang akurat membantu kami memberikan pelayanan yang lebih optimal',
                             style: TextStyle(
                               color: Colors.black54,
