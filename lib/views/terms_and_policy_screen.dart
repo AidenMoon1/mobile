@@ -84,8 +84,8 @@ class TermsAndPolicyScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               // Update Date
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Icon(Icons.calendar_today_outlined, color: primaryColor, size: 18),
                   SizedBox(width: 8),
                   Text(

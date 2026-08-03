@@ -65,6 +65,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     );
 
     // Tampilkan Dialog Sukses
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,

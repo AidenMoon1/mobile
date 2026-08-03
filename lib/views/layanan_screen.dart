@@ -146,9 +146,6 @@ class LayananScreen extends StatelessWidget {
               ),
               itemBuilder: (context, index) {
                 final item = _faseKehidupan[index];
-                final String? imagePath = item['imagePath'] as String?;
-                final IconData fallbackIcon = item['fallbackIcon'] as IconData;
-
                 return GestureDetector(
                   onTap: () {
                     if (item['title'] == 'Keluarga') {
@@ -173,7 +170,7 @@ class LayananScreen extends StatelessWidget {
                           builder: (context) => FormPengajuanScreen(
                             judulLayanan: 'Layanan ${item['title']}',
                             deskripsi: item['desc'] as String,
-                            icon: fallbackIcon,
+                            icon: item['icon'] as IconData,
                           ),
                         ),
                       );
@@ -194,7 +191,7 @@ class LayananScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        // # BAGIAN ATAS (BAGIAN BIRU NAVY DENGAN IKON/GAMBAR DI TENGAH)
+                        // # BAGIAN ATAS (BAGIAN BIRU NAVY DENGAN IKON DI TENGAH)
                         Expanded(
                           child: Container(
                             decoration: const BoxDecoration(
@@ -205,23 +202,11 @@ class LayananScreen extends StatelessWidget {
                               ),
                             ),
                             child: Center(
-                              child: imagePath != null
-                                  ? Image.asset(
-                                      imagePath,
-                                      width: 48,
-                                      height: 48,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) => Icon(
-                                        fallbackIcon,
-                                        color: const Color(0xFFE8A33D),
-                                        size: 44,
-                                      ),
-                                    )
-                                  : Icon(
-                                      fallbackIcon,
-                                      color: const Color(0xFFE8A33D),
-                                      size: 44,
-                                    ),
+                              child: Icon(
+                                item['icon'] as IconData,
+                                color: const Color(0xFFE8A33D),
+                                size: 44,
+                              ),
                             ),
                           ),
                         ),

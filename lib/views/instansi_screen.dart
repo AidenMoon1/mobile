@@ -1,203 +1,224 @@
 import 'package:flutter/material.dart';
+import '../services/opd_service.dart';
+import '../widgets/smart_image.dart';
 import 'info_disdukcapil.dart';
 import 'info_diskominfo.dart';
 import 'info_dpmpstp.dart';
 import 'info_dkp3.dart';
 import 'info_bpkpd.dart';
 
-class InstansiScreen extends StatelessWidget {
+class InstansiScreen extends StatefulWidget {
   const InstansiScreen({super.key});
 
-  final List<Map<String, dynamic>> _instansiList = const [
-    {
-      'title': 'Disdukcapil',
-      'image': 'assets/images/disduk.png',
-      'icon': Icons.badge_rounded,
-      'desc': 'Dinas Kependudukan dan Pencatatan Sipil',
-    },
-    {
-      'title': 'Diskominfo',
-      'image': 'assets/images/diskominfo.png',
-      'icon': Icons.hub_rounded,
-      'desc': 'Dinas Komunikasi dan Informatika',
-    },
-    {
-      'title': 'Dinkes',
-      'image': 'assets/images/dinkes.png',
-      'icon': Icons.health_and_safety_rounded,
-      'desc': 'Pelayanan Kesehatan Masyarakat',
-    },
-    {
-      'title': 'Disdikbud',
-      'image': 'assets/images/disdikbud.png',
-      'icon': Icons.school_rounded,
-      'desc': 'Dinas Pendidikan dan Kebudayaan',
-    },
-    {
-      'title': 'DPMPTSP',
-      'image': 'assets/images/dpmptsp.png',
-      'icon': Icons.assignment_rounded,
-      'desc': 'Dinas Penanaman Modal dan Pelayanan Terpadu Satu Pintu',
-    },
-    {
-      'title': 'DKP3',
-      'image': 'assets/images/dkp3.png',
-      'icon': Icons.eco_rounded,
-      'desc': 'Dinas Ketahanan Pangan, Pertanian dan Perikanan',
-    },
-    {
-      'title': 'BPKPD',
-      'image': 'assets/images/bpkpd.png',
-      'icon': Icons.account_balance_wallet_rounded,
-      'desc': 'Badan Pengelola Keuangan dan Pendapatan Daerah',
-    },
-  ];
+  @override
+  State<InstansiScreen> createState() => _InstansiScreenState();
+}
+
+class _InstansiScreenState extends State<InstansiScreen> {
+  final OpdService _opdService = OpdService();
+
+  @override
+  void initState() {
+    super.initState();
+    _opdService.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    _opdService.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9), // Background utama PUTIH / Off-White
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF123457), // AppBar Navy
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Instansi Kota Sukabumi',
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _instansiList.length,
-        itemBuilder: (context, index) {
-          final item = _instansiList[index];
-          final String? imagePath = item['image'] as String?;
-          final IconData iconData = item['icon'] as IconData? ?? Icons.account_balance_rounded;
+    const Color primaryColor = Color(0xFF123457);
+    const Color accentColor = Color(0xFFE8A33D);
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF123457), // Shape Box Berwarna NAVY
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFA5A4A4), width: 0.5),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x20000000),
-                  blurRadius: 6,
-                  offset: Offset(0, 3),
+    final instansiList = _opdService.getInstansiList();
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6F9),
+      body: CustomScrollView(
+        slivers: [
+          // APP BAR NAVY HEADER
+          SliverAppBar(
+            expandedHeight: 140.0,
+            floating: false,
+            pinned: true,
+            backgroundColor: primaryColor,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryColor, Color(0xFF1B4A7A)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
-              ],
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              leading: Container(
-                width: 64,
-                height: 64,
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: Colors.white, // Box Ikon Putih di dalam Kartu Navy
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFFFAC33), width: 1.5),
-                ),
-                child: imagePath != null
-                    ? Image.asset(
-                        imagePath,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            iconData,
-                            color: const Color(0xFF123457),
-                            size: 32,
-                          );
-                        },
-                      )
-                    : Icon(
-                        iconData,
-                        color: const Color(0xFF123457),
-                        size: 32,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 50, 20, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.account_balance_rounded,
+                              color: accentColor,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Instansi Daerah',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ],
                       ),
-              ),
-              title: Text(
-                item['title'] as String,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 17.5,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              subtitle: Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  item['desc'] as String,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontFamily: 'Poppins',
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Daftar Organisasi Perangkat Daerah (OPD) Pemkot Sukabumi.',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12.5,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              trailing: const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 20,
-                color: Color(0xFFE8A33D),
-              ),
-              onTap: () {
-                if (item['title'] == 'Disdukcapil') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const InfoDisdukcapil(),
-                    ),
-                  );
-                } else if (item['title'] == 'Diskominfo') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const InfoDiskominfo(),
-                    ),
-                  );
-                } else if (item['title'] == 'DPMPTSP') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const InfoDpmpstp(),
-                    ),
-                  );
-                } else if (item['title'] == 'DKP3') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const InfoDkp3(),
-                    ),
-                  );
-                } else if (item['title'] == 'BPKPD') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const InfoBpkpd(),
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Informasi ${item['title']} belum tersedia'),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
-                }
-              },
             ),
-          );
-        },
+          ),
+
+          // ISI DAFTAR INSTANSI DINAMIS
+          SliverPadding(
+            padding: const EdgeInsets.all(16.0),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final item = instansiList[index];
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: primaryColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x1A000000),
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
+                        )
+                      ],
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      leading: Container(
+                        width: 52,
+                        height: 52,
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: SmartImage(
+                          imagePath: item.logoPath,
+                          width: 44,
+                          height: 44,
+                          fit: BoxFit.contain,
+                          fallbackIcon: Icons.account_balance_rounded,
+                        ),
+                      ),
+                      title: Text(
+                        item.namaSingkat,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          item.namaLengkap,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontFamily: 'Poppins',
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 18,
+                        color: accentColor,
+                      ),
+                      onTap: () {
+                        final kode = item.kodeInstansi.toLowerCase();
+                        if (kode == 'disdukcapil') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const InfoDisdukcapil()),
+                          );
+                        } else if (kode == 'diskominfo') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const InfoDiskominfo()),
+                          );
+                        } else if (kode == 'dpmpstp') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const InfoDpmpstp()),
+                          );
+                        } else if (kode == 'dkp3') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const InfoDkp3()),
+                          );
+                        } else if (kode == 'bpkpd') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const InfoBpkpd()),
+                          );
+                        } else {
+                          // Generic OPD Info
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Membuka profil instansi ${item.namaLengkap}'),
+                              backgroundColor: primaryColor,
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  );
+                },
+                childCount: instansiList.length,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

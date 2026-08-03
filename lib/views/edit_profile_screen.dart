@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
+import '../models/user_model.dart';
+import '../widgets/smart_image.dart';
+import '../widgets/admin_image_picker.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -11,7 +14,6 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final UserService _userService = UserService();
   
-  // Controller untuk menangani input teks
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _usernameController;
@@ -22,7 +24,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Inisialisasi controller dengan data dari UserService
     final user = _userService.currentUser;
     _nameController = TextEditingController(text: user.name);
     _emailController = TextEditingController(text: user.email);
@@ -43,8 +44,158 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
+  void _showProfileImageModal(UserModel user) {
+    const Color primaryColor = Color(0xFF0A1E33);
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Kelola Foto Profil',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(height: 1),
+              const SizedBox(height: 14),
+
+              // TOMBOL UNGGAH FOTO BARU
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.photo_camera_rounded, color: primaryColor),
+                ),
+                title: const Text(
+                  'Unggah / Pilih Foto Baru',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                ),
+                subtitle: const Text(
+                  'Pilih foto dari galeri atau aset foto resmi',
+                  style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _bukaPickerFoto(user);
+                },
+              ),
+
+              // TOMBOL HAPUS FOTO PROFIL
+              if (user.profileImagePath.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                  ),
+                  title: const Text(
+                    'Hapus Foto Profil',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.redAccent, fontFamily: 'Poppins'),
+                  ),
+                  subtitle: const Text(
+                    'Kembalikan foto profil ke avatar default inisial',
+                    style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
+                  ),
+                  onTap: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    Navigator.pop(context);
+                    await _userService.removeProfileImage();
+                    if (!mounted) return;
+                    setState(() {});
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Foto profil berhasil dihapus!'),
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
+                  },
+                ),
+              ],
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _bukaPickerFoto(UserModel user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (modalContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            top: 20,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(modalContext).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Pilih Avatar / Unggah Foto Profil',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0A1E33), fontFamily: 'Poppins'),
+              ),
+              const SizedBox(height: 12),
+              AdminImagePicker(
+                label: 'Path Foto Profil / URL Gambar',
+                currentImagePath: user.profileImagePath,
+                onImageSelected: (path) async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final updated = user.copyWith(profileImagePath: path);
+                  await _userService.updateProfile(updated);
+                  if (!mounted) return;
+                  setState(() {});
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Foto profil baru berhasil diperbarui!'),
+                      backgroundColor: Color(0xFF123457),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _saveChanges() {
-    // 1. Buat model baru dari inputan user
     final updatedUser = _userService.currentUser.copyWith(
       name: _nameController.text,
       email: _emailController.text,
@@ -53,10 +204,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       status: _statusController.text,
     );
 
-    // 2. Simpan ke UserService
     _userService.updateProfile(updatedUser);
 
-    // 3. Tampilkan feedback
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Perubahan profil berhasil disimpan!'),
@@ -65,7 +214,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
 
-    // 4. Kembali ke halaman profil
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) Navigator.pop(context);
     });
@@ -76,6 +224,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     const Color primaryColor = Color(0xFF0A1E33);
     const Color accentColor = Color(0xFFE8A33D);
     const Color backgroundColor = Colors.white;
+
+    final user = _userService.currentUser;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -98,14 +248,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back, color: accentColor),
+                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const SizedBox(width: 8),
                       const Padding(
                         padding: EdgeInsets.only(top: 10),
                         child: Text(
-                          'Profil',
+                          'Edit Profil',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
@@ -116,228 +265,184 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ],
                   ),
                 ),
-                // Profile Picture (Floating)
+
+                // Profile Picture (Floating) dengan interaksi Unggah/Hapus
                 Positioned(
                   bottom: -60,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: const CircleAvatar(
-                      radius: 70,
-                      backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+                  child: GestureDetector(
+                    onTap: () => _showProfileImageModal(user),
+                    child: Container(
+                      width: 130,
+                      height: 130,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 4),
+                        color: Colors.grey.shade300,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: user.profileImagePath.isNotEmpty
+                            ? SmartImage(
+                                imagePath: user.profileImagePath,
+                                width: 130,
+                                height: 130,
+                                fit: BoxFit.cover,
+                              )
+                            : Center(
+                                child: Text(
+                                  user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+                                  style: const TextStyle(
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryColor,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                              ),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 70),
-            
+
             // Edit Photo Button
-            ElevatedButton(
-              onPressed: () {},
+            ElevatedButton.icon(
+              onPressed: () => _showProfileImageModal(user),
+              icon: const Icon(Icons.photo_camera_rounded, size: 18),
+              label: Text(
+                user.profileImagePath.isNotEmpty ? 'Ubah / Hapus Foto Profil' : 'Unggah Foto Profil',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
-                foregroundColor: Colors.white,
+                foregroundColor: primaryColor,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
-              child: const Text('Edit Foto', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
-            
-            const SizedBox(height: 20),
-            const Divider(color: Colors.black12, height: 1),
+            const SizedBox(height: 24),
 
-            // INPUT FORM SECTION
+            // Form Content
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
                 children: [
-                  _buildEditField(
-                    icon: Icons.edit,
-                    label: 'NAMA LENGKAP',
-                    controller: _nameController,
+                  _buildTextField(label: 'Nama Lengkap', controller: _nameController, icon: Icons.person_outline),
+                  const SizedBox(height: 16),
+                  _buildTextField(label: 'Alamat Email', controller: _emailController, icon: Icons.email_outlined),
+                  const SizedBox(height: 16),
+                  _buildTextField(label: 'Nama Pengguna (Username)', controller: _usernameController, icon: Icons.alternate_email),
+                  const SizedBox(height: 16),
+                  _buildTextField(label: 'Nomor WhatsApp / HP', controller: _phoneController, icon: Icons.phone_outlined),
+                  const SizedBox(height: 16),
+                  _buildTextField(label: 'Status Domisili / Wilayah', controller: _statusController, icon: Icons.location_on_outlined),
+                  const SizedBox(height: 16),
+                  _buildTextField(label: 'Terdaftar Sejak', controller: _dateController, icon: Icons.calendar_today_outlined, enabled: false),
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: primaryColor,
+                            side: const BorderSide(color: primaryColor),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _saveChanges,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text('Simpan Perubahan', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
                   ),
-                  _buildEditField(
-                    icon: Icons.mail_outline,
-                    label: 'ALAMAT EMAIL',
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  _buildEditField(
-                    icon: Icons.person_outline,
-                    label: 'USERNAME UTAMA',
-                    controller: _usernameController,
-                  ),
-                  _buildEditField(
-                    icon: Icons.phone_android,
-                    label: 'NOMOR WHATSAPP',
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                  ),
-                  _buildEditField(
-                    icon: Icons.location_on_outlined,
-                    label: 'STATUS KEPENDUDUKAN',
-                    controller: _statusController,
-                  ),
-                  _buildEditField(
-                    icon: Icons.calendar_today_outlined,
-                    label: 'TANGGAL BERGABUNG',
-                    controller: _dateController,
-                    readOnly: true,
-                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
-
-            // SAVE BUTTON
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: _saveChanges,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Simpan Perubahan',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ),
-
-            // BOTTOM BANNER
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: primaryColor.withOpacity(0.1)),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: primaryColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.description_outlined, color: Colors.white),
-                    ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Lengkapi Data Anda',
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Informasi kontak yang akurat membantu kami memberikan pelayanan yang lebih optimal',
-                            style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEditField({
-    required IconData icon,
+  Widget _buildTextField({
     required String label,
     required TextEditingController controller,
-    TextInputType keyboardType = TextInputType.text,
-    bool readOnly = false,
+    required IconData icon,
+    bool enabled = true,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              color: Color(0xFFE8A33D),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: Colors.white, size: 24),
+    const Color primaryColor = Color(0xFF0A1E33);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: primaryColor,
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                TextFormField(
-                  controller: controller,
-                  readOnly: readOnly,
-                  keyboardType: keyboardType,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black12),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFFE8A33D)),
-                    ),
-                  ),
-                ),
-              ],
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          style: TextStyle(
+            color: enabled ? Colors.black87 : Colors.grey.shade600,
+            fontSize: 14,
+          ),
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, color: enabled ? primaryColor : Colors.grey),
+            filled: true,
+            fillColor: enabled ? Colors.grey.shade50 : Colors.grey.shade200,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: primaryColor, width: 1.5),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
