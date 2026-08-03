@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../models/custom_field_config.dart';
 import '../../models/layanan_model.dart';
 import '../../services/opd_service.dart';
 
@@ -23,16 +24,8 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
   late TextEditingController _deskripsiController;
   late TextEditingController _urlPortalController;
 
-  // FLAGS KONFIGURASI FIELD PERMOHONAN DIGITAL OLEH ADMIN
-  bool _requiresNik = true;
-  bool _requiresNama = true;
-  bool _requiresNoKk = true;
-  bool _requiresNoHp = true;
-  bool _requiresKeterangan = true;
-  bool _requiresUploadDokumen = true;
-
   final List<TextEditingController> _persyaratanControllers = [];
-  final List<TextEditingController> _customFieldControllers = [];
+  final List<CustomFieldConfig> _formFields = [];
 
   final List<String> _sektorOptions = const [
     'Keluarga',
@@ -67,27 +60,32 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     );
 
     if (item != null) {
-      _requiresNik = item.requiresNik;
-      _requiresNama = item.requiresNama;
-      _requiresNoKk = item.requiresNoKk;
-      _requiresNoHp = item.requiresNoHp;
-      _requiresKeterangan = item.requiresKeterangan;
-      _requiresUploadDokumen = item.requiresUploadDokumen;
-
       if (item.persyaratan.isNotEmpty) {
         for (var req in item.persyaratan) {
           _persyaratanControllers.add(TextEditingController(text: req));
         }
       }
-      if (item.customFields.isNotEmpty) {
-        for (var cf in item.customFields) {
-          _customFieldControllers.add(TextEditingController(text: cf));
-        }
+      if (item.formFields.isNotEmpty) {
+        _formFields.addAll(item.formFields);
+      } else {
+        _initDefaultFormFields();
       }
     } else {
       _persyaratanControllers.add(TextEditingController(text: 'Fotokopi Kartu Keluarga (KK) terbaru.'));
       _persyaratanControllers.add(TextEditingController(text: 'Fotokopi KTP Pemohon.'));
+      _initDefaultFormFields();
     }
+  }
+
+  void _initDefaultFormFields() {
+    _formFields.addAll([
+      CustomFieldConfig(id: '1', label: 'NIK Pemohon (16 Digit)', type: FieldType.number, hint: 'Masukkan 16 angka NIK'),
+      CustomFieldConfig(id: '2', label: 'Nama Lengkap', type: FieldType.shortText, hint: 'Sesuai KTP / Akta'),
+      CustomFieldConfig(id: '3', label: 'Nomor Kartu Keluarga (KK)', type: FieldType.number, hint: 'Masukkan 16 angka No. KK'),
+      CustomFieldConfig(id: '4', label: 'Nomor WhatsApp / HP', type: FieldType.number, hint: 'Contoh: 081234567890'),
+      CustomFieldConfig(id: '5', label: 'Keterangan / Alasan Permohonan', type: FieldType.longText, hint: 'Jelaskan keperluan permohonan Anda...'),
+      CustomFieldConfig(id: '6', label: 'Unggah Dokumen Syarat (JPG, PNG, JPEG)', type: FieldType.fileUpload),
+    ]);
   }
 
   @override
@@ -98,9 +96,6 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     _deskripsiController.dispose();
     _urlPortalController.dispose();
     for (var c in _persyaratanControllers) {
-      c.dispose();
-    }
-    for (var c in _customFieldControllers) {
       c.dispose();
     }
     super.dispose();
@@ -121,27 +116,223 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     }
   }
 
-  void _tambahCustomFieldRow() {
-    setState(() {
-      _customFieldControllers.add(TextEditingController());
-    });
-  }
+  // DIALOG FORM BUILDER DENGAN 6 TIPE FIELD
+  void _bukaModalTambahAtauEditField({CustomFieldConfig? editField, int? index}) {
+    final TextEditingController labelCtrl = TextEditingController(text: editField?.label ?? '');
+    final TextEditingController hintCtrl = TextEditingController(text: editField?.hint ?? '');
+    FieldType selectedType = editField?.type ?? FieldType.shortText;
+    bool isReq = editField?.isRequired ?? true;
 
-  void _hapusCustomFieldRow(int index) {
-    setState(() {
-      _customFieldControllers[index].dispose();
-      _customFieldControllers.removeAt(index);
-    });
+    final List<TextEditingController> optionCtrls = [];
+    if (editField != null && editField.options.isNotEmpty) {
+      for (var opt in editField.options) {
+        optionCtrls.add(TextEditingController(text: opt));
+      }
+    } else {
+      optionCtrls.add(TextEditingController(text: 'Pilihan 1'));
+      optionCtrls.add(TextEditingController(text: 'Pilihan 2'));
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                editField == null ? 'Tambah Element Field Baru' : 'Edit Element Field',
+                style: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Color(0xFF123457),
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Label / Nama Field',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF123457), fontFamily: 'Poppins'),
+                    ),
+                    const SizedBox(height: 4),
+                    TextField(
+                      controller: labelCtrl,
+                      style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                      decoration: InputDecoration(
+                        hintText: 'Contoh: Tanggal Lahir Anak / Jenis Kelamin',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    const Text(
+                      'Tipe Field Input',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF123457), fontFamily: 'Poppins'),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<FieldType>(
+                          value: selectedType,
+                          isExpanded: true,
+                          style: const TextStyle(fontSize: 12.5, color: Color(0xFF123457), fontFamily: 'Poppins'),
+                          items: FieldType.values.map((t) {
+                            return DropdownMenuItem(
+                              value: t,
+                              child: Text(t.displayName),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setModalState(() => selectedType = val);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (selectedType == FieldType.dropdown) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Opsi Pilihan Dropdown',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF123457), fontFamily: 'Poppins'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setModalState(() {
+                                optionCtrls.add(TextEditingController());
+                              });
+                            },
+                            child: const Text('+ Opsi', style: TextStyle(fontSize: 11, fontFamily: 'Poppins')),
+                          ),
+                        ],
+                      ),
+                      ...optionCtrls.asMap().entries.map((entry) {
+                        final idx = entry.key;
+                        final ctrl = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: ctrl,
+                                  style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+                                  decoration: InputDecoration(
+                                    hintText: 'Opsi ${idx + 1}',
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+                                  ),
+                                ),
+                              ),
+                              if (optionCtrls.length > 1)
+                                IconButton(
+                                  icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent, size: 20),
+                                  onPressed: () {
+                                    setModalState(() {
+                                      optionCtrls[idx].dispose();
+                                      optionCtrls.removeAt(idx);
+                                    });
+                                  },
+                                ),
+                            ],
+                          ),
+                        );
+                      }),
+                      const SizedBox(height: 12),
+                    ],
+
+                    if (selectedType != FieldType.fileUpload && selectedType != FieldType.datePicker) ...[
+                      const Text(
+                        'Hint / Teks Petunjuk',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF123457), fontFamily: 'Poppins'),
+                      ),
+                      const SizedBox(height: 4),
+                      TextField(
+                        controller: hintCtrl,
+                        style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                        decoration: InputDecoration(
+                          hintText: 'Contoh: Masukkan data sesuai KTP',
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+
+                    SwitchListTile(
+                      value: isReq,
+                      onChanged: (val) => setModalState(() => isReq = val),
+                      title: const Text('Wajib Diisi (Required)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (labelCtrl.text.trim().isEmpty) return;
+
+                    final optsList = optionCtrls
+                        .map((c) => c.text.trim())
+                        .where((t) => t.isNotEmpty)
+                        .toList();
+
+                    final newField = CustomFieldConfig(
+                      id: editField?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+                      label: labelCtrl.text.trim(),
+                      type: selectedType,
+                      isRequired: isReq,
+                      options: optsList,
+                      hint: hintCtrl.text.trim(),
+                    );
+
+                    setState(() {
+                      if (index != null) {
+                        _formFields[index] = newField;
+                      } else {
+                        _formFields.add(newField);
+                      }
+                    });
+
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF123457),
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Simpan Field', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   void _simpanLayanan() {
     if (_formKey.currentState!.validate()) {
       final reqList = _persyaratanControllers
-          .map((c) => c.text.trim())
-          .where((text) => text.isNotEmpty)
-          .toList();
-
-      final cfList = _customFieldControllers
           .map((c) => c.text.trim())
           .where((text) => text.isNotEmpty)
           .toList();
@@ -159,13 +350,7 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
         persyaratan: reqList,
         urlPortal: _urlPortalController.text.trim(),
         iconName: 'description_outlined',
-        requiresNik: _requiresNik,
-        requiresNama: _requiresNama,
-        requiresNoKk: _requiresNoKk,
-        requiresNoHp: _requiresNoHp,
-        requiresKeterangan: _requiresKeterangan,
-        requiresUploadDokumen: _requiresUploadDokumen,
-        customFields: cfList,
+        formFields: _formFields,
       );
 
       if (isEdit) {
@@ -333,120 +518,119 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
               ),
               const SizedBox(height: 18),
 
-              // SEKSI BARU: KONFIGURASI FIELD FORMULIR PERMOHONAN OLEH ADMIN
-              _buildSectionHeader('Konfigurasi Field Formulir Permohonan Warga'),
-              const SizedBox(height: 4),
-              const Text(
-                'Pilih field apa saja yang wajib/muncul pada formulir permohonan warga untuk layanan ini.',
-                style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
-              ),
-              const SizedBox(height: 10),
-
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Column(
-                  children: [
-                    _buildSwitchTile(
-                      title: 'NIK Pemohon (16 Digit)',
-                      value: _requiresNik,
-                      onChanged: (val) => setState(() => _requiresNik = val),
-                    ),
-                    const Divider(height: 1),
-                    _buildSwitchTile(
-                      title: 'Nama Lengkap Pemohon',
-                      value: _requiresNama,
-                      onChanged: (val) => setState(() => _requiresNama = val),
-                    ),
-                    const Divider(height: 1),
-                    _buildSwitchTile(
-                      title: 'Nomor Kartu Keluarga (KK)',
-                      subtitle: 'Matikan jika permohonan ini tidak memerlukan No. KK',
-                      value: _requiresNoKk,
-                      onChanged: (val) => setState(() => _requiresNoKk = val),
-                    ),
-                    const Divider(height: 1),
-                    _buildSwitchTile(
-                      title: 'Nomor WhatsApp / HP',
-                      subtitle: 'Matikan jika permohonan ini tidak memerlukan No. HP',
-                      value: _requiresNoHp,
-                      onChanged: (val) => setState(() => _requiresNoHp = val),
-                    ),
-                    const Divider(height: 1),
-                    _buildSwitchTile(
-                      title: 'Keterangan / Alasan Permohonan',
-                      value: _requiresKeterangan,
-                      onChanged: (val) => setState(() => _requiresKeterangan = val),
-                    ),
-                    const Divider(height: 1),
-                    _buildSwitchTile(
-                      title: 'Unggah Dokumen Syarat (JPG, PNG, JPEG)',
-                      value: _requiresUploadDokumen,
-                      onChanged: (val) => setState(() => _requiresUploadDokumen = val),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // SEKSI FIELD KUSTOM TAMBAHAN
+              // SEKSI FORM BUILDER ENGINE DINAMIS
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Field Isian Kustom Tambahan',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                    'Form Builder (Elemen Isian Warga)',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
-                  TextButton.icon(
-                    onPressed: _tambahCustomFieldRow,
-                    icon: const Icon(Icons.add_circle_outline_rounded, color: primaryColor, size: 18),
+                  ElevatedButton.icon(
+                    onPressed: () => _bukaModalTambahAtauEditField(),
+                    icon: const Icon(Icons.add_rounded, size: 18),
                     label: const Text(
-                      'Tambah Field Kustom',
-                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                      '+ Tambah Field',
+                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accentColor,
+                      foregroundColor: primaryColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     ),
                   ),
                 ],
               ),
-              if (_customFieldControllers.isNotEmpty)
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _customFieldControllers.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _customFieldControllers[index],
-                              style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
-                              decoration: InputDecoration(
-                                hintText: 'Contoh: Alamat Tempat Usaha / Jenis Usaha',
-                                hintStyle: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Poppins'),
-                                filled: true,
-                                fillColor: Colors.white,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
-                                ),
+              const SizedBox(height: 4),
+              const Text(
+                'Admin dapat membuat & mengatur sendiri tipe field (Teks Pendek, Teks Panjang, Dropdown, Kalender, Angka, Upload).',
+                style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+              ),
+              const SizedBox(height: 10),
+
+              _formFields.isEmpty
+                  ? Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Belum ada field formulir. Klik "+ Tambah Field" untuk membuat.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                        ),
+                      ),
+                    )
+                  : ReorderableListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _formFields.length,
+                      onReorder: (oldIdx, newIdx) {
+                        setState(() {
+                          if (newIdx > oldIdx) newIdx -= 1;
+                          final item = _formFields.removeAt(oldIdx);
+                          _formFields.insert(newIdx, item);
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        final f = _formFields[index];
+                        return Container(
+                          key: ValueKey(f.id),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: primaryColor.withOpacity(0.2)),
+                          ),
+                          child: ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${index + 1}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 12),
                               ),
                             ),
+                            title: Text(
+                              f.label,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                            ),
+                            subtitle: Text(
+                              'Tipe: ${f.type.displayName}${f.isRequired ? " • (Wajib)" : " • (Opsional)"}',
+                              style: TextStyle(fontSize: 11, color: Colors.grey.shade700, fontFamily: 'Poppins'),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_rounded, color: primaryColor, size: 20),
+                                  onPressed: () => _bukaModalTambahAtauEditField(editField: f, index: index),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                                  onPressed: () {
+                                    setState(() {
+                                      _formFields.removeAt(index);
+                                    });
+                                  },
+                                ),
+                                const Icon(Icons.drag_handle_rounded, color: Colors.grey),
+                              ],
+                            ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 22),
-                            onPressed: () => _hapusCustomFieldRow(index),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                        );
+                      },
+                    ),
 
               const SizedBox(height: 20),
 
@@ -550,39 +734,6 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSwitchTile({
-    required String title,
-    String? subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    const Color primaryColor = Color(0xFF123457);
-    const Color accentColor = Color(0xFFE8A33D);
-
-    return SwitchListTile(
-      value: value,
-      onChanged: onChanged,
-      activeColor: accentColor,
-      activeTrackColor: primaryColor.withOpacity(0.2),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
-          color: primaryColor,
-          fontFamily: 'Poppins',
-        ),
-      ),
-      subtitle: subtitle != null
-          ? Text(
-              subtitle,
-              style: const TextStyle(fontSize: 10.5, color: Colors.grey, fontFamily: 'Poppins'),
-            )
-          : null,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
     );
   }
 

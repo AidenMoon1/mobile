@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/instansi_model.dart';
 import '../models/layanan_model.dart';
+import '../models/custom_field_config.dart';
 
 class OpdService extends ChangeNotifier {
   static final OpdService _instance = OpdService._internal();
@@ -120,7 +121,7 @@ class OpdService extends ChangeNotifier {
 
     // Seed Layanan Publik Utama per OPD & Sektor
     _layananList.addAll([
-      // Disdukcapil (Keluarga)
+      // Disdukcapil (Keluarga) - Pelayanan KTP-el
       LayananModel(
         id: '101',
         kodeInstansi: 'disdukcapil',
@@ -138,7 +139,18 @@ class OpdService extends ChangeNotifier {
         ],
         urlPortal: 'https://disdukcapil.sukabumikota.go.id',
         iconName: 'badge_outlined',
+        formFields: [
+          CustomFieldConfig(id: 'f1', label: 'NIK Pemohon (16 Digit)', type: FieldType.number, hint: 'Masukkan 16 digit NIK'),
+          CustomFieldConfig(id: 'f2', label: 'Nama Lengkap Pemohon', type: FieldType.shortText, hint: 'Sesuai KTP / Akta'),
+          CustomFieldConfig(id: 'f3', label: 'Jenis Permohonan KTP', type: FieldType.dropdown, options: ['Perekaman Baru (Pemula 17 Th)', 'Ganti KTP Rusak', 'Ganti KTP Hilang', 'Aktivasi KTP Digital (IKD)']),
+          CustomFieldConfig(id: 'f4', label: 'Nomor Kartu Keluarga (KK)', type: FieldType.number, hint: 'Masukkan 16 digit No. KK'),
+          CustomFieldConfig(id: 'f5', label: 'Nomor WhatsApp / HP', type: FieldType.number, hint: 'Contoh: 081234567890'),
+          CustomFieldConfig(id: 'f6', label: 'Alasan / Keterangan Tambahan', type: FieldType.longText, hint: 'Jelaskan alasan permohonan...'),
+          CustomFieldConfig(id: 'f7', label: 'Unggah Lampiran Berkas Syarat', type: FieldType.fileUpload),
+        ],
       ),
+
+      // Disdukcapil (Keluarga) - Kartu Keluarga (KK) -> TANPA DIPERLUKAN NOMOR HP (Sesuai contoh user!)
       LayananModel(
         id: '102',
         kodeInstansi: 'disdukcapil',
@@ -156,44 +168,17 @@ class OpdService extends ChangeNotifier {
         ],
         urlPortal: 'https://disdukcapil.sukabumikota.go.id',
         iconName: 'family_restroom_outlined',
-      ),
-      LayananModel(
-        id: '103',
-        kodeInstansi: 'disdukcapil',
-        sektor: 'Keluarga',
-        judulLayanan: 'Akta Kelahiran & Akta Kematian',
-        rawTitle: 'Akta Kelahiran / Kematian',
-        subjudul: 'Pencatatan kelahiran bayi baru lahir serta penerbitan akta kematian resmi.',
-        deskripsi:
-            'Layanan pencatatan sipil untuk penerbitan Akta Kelahiran anak baru lahir dan Akta Kematian warga Kota Sukabumi guna tertib administrasi kependudukan.',
-        persyaratan: [
-          'Surat Keterangan Lahir dari Dokter/Bidan/Rumah Sakit.',
-          'Fotokopi KTP kedua orang tua & KTP 2 orang saksi.',
-          'Buku Nikah / Akta Perkawinan Orang Tua.',
-          'Kartu Keluarga (KK) Asli.',
+        formFields: [
+          CustomFieldConfig(id: 'f10', label: 'NIK Kepala Keluarga', type: FieldType.number, hint: 'Masukkan 16 digit NIK'),
+          CustomFieldConfig(id: 'f11', label: 'Nama Lengkap Kepala Keluarga', type: FieldType.shortText, hint: 'Sesuai KTP'),
+          CustomFieldConfig(id: 'f12', label: 'Nomor Kartu Keluarga Lama', type: FieldType.number, hint: 'Masukkan 16 digit No. KK lama'),
+          CustomFieldConfig(id: 'f13', label: 'Alasan Permohonan KK', type: FieldType.dropdown, options: ['Keluarga Baru (Pernikahan)', 'Penambahan Anggota (Kelahiran)', 'Perubahan Data Alamat/Pekerjaan', 'KK Rusak / Hilang']),
+          CustomFieldConfig(id: 'f14', label: 'Alamat Rumah Lengkap', type: FieldType.longText, hint: 'RT/RW, Kelurahan, Kecamatan, Kota Sukabumi'),
+          CustomFieldConfig(id: 'f15', label: 'Unggah Berkas Persyaratan (KK/Buku Nikah)', type: FieldType.fileUpload),
         ],
-        urlPortal: 'https://disdukcapil.sukabumikota.go.id',
-        iconName: 'child_care_rounded',
-      ),
-      LayananModel(
-        id: '104',
-        kodeInstansi: 'disdukcapil',
-        sektor: 'Keluarga',
-        judulLayanan: 'Kartu Identitas Anak (KIA)',
-        rawTitle: 'Kartu Identitas Anak (KIA)',
-        subjudul: 'Penerbitan kartu identitas resmi bagi anak usia 0 hingga 17 tahun kurang satu hari.',
-        deskripsi:
-            'Layanan penerbitan Kartu Identitas Anak (KIA) yang berfungsi sebagai identitas resmi anak untuk keperluan penerbangan, sekolah, perbankan, dan medis.',
-        persyaratan: [
-          'Fotokopi Akta Kelahiran Anak.',
-          'Fotokopi Kartu Keluarga (KK) Orang Tua.',
-          'Pasfoto anak ukuran 2x3 sebanyak 2 lembar (untuk anak usia 5-17 tahun).',
-        ],
-        urlPortal: 'https://disdukcapil.sukabumikota.go.id',
-        iconName: 'face_rounded',
       ),
 
-      // DPMPTSP (Usaha & Lingkungan)
+      // DPMPTSP (Usaha) - OSS NIB
       LayananModel(
         id: '201',
         kodeInstansi: 'dpmpstp',
@@ -211,81 +196,16 @@ class OpdService extends ChangeNotifier {
         ],
         urlPortal: 'https://oss.go.id',
         iconName: 'store_rounded',
-      ),
-      LayananModel(
-        id: '202',
-        kodeInstansi: 'dpmpstp',
-        sektor: 'Lingkungan & Tempat Tinggal',
-        judulLayanan: 'Persetujuan Bangunan Gedung (PBG)',
-        rawTitle: 'Izin Bangunan Gedung (PBG)',
-        subjudul: 'Permohonan persetujuan teknis dan izin konstruksi renovasi/pembangunan gedung.',
-        deskripsi:
-            'Penerbitan dokumen resmi Persetujuan Bangunan Gedung (pengganti IMB) untuk memastikan keandalan bangunan gedung di Kota Sukabumi.',
-        persyaratan: [
-          'Sertifikat Tanah / Bukti Kepemilikan Lahan.',
-          'Gambar Rencana Teknis Arsitektur & Struktur.',
-          'Dokumen Lingkungan (SPPL/UKL-UPL jika dipersyaratkan).',
-          'KTP Pemilik Bangunan.',
+        formFields: [
+          CustomFieldConfig(id: 'f20', label: 'NIK Pemilik Usaha', type: FieldType.number, hint: '16 digit NIK'),
+          CustomFieldConfig(id: 'f21', label: 'Nama Lengkap Pemilik Usaha', type: FieldType.shortText, hint: 'Sesuai KTP'),
+          CustomFieldConfig(id: 'f22', label: 'Nama Usaha / Toko / Perusahaan', type: FieldType.shortText, hint: 'Contoh: Toko Berkah Mandiri'),
+          CustomFieldConfig(id: 'f23', label: 'Skala Usaha', type: FieldType.dropdown, options: ['Mikro (Modal <= 1 Miliar)', 'Kecil (Modal 1 - 5 Miliar)', 'Menengah (Modal 5 - 10 Miliar)', 'Besar (Modal > 10 Miliar)']),
+          CustomFieldConfig(id: 'f24', label: 'Alamat Lokasi Usaha', type: FieldType.longText, hint: 'Jalan, RT/RW, Kelurahan'),
+          CustomFieldConfig(id: 'f25', label: 'Tanggal Memulai Usaha', type: FieldType.datePicker, hint: 'Pilih tanggal mulai berdiri'),
+          CustomFieldConfig(id: 'f26', label: 'Nomor WhatsApp Pemilik', type: FieldType.number, hint: '081234567890'),
+          CustomFieldConfig(id: 'f27', label: 'Unggah Foto Lokasi / KTP', type: FieldType.fileUpload),
         ],
-        urlPortal: 'https://simbg.pu.go.id',
-        iconName: 'home_work_rounded',
-      ),
-
-      // Diskominfo (Tanggap Darurat & Rekreasi)
-      LayananModel(
-        id: '301',
-        kodeInstansi: 'diskominfo',
-        sektor: 'Tanggap Darurat',
-        judulLayanan: 'Sukabumi Siaga 112',
-        rawTitle: 'Panggilan Darurat 112',
-        subjudul: 'Layanan bebas pulsa 24 jam untuk kondisi darurat kebakaran, bencana, dan medis.',
-        deskripsi:
-            'Pusat bantuan darurat terpadu Kota Sukabumi untuk menangani laporan kebakaran, kecelakaan lalu lintas, bencana alam, serta permintaan ambulans gratis.',
-        persyaratan: [
-          'Telepon langsung ke nomor 112 (Bebas Pulsa / Bebas Kuota).',
-          'Sampaikan lokasi kejadian dan nama pelapor secara jelas.',
-        ],
-        urlPortal: 'tel:112',
-        iconName: 'warning_amber_rounded',
-      ),
-
-      // BPKPD (Lingkungan & Keuangan)
-      LayananModel(
-        id: '401',
-        kodeInstansi: 'bpkpd',
-        sektor: 'Lingkungan & Tempat Tinggal',
-        judulLayanan: 'Pelayanan Pajak Bumi dan Bangunan (PBB-P2)',
-        rawTitle: 'Layanan PBB-P2 Sukabumi',
-        subjudul: 'Pengecekan tagihan, cetak SPPT PBB, pemutakhiran nama wajib pajak, dan konsultasi.',
-        deskripsi:
-            'Layanan pengelolaan Pajak Bumi dan Bangunan Perdesaan dan Perkotaan Kota Sukabumi secara transparan dan mudah dilakukan dari mana saja.',
-        persyaratan: [
-          'Nomor Objek Pajak (NOP) PBB.',
-          'Fotokopi KTP Wajib Pajak.',
-          'Fotokopi Sertifikat Tanah / Akta Jual Beli.',
-          'Bukti Pelunasan PBB Tahun Sebelumnya.',
-        ],
-        urlPortal: 'https://bpkpd.sukabumikota.go.id',
-        iconName: 'receipt_long_rounded',
-      ),
-
-      // DKP3 (Kesehatan & Lingkungan)
-      LayananModel(
-        id: '501',
-        kodeInstansi: 'dkp3',
-        sektor: 'Kesehatan',
-        judulLayanan: 'Pelayanan Kesehatan Hewan & Puskeswan',
-        rawTitle: 'Puskeswan & Kesehatan Hewan',
-        subjudul: 'Pemeriksaan kesehatan hewan peliharaan, imunisasi rabies, dan pengobatan ternak.',
-        deskripsi:
-            'Layanan medik veteriner gratis / terjangkau bagi hewan peliharaan dan hewan ternak milik warga Kota Sukabumi oleh dokter hewan resmi DKP3.',
-        persyaratan: [
-          'KTP Pemilik / Pemegang Hewan Kota Sukabumi.',
-          'Buku Kesehatan Hewan (jika ada).',
-          'Membawa hewan langsung ke lokasi Puskeswan.',
-        ],
-        urlPortal: 'https://dkp3.sukabumikota.go.id',
-        iconName: 'pets_rounded',
       ),
     ]);
   }

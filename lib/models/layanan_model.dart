@@ -1,3 +1,5 @@
+import 'custom_field_config.dart';
+
 class LayananModel {
   final String id;
   final String kodeInstansi; // e.g. 'disdukcapil', 'diskominfo', 'dpmpstp', 'bpkpd', 'dkp3'
@@ -10,14 +12,8 @@ class LayananModel {
   final String urlPortal;
   final String iconName;
 
-  // KONFIGURASI FIELD FORMULIR PERMOHONAN OLEH ADMIN
-  final bool requiresNik;
-  final bool requiresNama;
-  final bool requiresNoKk;
-  final bool requiresNoHp;
-  final bool requiresKeterangan;
-  final bool requiresUploadDokumen;
-  final List<String> customFields;
+  // MESIN FORM BUILDER: DAFTAR ELEMENT FORM DINAMIS YANG DIBUAT ADMIN
+  final List<CustomFieldConfig> formFields;
 
   LayananModel({
     required this.id,
@@ -30,13 +26,7 @@ class LayananModel {
     required this.persyaratan,
     required this.urlPortal,
     required this.iconName,
-    this.requiresNik = true,
-    this.requiresNama = true,
-    this.requiresNoKk = true,
-    this.requiresNoHp = true,
-    this.requiresKeterangan = true,
-    this.requiresUploadDokumen = true,
-    this.customFields = const [],
+    this.formFields = const [],
   });
 
   Map<String, dynamic> toMap() {
@@ -51,13 +41,7 @@ class LayananModel {
       'persyaratanJson': persyaratan.join('|||'),
       'urlPortal': urlPortal,
       'iconName': iconName,
-      'requiresNik': requiresNik ? 1 : 0,
-      'requiresNama': requiresNama ? 1 : 0,
-      'requiresNoKk': requiresNoKk ? 1 : 0,
-      'requiresNoHp': requiresNoHp ? 1 : 0,
-      'requiresKeterangan': requiresKeterangan ? 1 : 0,
-      'requiresUploadDokumen': requiresUploadDokumen ? 1 : 0,
-      'customFieldsJson': customFields.join('|||'),
+      'formFieldsJson': formFields.map((f) => f.toMap()).toList(),
     };
   }
 
@@ -67,9 +51,13 @@ class LayananModel {
       reqList = map['persyaratanJson'].toString().split('|||');
     }
 
-    List<String> cfList = [];
-    if (map['customFieldsJson'] != null && map['customFieldsJson'].toString().isNotEmpty) {
-      cfList = map['customFieldsJson'].toString().split('|||');
+    List<CustomFieldConfig> fieldsList = [];
+    if (map['formFieldsJson'] != null) {
+      if (map['formFieldsJson'] is List) {
+        fieldsList = (map['formFieldsJson'] as List)
+            .map((e) => CustomFieldConfig.fromMap(Map<String, dynamic>.from(e)))
+            .toList();
+      }
     }
 
     return LayananModel(
@@ -83,13 +71,7 @@ class LayananModel {
       persyaratan: reqList,
       urlPortal: map['urlPortal'] ?? '',
       iconName: map['iconName'] ?? '',
-      requiresNik: map['requiresNik'] == 1 || map['requiresNik'] == true || map['requiresNik'] == null,
-      requiresNama: map['requiresNama'] == 1 || map['requiresNama'] == true || map['requiresNama'] == null,
-      requiresNoKk: map['requiresNoKk'] == 1 || map['requiresNoKk'] == true || map['requiresNoKk'] == null,
-      requiresNoHp: map['requiresNoHp'] == 1 || map['requiresNoHp'] == true || map['requiresNoHp'] == null,
-      requiresKeterangan: map['requiresKeterangan'] == 1 || map['requiresKeterangan'] == true || map['requiresKeterangan'] == null,
-      requiresUploadDokumen: map['requiresUploadDokumen'] == 1 || map['requiresUploadDokumen'] == true || map['requiresUploadDokumen'] == null,
-      customFields: cfList,
+      formFields: fieldsList,
     );
   }
 
@@ -104,13 +86,7 @@ class LayananModel {
     List<String>? persyaratan,
     String? urlPortal,
     String? iconName,
-    bool? requiresNik,
-    bool? requiresNama,
-    bool? requiresNoKk,
-    bool? requiresNoHp,
-    bool? requiresKeterangan,
-    bool? requiresUploadDokumen,
-    List<String>? customFields,
+    List<CustomFieldConfig>? formFields,
   }) {
     return LayananModel(
       id: id ?? this.id,
@@ -123,13 +99,7 @@ class LayananModel {
       persyaratan: persyaratan ?? this.persyaratan,
       urlPortal: urlPortal ?? this.urlPortal,
       iconName: iconName ?? this.iconName,
-      requiresNik: requiresNik ?? this.requiresNik,
-      requiresNama: requiresNama ?? this.requiresNama,
-      requiresNoKk: requiresNoKk ?? this.requiresNoKk,
-      requiresNoHp: requiresNoHp ?? this.requiresNoHp,
-      requiresKeterangan: requiresKeterangan ?? this.requiresKeterangan,
-      requiresUploadDokumen: requiresUploadDokumen ?? this.requiresUploadDokumen,
-      customFields: customFields ?? this.customFields,
+      formFields: formFields ?? this.formFields,
     );
   }
 }
