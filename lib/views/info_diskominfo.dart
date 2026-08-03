@@ -123,7 +123,7 @@ class _InfoDiskominfoState extends State<InfoDiskominfo> {
                             ),
                             child: Image.asset(
                               'assets/images/diskominfo.png',
-                              fit: BoxFit.cover,
+                              fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) => const Icon(
                                 Icons.computer_rounded,
                                 color: primaryColor,
