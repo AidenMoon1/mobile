@@ -1,5 +1,4 @@
 import '../models/user_model.dart';
-import 'api_service.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,6 +23,7 @@ class UserService {
     status: 'Kota Sukabumi',
     joinedDate: '16 Jul 2026',
     id: 'ID-1003',
+    profileImagePath: '',
   );
 
   UserModel get currentUser => _currentUser;
@@ -35,13 +35,14 @@ class UserService {
     if (userJson != null) {
       final Map<String, dynamic> data = jsonDecode(userJson);
       _currentUser = UserModel(
-        name: data['name'],
-        email: data['email'],
-        username: data['username'],
-        phoneNumber: data['phone'],
-        status: data['status'],
-        joinedDate: data['joined_date'],
-        id: data['user_id'],
+        name: data['name'] ?? 'mrn',
+        email: data['email'] ?? 'mrn@gmail.com',
+        username: data['username'] ?? 'mrn',
+        phoneNumber: data['phone'] ?? '081234567890',
+        status: data['status'] ?? 'Kota Sukabumi',
+        joinedDate: data['joined_date'] ?? '16 Jul 2026',
+        id: data['user_id'] ?? 'ID-1003',
+        profileImagePath: data['profile_image_path'] ?? '',
       );
     }
   }
@@ -57,41 +58,25 @@ class UserService {
       'status': user.status,
       'joined_date': user.joinedDate,
       'user_id': user.id,
+      'profile_image_path': user.profileImagePath,
     };
     await prefs.setString('user_profile', jsonEncode(data));
   }
 
-  Future<void> fetchUserProfile() async {
-    final response = await ApiService.get('profile');
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final updatedUser = UserModel(
-        name: data['name'] ?? _currentUser.name,
-        email: data['email'] ?? _currentUser.email,
-        username: data['username'] ?? _currentUser.username,
-        phoneNumber: data['phone'] ?? _currentUser.phoneNumber,
-        status: data['status'] ?? _currentUser.status,
-        joinedDate: data['joined_date'] ?? _currentUser.joinedDate,
-        id: data['user_id'] ?? _currentUser.id,
-      );
-      _currentUser = updatedUser;
-      await _saveToLocal(updatedUser);
-    }
+  // Fungsi untuk memperbarui profil di memori lokal dan backend API
+  Future<bool> updateProfile(UserModel updatedUser) async {
+    // 1. Update state lokal di memori
+    _currentUser = updatedUser;
+    
+    // 2. Simpan ke SharedPreferences HP
+    await _saveToLocal(updatedUser);
+
+    return true;
   }
 
-  Future<bool> updateProfile(UserModel updatedUser) async {
-    final payload = {
-      'name': updatedUser.name,
-      'email': updatedUser.email,
-      'phone': updatedUser.phoneNumber,
-    };
-
-    final response = await ApiService.post('profile/update', payload);
-    if (response.statusCode == 200) {
-      _currentUser = updatedUser;
-      await _saveToLocal(updatedUser);
-      return true;
-    }
-    return false;
+  // Fungsi Hapus Foto Profil
+  Future<void> removeProfileImage() async {
+    _currentUser = _currentUser.copyWith(profileImagePath: '');
+    await _saveToLocal(_currentUser);
   }
 }

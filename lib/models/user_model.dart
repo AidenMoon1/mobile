@@ -6,6 +6,7 @@ class UserModel {
   String status;
   String joinedDate;
   String id;
+  String profileImagePath;
 
   UserModel({
     required this.name,
@@ -15,6 +16,7 @@ class UserModel {
     required this.status,
     required this.joinedDate,
     required this.id,
+    this.profileImagePath = '',
   });
 
   // Salinan model untuk menghindari referensi yang sama saat editing
@@ -26,6 +28,7 @@ class UserModel {
     String? status,
     String? joinedDate,
     String? id,
+    String? profileImagePath,
   }) {
     return UserModel(
       name: name ?? this.name,
@@ -35,6 +38,7 @@ class UserModel {
       status: status ?? this.status,
       joinedDate: joinedDate ?? this.joinedDate,
       id: id ?? this.id,
+      profileImagePath: profileImagePath ?? this.profileImagePath,
     );
   }
 }
