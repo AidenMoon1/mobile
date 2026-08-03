@@ -25,8 +25,13 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
   final TextEditingController _noHpController = TextEditingController();
   final TextEditingController _keteranganController = TextEditingController();
 
+  String? _selectedFileName;
+  String? _selectedFileExtension;
   bool _fileTerunggah = false;
   bool _isSubmitting = false;
+
+  // Format berkas yang didukung (HANYA 3 FORMAT: JPG, PNG, JPEG)
+  final List<String> _allowedExtensions = const ['jpg', 'png', 'jpeg'];
 
   @override
   void dispose() {
@@ -38,27 +43,195 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
     super.dispose();
   }
 
-  void _simulasiUploadDokumen() {
+  void _bukaModalPilihDokumen() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Pilih File Dokumen Syarat',
+                style: TextStyle(
+                  fontSize: 16.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF123457),
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8A33D).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFE8A33D)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded, color: Color(0xFF123457), size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Format yang didukung: JPG, PNG, JPEG (Maks. 2MB)',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF123457),
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // PILIHAN SIMULASI FILE VALID & INVALID
+              _buildFileOptionTile(
+                fileName: 'dokumen_persyaratan.jpg',
+                fileExtension: 'jpg',
+                icon: Icons.image_rounded,
+                isSupported: true,
+              ),
+              _buildFileOptionTile(
+                fileName: 'scan_ktp_kk.png',
+                fileExtension: 'png',
+                icon: Icons.image_outlined,
+                isSupported: true,
+              ),
+              _buildFileOptionTile(
+                fileName: 'lampiran_berkas.jpeg',
+                fileExtension: 'jpeg',
+                icon: Icons.photo_library_rounded,
+                isSupported: true,
+              ),
+              _buildFileOptionTile(
+                fileName: 'berkas_pengajuan.pdf',
+                fileExtension: 'pdf',
+                icon: Icons.picture_as_pdf_rounded,
+                isSupported: false,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFileOptionTile({
+    required String fileName,
+    required String fileExtension,
+    required IconData icon,
+    required bool isSupported,
+  }) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isSupported ? const Color(0xFF123457).withOpacity(0.1) : Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: isSupported ? const Color(0xFF123457) : Colors.red),
+      ),
+      title: Text(
+        fileName,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Poppins',
+        ),
+      ),
+      subtitle: Text(
+        isSupported ? 'Format .${fileExtension.toUpperCase()} (Didukung)' : 'Format .${fileExtension.toUpperCase()} (Tidak Didukung)',
+        style: TextStyle(
+          fontSize: 11,
+          color: isSupported ? Colors.green.shade700 : Colors.red,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+        ),
+      ),
+      trailing: isSupported
+          ? const Icon(Icons.check_circle_outline_rounded, color: Colors.green)
+          : const Icon(Icons.cancel_outlined, color: Colors.red),
+      onTap: () {
+        Navigator.pop(context); // Tutup modal sheet
+        _prosesPilihanFile(fileName, fileExtension);
+      },
+    );
+  }
+
+  void _prosesPilihanFile(String fileName, String extension) {
+    final extLower = extension.toLowerCase();
+    if (!_allowedExtensions.contains(extLower)) {
+      // FORMAT TIDAK DIDUKUNG
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Format file .$extension tidak didukung! Hanya file JPG, PNG, dan JPEG yang dapat diunggah.',
+                  style: const TextStyle(fontFamily: 'Poppins', fontSize: 12.5),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    // FORMAT VALID (.JPG, .PNG, .JPEG)
     setState(() {
-      _fileTerunggah = !_fileTerunggah;
+      _selectedFileName = fileName;
+      _selectedFileExtension = extLower;
+      _fileTerunggah = true;
     });
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          _fileTerunggah ? 'Dokumen persyaratan berhasil diunggah!' : 'Dokumen dibatalkan.',
+          'Dokumen "$fileName" (Format .${extLower.toUpperCase()}) berhasil diunggah!',
+          style: const TextStyle(fontFamily: 'Poppins'),
         ),
-        backgroundColor: _fileTerunggah ? const Color(0xFF123457) : Colors.redAccent,
+        backgroundColor: const Color(0xFF123457),
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _hapusDokumen() {
+    setState(() {
+      _selectedFileName = null;
+      _selectedFileExtension = null;
+      _fileTerunggah = false;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Unggahan dokumen dibatalkan.', style: TextStyle(fontFamily: 'Poppins')),
+        backgroundColor: Colors.redAccent,
+        duration: Duration(seconds: 2),
       ),
     );
   }
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      if (!_fileTerunggah) {
+      if (!_fileTerunggah || _selectedFileName == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Harap unggah dokumen persyaratan terlebih dahulu!'),
+            content: Text('Harap unggah dokumen persyaratan (JPG, PNG, atau JPEG) terlebih dahulu!'),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -100,7 +273,7 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Permohonan "${widget.judulLayanan}" Anda telah berhasil dikirim dan terdaftar di sistem terpadu.',
+                  'Permohonan "${widget.judulLayanan}" Anda beserta dokumen ($_selectedFileName) telah berhasil dikirim dan terdaftar di sistem terpadu.',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 13, fontFamily: 'Poppins', color: Colors.black87),
                 ),
@@ -112,7 +285,7 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
-                    'No. Resi: RES-20260730-8912',
+                    'No. Resi: RES-20260803-9912',
                     style: TextStyle(
                       color: Color(0xFF123457),
                       fontWeight: FontWeight.bold,
@@ -309,23 +482,53 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // SEKSI UPLOAD DOKUMEN
-                    const Text(
-                      'Unggah Dokumen Syarat (PDF/JPG)',
+                    // SEKSI UPLOAD DOKUMEN (HANYA SUPPORT JPG, PNG, JPEG)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Unggah Dokumen Syarat',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: accentColor.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'JPG, PNG, JPEG',
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Hanya mendukung 3 format file gambar: .JPG, .PNG, .JPEG (Maks 2MB)',
                       style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
+                        fontSize: 11.5,
+                        color: Colors.grey.shade600,
                         fontFamily: 'Poppins',
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
                     GestureDetector(
-                      onTap: _simulasiUploadDokumen,
+                      onTap: _bukaModalPilihDokumen,
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
                         decoration: BoxDecoration(
                           color: _fileTerunggah ? const Color(0xFFE8F5E9) : Colors.white,
                           borderRadius: BorderRadius.circular(14),
@@ -335,7 +538,6 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
                           ),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               _fileTerunggah ? Icons.check_circle_rounded : Icons.cloud_upload_rounded,
@@ -343,15 +545,41 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
                               size: 28,
                             ),
                             const SizedBox(width: 12),
-                            Text(
-                              _fileTerunggah ? 'Dokumen Persyaratan Terunggah' : 'Pilih File Dokumen Syarat (Max 2MB)',
-                              style: TextStyle(
-                                color: _fileTerunggah ? Colors.green.shade800 : primaryColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                fontFamily: 'Poppins',
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _fileTerunggah ? (_selectedFileName ?? 'Dokumen Terunggah') : 'Pilih File Dokumen Syarat',
+                                    style: TextStyle(
+                                      color: _fileTerunggah ? Colors.green.shade900 : primaryColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _fileTerunggah
+                                        ? 'Format .${_selectedFileExtension?.toUpperCase()} (Valid)'
+                                        : 'Klik untuk memilih file (.jpg, .png, .jpeg)',
+                                    style: TextStyle(
+                                      color: _fileTerunggah ? Colors.green.shade700 : Colors.grey,
+                                      fontSize: 11,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+                            if (_fileTerunggah)
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                                onPressed: _hapusDokumen,
+                                tooltip: 'Hapus Dokumen',
+                              ),
                           ],
                         ),
                       ),
