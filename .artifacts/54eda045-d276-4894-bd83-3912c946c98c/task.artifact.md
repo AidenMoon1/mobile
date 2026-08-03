@@ -1,7 +1,10 @@
-- [x] Configure App for Physical Device Connection
-    - [x] Update `AndroidManifest.xml` to allow cleartext traffic
-    - [x] Update `api_service.dart` with local IP `13.13.13.216`
-- [x] Build New APK
-    - [x] Run `flutter build apk --release`
+- [x] Backend: Data Integration
+    - [x] Modify `permohonans` table migration (make fields nullable)
+    - [x] Run `php artisan migrate`
+    - [x] Create `PermohonanApiController`
+    - [x] Update `routes/api.php` with `permohonan` endpoint
+- [x] Frontend: Connect Forms to API
+    - [x] Update `FormPengajuanScreen.dart` to send data to server
+    - [x] Verify `ReportScreen.dart` connection
 - [x] Verification
-    - [x] Provide instructions for starting server with `--host=0.0.0.0`
+    - [x] Test form submission from phone to MySQL

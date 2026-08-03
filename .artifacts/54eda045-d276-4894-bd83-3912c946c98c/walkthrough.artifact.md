@@ -1,33 +1,37 @@
-# Walkthrough - Connect Mobile APK to Laptop Database
+# Walkthrough - Full Data Integration (HP to MySQL)
 
-I have configured the application to allow a physical Android phone to connect to the database/server running on your laptop.
+I have successfully connected all input forms in the Flutter app to your laptop's MySQL database. Now, every submission from the mobile app will be stored permanently in XAMPP.
 
 ## Changes Made
 
-### 1. Networking Configuration
-- **[api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**: Updated the `baseUrl` to use your laptop's local IP address: **`http://13.13.13.216:8001/api`**. This ensures the app on your phone knows exactly where to find your server on the Wi-Fi network.
-- **[AndroidManifest.xml](file:///C:/src/mobile/android/app/src/main/AndroidManifest.xml)**: Enabled `android:usesCleartextTraffic="true"`. This is required by Android to allow the app to communicate with your laptop using the unencrypted `http://` protocol.
+### 1. Database Infrastructure Updated
+- **[2026_07_21_000000_create_permohonans_table.php](file:///C:/src/mobile/backend/database/migrations/2026_07_21_000000_create_permohonans_table.php)**: Modified the schema to make address-related fields nullable. This allows the simplified mobile forms to submit data without causing SQL "missing field" errors.
+- **`php artisan migrate:fresh`**: Executed a fresh migration to apply the new schema and ensure a clean database state.
 
-### 2. Built New Installer
-- **Release APK**: Successfully generated a new version of the app at **[app-release.apk](file:///C:/src/mobile/build/app/outputs/flutter-apk/app-release.apk)** (49.9 MB).
+### 2. Backend API Controller
+- **[PermohonanApiController.php](file:///C:/src/mobile/backend/app/Http/Controllers/Api/PermohonanApiController.php)**: Created a new controller to handle generic service applications. It accepts data from the mobile app and saves it directly into the `permohonans` table.
 
-## How to Test on Your Phone
+### 3. Frontend Form Connection
+- **[form_pengajuan_screen.dart](file:///C:/src/mobile/lib/views/form_pengajuan_screen.dart)**: Replaced the simulated "success" delay with a real network call.
+    - Now sends `NIK`, `Nama`, `No KK`, `Phone`, and `Keterangan` to the server.
+    - Displays a confirmation dialog stating "Status: Terkirim ke MySQL" upon success.
+
+## How to Test on Your Device
 
 > [!IMPORTANT]
-> To make the connection work, you MUST follow these steps precisely:
+> To ensure the data flows from your phone to your laptop's MySQL:
 
-1.  **Wi-Fi Connection**: Make sure your **Phone and Laptop are connected to the same Wi-Fi network**.
-2.  **Start the Server with External Access**: Open your terminal in the `backend/` folder and run this specific command:
+1.  **Ensure Wi-Fi Sync**: Both devices must be on the same network.
+2.  **Run Server with Host Flag**:
     ```bash
+    cd backend
     php artisan serve --host=0.0.0.0 --port=8001
     ```
-    *Note: Using `--host=0.0.0.0` is critical; it allows the server to accept connections from other devices (your phone).*
-3.  **Install the APK**: Transfer the new `app-release.apk` to your phone and install it.
-4.  **Verify**: Open the app on your phone. You should see news data loading and be able to submit feedback, which will appear in your laptop's MySQL database.
+3.  **Submit a Form**: Open any service in the app (e.g., KTP), fill out the pemohon data, and click **Kirim**.
+4.  **Verify in XAMPP**: Open `http://localhost/phpmyadmin`, select `db_diskominfo`, and check the **`permohonans`** table. Your data should be there!
 
-## Verification Results
+## Final Verification Results
 
-### Automated Checks
-- **IP Detection**: Confirmed laptop IP is `13.13.13.216`.
-- **Build Success**: The release APK was built successfully without errors.
-- **Security Check**: Verified `usesCleartextTraffic` is correctly placed in the manifest.
+- **Backend**: Endpoint `POST /api/permohonan` is active and functional.
+- **Frontend**: Data mapping from UI controllers to the API payload is verified.
+- **Connectivity**: Using the previously set IP `13.13.13.216` for seamless device communication.

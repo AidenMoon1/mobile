@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'activity_log_screen.dart';
+import '../services/api_service.dart';
 
 class FormPengajuanScreen extends StatefulWidget {
   final String judulLayanan;
@@ -226,7 +227,7 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
     );
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (!_fileTerunggah || _selectedFileName == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -242,87 +243,119 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
         _isSubmitting = true;
       });
 
-      Future.delayed(const Duration(seconds: 2), () {
+      // Persiapan data untuk dikirim ke MySQL
+      final Map<String, dynamic> payload = {
+        'nama': _namaController.text,
+        'nik': _nikController.text,
+        'no_kk': _noKkController.text,
+        'phone': _noHpController.text,
+        'keterangan': _keteranganController.text,
+        'service_type': widget.judulLayanan,
+      };
+
+      try {
+        final response = await ApiService.post('permohonan', payload);
+        
         if (!mounted) return;
         setState(() {
           _isSubmitting = false;
         });
 
-        // Dialog Berhasil Kirim Berkas
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Column(
-              children: [
-                Icon(Icons.check_circle_rounded, color: Colors.green, size: 54),
-                SizedBox(height: 10),
-                Text(
-                  'Pengajuan Berhasil!',
-                  style: TextStyle(
-                    color: Color(0xFF123457),
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
-                ),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Permohonan "${widget.judulLayanan}" Anda beserta dokumen ($_selectedFileName) telah berhasil dikirim dan terdaftar di sistem terpadu.',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins', color: Colors.black87),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF123457).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'No. Resi: RES-20260803-9912',
+        if (response.statusCode == 201) {
+          // Dialog Berhasil Kirim Berkas
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Column(
+                children: [
+                  Icon(Icons.check_circle_rounded, color: Colors.green, size: 54),
+                  SizedBox(height: 10),
+                  Text(
+                    'Pengajuan Berhasil!',
                     style: TextStyle(
                       color: Color(0xFF123457),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
                       fontFamily: 'Poppins',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
                     ),
                   ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Permohonan "${widget.judulLayanan}" Anda telah berhasil disimpan di database pusat.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 13, fontFamily: 'Poppins', color: Colors.black87),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF123457).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'Status: Terkirim ke MySQL',
+                      style: TextStyle(
+                        color: Color(0xFF123457),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Tutup dialog
+                    Navigator.pop(context); // Kembali dari form
+                  },
+                  child: const Text('Tutup', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Tutup dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ActivityLogScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF123457),
+                    foregroundColor: const Color(0xFFE8A33D),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Cek Riwayat', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context); // Tutup dialog
-                  Navigator.pop(context); // Kembali dari form
-                },
-                child: const Text('Tutup', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Tutup dialog
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ActivityLogScreen()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF123457),
-                  foregroundColor: const Color(0xFFE8A33D),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                child: const Text('Cek Riwayat', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
-              ),
-            ],
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Gagal mengirim: ${response.reasonPhrase}'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      } catch (e) {
+        if (!mounted) return;
+        setState(() {
+          _isSubmitting = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error Koneksi: $e'),
+            backgroundColor: Colors.redAccent,
           ),
         );
-      });
+      }
     }
   }
 
