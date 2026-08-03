@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/instansi_model.dart';
 import '../../services/opd_service.dart';
+import '../../widgets/admin_image_picker.dart';
 
 class AdminFormInstansiScreen extends StatefulWidget {
   final InstansiModel? instansi;
@@ -190,11 +191,14 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
               ),
               const SizedBox(height: 12),
 
-              _buildInputField(
-                controller: _logoPathController,
-                label: 'Jalur File Logo Aset (.png)',
-                hint: 'assets/images/disduk.png',
-                validator: (val) => (val == null || val.isEmpty) ? 'Logo path wajib diisi' : null,
+              AdminImagePicker(
+                label: 'Logo / Foto Instansi OPD',
+                currentImagePath: _logoPathController.text,
+                onImageSelected: (path) {
+                  setState(() {
+                    _logoPathController.text = path;
+                  });
+                },
               ),
               const SizedBox(height: 16),
 

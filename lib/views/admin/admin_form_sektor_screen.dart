@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/sektor_model.dart';
 import '../../services/opd_service.dart';
+import '../../widgets/admin_image_picker.dart';
 
 class AdminFormSektorScreen extends StatefulWidget {
   final SektorModel? sektor;
@@ -121,11 +122,14 @@ class _AdminFormSektorScreenState extends State<AdminFormSektorScreen> {
               ),
               const SizedBox(height: 12),
 
-              _buildInputField(
-                controller: _imagePathController,
-                label: 'Jalur File Gambar Ikon Aset (.png)',
-                hint: 'assets/icon/keluarga.png',
-                validator: (val) => (val == null || val.isEmpty) ? 'Path gambar wajib diisi' : null,
+              AdminImagePicker(
+                label: 'Gambar Ikon Sektor Kategori',
+                currentImagePath: _imagePathController.text,
+                onImageSelected: (path) {
+                  setState(() {
+                    _imagePathController.text = path;
+                  });
+                },
               ),
               const SizedBox(height: 24),
 
