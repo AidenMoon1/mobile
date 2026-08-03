@@ -741,7 +741,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               _buildLifePhaseCard(
                                 context: context,
                                 title: 'Keluarga',
-                                icon: Icons.family_restroom_rounded,
+                                imagePath: 'assets/icon/keluarga.png',
+                                fallbackIcon: Icons.family_restroom_rounded,
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananKeluargaScreen()));
                                 },
@@ -749,7 +750,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               _buildLifePhaseCard(
                                 context: context,
                                 title: 'Pendidikan',
-                                icon: Icons.school_rounded,
+                                imagePath: 'assets/icon/pendidikan.png',
+                                fallbackIcon: Icons.school_rounded,
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
                                 },
@@ -757,7 +759,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               _buildLifePhaseCard(
                                 context: context,
                                 title: 'Usaha',
-                                icon: Icons.storefront_rounded,
+                                imagePath: 'assets/icon/usaha.png',
+                                fallbackIcon: Icons.storefront_rounded,
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananUsahaScreen()));
                                 },
@@ -765,7 +768,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               _buildLifePhaseCard(
                                 context: context,
                                 title: 'Lingkungan & Tempat ...',
-                                icon: Icons.home_work_rounded,
+                                imagePath: 'assets/icon/lingkungan.png',
+                                fallbackIcon: Icons.home_work_rounded,
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananLingkunganScreen()));
                                 },
@@ -773,7 +777,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               _buildLifePhaseCard(
                                 context: context,
                                 title: 'Kendaraan',
-                                icon: Icons.directions_car_rounded,
+                                imagePath: 'assets/icon/kendaraan.png',
+                                fallbackIcon: Icons.directions_car_rounded,
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
                                 },
@@ -781,7 +786,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               _buildLifePhaseCard(
                                 context: context,
                                 title: 'Kesehatan',
-                                icon: Icons.add_box_rounded,
+                                imagePath: 'assets/icon/kesehatan.png',
+                                fallbackIcon: Icons.local_hospital_rounded,
                                 onTap: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
                                 },
@@ -1217,7 +1223,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildLifePhaseCard({
     required BuildContext context,
     required String title,
-    required IconData icon,
+    String? imagePath,
+    required IconData fallbackIcon,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -1231,11 +1238,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Expanded(
               child: Center(
-                child: Icon(
-                  icon,
-                  color: const Color(0xFF0A1E33),
-                  size: 38,
-                ),
+                child: imagePath != null
+                    ? Image.asset(
+                        imagePath,
+                        width: 38,
+                        height: 38,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          fallbackIcon,
+                          color: const Color(0xFF0A1E33),
+                          size: 38,
+                        ),
+                      )
+                    : Icon(
+                        fallbackIcon,
+                        color: const Color(0xFF0A1E33),
+                        size: 38,
+                      ),
               ),
             ),
             Container(

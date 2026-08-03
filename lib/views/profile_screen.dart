@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'edit_profile_screen.dart';
-import 'activity_log_screen.dart';
 import 'terms_and_policy_screen.dart';
 import 'about_screen.dart';
 import 'feedback_screen.dart';
