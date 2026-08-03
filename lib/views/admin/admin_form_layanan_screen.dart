@@ -23,7 +23,16 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
   late TextEditingController _deskripsiController;
   late TextEditingController _urlPortalController;
 
+  // FLAGS KONFIGURASI FIELD PERMOHONAN DIGITAL OLEH ADMIN
+  bool _requiresNik = true;
+  bool _requiresNama = true;
+  bool _requiresNoKk = true;
+  bool _requiresNoHp = true;
+  bool _requiresKeterangan = true;
+  bool _requiresUploadDokumen = true;
+
   final List<TextEditingController> _persyaratanControllers = [];
+  final List<TextEditingController> _customFieldControllers = [];
 
   final List<String> _sektorOptions = const [
     'Keluarga',
@@ -57,9 +66,23 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
       text: item?.urlPortal ?? 'https://disdukcapil.sukabumikota.go.id',
     );
 
-    if (item != null && item.persyaratan.isNotEmpty) {
-      for (var req in item.persyaratan) {
-        _persyaratanControllers.add(TextEditingController(text: req));
+    if (item != null) {
+      _requiresNik = item.requiresNik;
+      _requiresNama = item.requiresNama;
+      _requiresNoKk = item.requiresNoKk;
+      _requiresNoHp = item.requiresNoHp;
+      _requiresKeterangan = item.requiresKeterangan;
+      _requiresUploadDokumen = item.requiresUploadDokumen;
+
+      if (item.persyaratan.isNotEmpty) {
+        for (var req in item.persyaratan) {
+          _persyaratanControllers.add(TextEditingController(text: req));
+        }
+      }
+      if (item.customFields.isNotEmpty) {
+        for (var cf in item.customFields) {
+          _customFieldControllers.add(TextEditingController(text: cf));
+        }
       }
     } else {
       _persyaratanControllers.add(TextEditingController(text: 'Fotokopi Kartu Keluarga (KK) terbaru.'));
@@ -75,6 +98,9 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     _deskripsiController.dispose();
     _urlPortalController.dispose();
     for (var c in _persyaratanControllers) {
+      c.dispose();
+    }
+    for (var c in _customFieldControllers) {
       c.dispose();
     }
     super.dispose();
@@ -95,9 +121,27 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     }
   }
 
+  void _tambahCustomFieldRow() {
+    setState(() {
+      _customFieldControllers.add(TextEditingController());
+    });
+  }
+
+  void _hapusCustomFieldRow(int index) {
+    setState(() {
+      _customFieldControllers[index].dispose();
+      _customFieldControllers.removeAt(index);
+    });
+  }
+
   void _simpanLayanan() {
     if (_formKey.currentState!.validate()) {
       final reqList = _persyaratanControllers
+          .map((c) => c.text.trim())
+          .where((text) => text.isNotEmpty)
+          .toList();
+
+      final cfList = _customFieldControllers
           .map((c) => c.text.trim())
           .where((text) => text.isNotEmpty)
           .toList();
@@ -115,6 +159,13 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
         persyaratan: reqList,
         urlPortal: _urlPortalController.text.trim(),
         iconName: 'description_outlined',
+        requiresNik: _requiresNik,
+        requiresNama: _requiresNama,
+        requiresNoKk: _requiresNoKk,
+        requiresNoHp: _requiresNoHp,
+        requiresKeterangan: _requiresKeterangan,
+        requiresUploadDokumen: _requiresUploadDokumen,
+        customFields: cfList,
       );
 
       if (isEdit) {
@@ -280,7 +331,124 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
                 hint: 'https://disdukcapil.sukabumikota.go.id',
                 validator: (val) => (val == null || val.isEmpty) ? 'Link portal wajib diisi' : null,
               ),
+              const SizedBox(height: 18),
+
+              // SEKSI BARU: KONFIGURASI FIELD FORMULIR PERMOHONAN OLEH ADMIN
+              _buildSectionHeader('Konfigurasi Field Formulir Permohonan Warga'),
+              const SizedBox(height: 4),
+              const Text(
+                'Pilih field apa saja yang wajib/muncul pada formulir permohonan warga untuk layanan ini.',
+                style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
+              ),
+              const SizedBox(height: 10),
+
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  children: [
+                    _buildSwitchTile(
+                      title: 'NIK Pemohon (16 Digit)',
+                      value: _requiresNik,
+                      onChanged: (val) => setState(() => _requiresNik = val),
+                    ),
+                    const Divider(height: 1),
+                    _buildSwitchTile(
+                      title: 'Nama Lengkap Pemohon',
+                      value: _requiresNama,
+                      onChanged: (val) => setState(() => _requiresNama = val),
+                    ),
+                    const Divider(height: 1),
+                    _buildSwitchTile(
+                      title: 'Nomor Kartu Keluarga (KK)',
+                      subtitle: 'Matikan jika permohonan ini tidak memerlukan No. KK',
+                      value: _requiresNoKk,
+                      onChanged: (val) => setState(() => _requiresNoKk = val),
+                    ),
+                    const Divider(height: 1),
+                    _buildSwitchTile(
+                      title: 'Nomor WhatsApp / HP',
+                      subtitle: 'Matikan jika permohonan ini tidak memerlukan No. HP',
+                      value: _requiresNoHp,
+                      onChanged: (val) => setState(() => _requiresNoHp = val),
+                    ),
+                    const Divider(height: 1),
+                    _buildSwitchTile(
+                      title: 'Keterangan / Alasan Permohonan',
+                      value: _requiresKeterangan,
+                      onChanged: (val) => setState(() => _requiresKeterangan = val),
+                    ),
+                    const Divider(height: 1),
+                    _buildSwitchTile(
+                      title: 'Unggah Dokumen Syarat (JPG, PNG, JPEG)',
+                      value: _requiresUploadDokumen,
+                      onChanged: (val) => setState(() => _requiresUploadDokumen = val),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 16),
+
+              // SEKSI FIELD KUSTOM TAMBAHAN
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Field Isian Kustom Tambahan',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                  ),
+                  TextButton.icon(
+                    onPressed: _tambahCustomFieldRow,
+                    icon: const Icon(Icons.add_circle_outline_rounded, color: primaryColor, size: 18),
+                    label: const Text(
+                      'Tambah Field Kustom',
+                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                    ),
+                  ),
+                ],
+              ),
+              if (_customFieldControllers.isNotEmpty)
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _customFieldControllers.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _customFieldControllers[index],
+                              style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
+                              decoration: InputDecoration(
+                                hintText: 'Contoh: Alamat Tempat Usaha / Jenis Usaha',
+                                hintStyle: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Poppins'),
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 22),
+                            onPressed: () => _hapusCustomFieldRow(index),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+              const SizedBox(height: 20),
 
               // SEKSI SYARAT & DOKUMEN DINAMIS
               Row(
@@ -382,6 +550,39 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSwitchTile({
+    required String title,
+    String? subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    const Color primaryColor = Color(0xFF123457);
+    const Color accentColor = Color(0xFFE8A33D);
+
+    return SwitchListTile(
+      value: value,
+      onChanged: onChanged,
+      activeColor: accentColor,
+      activeTrackColor: primaryColor.withOpacity(0.2),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          color: primaryColor,
+          fontFamily: 'Poppins',
+        ),
+      ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: const TextStyle(fontSize: 10.5, color: Colors.grey, fontFamily: 'Poppins'),
+            )
+          : null,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
     );
   }
 

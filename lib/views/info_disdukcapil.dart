@@ -408,6 +408,7 @@ class _InfoDisdukcapilState extends State<InfoDisdukcapil> {
                                         subjudul: item.subjudul,
                                         deskripsiTentang: item.deskripsi,
                                         persyaratan: item.persyaratan,
+                                        layananModel: item,
                                       ),
                                     ),
                                   );

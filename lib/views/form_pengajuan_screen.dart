@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import '../models/layanan_model.dart';
 import 'activity_log_screen.dart';
 
 class FormPengajuanScreen extends StatefulWidget {
   final String judulLayanan;
   final String deskripsi;
   final IconData icon;
+  final LayananModel? layananModel;
 
   const FormPengajuanScreen({
     super.key,
     required this.judulLayanan,
     required this.deskripsi,
     required this.icon,
+    this.layananModel,
   });
 
   @override
@@ -25,13 +28,31 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
   final TextEditingController _noHpController = TextEditingController();
   final TextEditingController _keteranganController = TextEditingController();
 
+  final Map<String, TextEditingController> _customControllers = {};
+
   String? _selectedFileName;
   String? _selectedFileExtension;
   bool _fileTerunggah = false;
   bool _isSubmitting = false;
 
-  // Format berkas yang didukung (HANYA 3 FORMAT: JPG, PNG, JPEG)
   final List<String> _allowedExtensions = const ['jpg', 'png', 'jpeg'];
+
+  // KONFIGURASI FIELD DARI ADMIN (JIKA ADA LAYANAN MODEL)
+  bool get requiresNik => widget.layananModel?.requiresNik ?? true;
+  bool get requiresNama => widget.layananModel?.requiresNama ?? true;
+  bool get requiresNoKk => widget.layananModel?.requiresNoKk ?? true;
+  bool get requiresNoHp => widget.layananModel?.requiresNoHp ?? true;
+  bool get requiresKeterangan => widget.layananModel?.requiresKeterangan ?? true;
+  bool get requiresUploadDokumen => widget.layananModel?.requiresUploadDokumen ?? true;
+  List<String> get customFields => widget.layananModel?.customFields ?? const [];
+
+  @override
+  void initState() {
+    super.initState();
+    for (var cf in customFields) {
+      _customControllers[cf] = TextEditingController();
+    }
+  }
 
   @override
   void dispose() {
@@ -40,6 +61,9 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
     _noKkController.dispose();
     _noHpController.dispose();
     _keteranganController.dispose();
+    for (var c in _customControllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -93,7 +117,6 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
               ),
               const SizedBox(height: 16),
 
-              // PILIHAN SIMULASI FILE VALID & INVALID
               _buildFileOptionTile(
                 fileName: 'dokumen_persyaratan.jpg',
                 fileExtension: 'jpg',
@@ -161,7 +184,7 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
           ? const Icon(Icons.check_circle_outline_rounded, color: Colors.green)
           : const Icon(Icons.cancel_outlined, color: Colors.red),
       onTap: () {
-        Navigator.pop(context); // Tutup modal sheet
+        Navigator.pop(context);
         _prosesPilihanFile(fileName, fileExtension);
       },
     );
@@ -170,7 +193,6 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
   void _prosesPilihanFile(String fileName, String extension) {
     final extLower = extension.toLowerCase();
     if (!_allowedExtensions.contains(extLower)) {
-      // FORMAT TIDAK DIDUKUNG
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -192,7 +214,6 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
       return;
     }
 
-    // FORMAT VALID (.JPG, .PNG, .JPEG)
     setState(() {
       _selectedFileName = fileName;
       _selectedFileExtension = extLower;
@@ -228,7 +249,7 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      if (!_fileTerunggah || _selectedFileName == null) {
+      if (requiresUploadDokumen && (!_fileTerunggah || _selectedFileName == null)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Harap unggah dokumen persyaratan (JPG, PNG, atau JPEG) terlebih dahulu!'),
@@ -248,7 +269,8 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
           _isSubmitting = false;
         });
 
-        // Dialog Berhasil Kirim Berkas
+        final docText = _selectedFileName != null ? ' beserta dokumen ($_selectedFileName)' : '';
+
         showDialog(
           context: context,
           barrierDismissible: false,
@@ -273,7 +295,7 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Permohonan "${widget.judulLayanan}" Anda beserta dokumen ($_selectedFileName) telah berhasil dikirim dan terdaftar di sistem terpadu.',
+                  'Permohonan "${widget.judulLayanan}" Anda$docText telah berhasil dikirim dan terdaftar di sistem terpadu.',
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 13, fontFamily: 'Poppins', color: Colors.black87),
                 ),
@@ -299,14 +321,14 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // Tutup dialog
-                  Navigator.pop(context); // Kembali dari form
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                 },
                 child: const Text('Tutup', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context); // Tutup dialog
+                  Navigator.pop(context);
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const ActivityLogScreen()),
@@ -419,173 +441,200 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Pastikan data diri yang Anda masukkan sudah sesuai dengan data KTP/KK resmi.',
+                      'Isi data formulir yang diperlukan sesuai identitas resmi Anda.',
                       style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
                     ),
                     const SizedBox(height: 16),
 
-                    // INPUT NIK
-                    _buildTextField(
-                      controller: _nikController,
-                      label: 'NIK Pemohon (16 Digit)',
-                      hint: 'Masukkan 16 angka NIK',
-                      icon: Icons.badge_outlined,
-                      keyboardType: TextInputType.number,
-                      validator: (val) {
-                        if (val == null || val.isEmpty) return 'NIK wajib diisi';
-                        if (val.length < 16) return 'NIK harus 16 digit';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
+                    // INPUT NIK (DINAMIS SENSITIF KONFIGURASI ADMIN)
+                    if (requiresNik) ...[
+                      _buildTextField(
+                        controller: _nikController,
+                        label: 'NIK Pemohon (16 Digit)',
+                        hint: 'Masukkan 16 angka NIK',
+                        icon: Icons.badge_outlined,
+                        keyboardType: TextInputType.number,
+                        validator: (val) {
+                          if (val == null || val.isEmpty) return 'NIK wajib diisi';
+                          if (val.length < 16) return 'NIK harus 16 digit';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 14),
+                    ],
 
-                    // INPUT NAMA LENGKAP
-                    _buildTextField(
-                      controller: _namaController,
-                      label: 'Nama Lengkap',
-                      hint: 'Sesuai KTP / Akta',
-                      icon: Icons.person_outline_rounded,
-                      validator: (val) => (val == null || val.isEmpty) ? 'Nama lengkap wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 14),
+                    // INPUT NAMA LENGKAP (DINAMIS SENSITIF KONFIGURASI ADMIN)
+                    if (requiresNama) ...[
+                      _buildTextField(
+                        controller: _namaController,
+                        label: 'Nama Lengkap',
+                        hint: 'Sesuai KTP / Akta',
+                        icon: Icons.person_outline_rounded,
+                        validator: (val) => (val == null || val.isEmpty) ? 'Nama lengkap wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 14),
+                    ],
 
-                    // INPUT NO KK
-                    _buildTextField(
-                      controller: _noKkController,
-                      label: 'Nomor Kartu Keluarga (KK)',
-                      hint: 'Masukkan 16 angka No. KK',
-                      icon: Icons.family_restroom_outlined,
-                      keyboardType: TextInputType.number,
-                      validator: (val) => (val == null || val.isEmpty) ? 'Nomor KK wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 14),
+                    // INPUT NO KK (DINAMIS SENSITIF KONFIGURASI ADMIN)
+                    if (requiresNoKk) ...[
+                      _buildTextField(
+                        controller: _noKkController,
+                        label: 'Nomor Kartu Keluarga (KK)',
+                        hint: 'Masukkan 16 angka No. KK',
+                        icon: Icons.family_restroom_outlined,
+                        keyboardType: TextInputType.number,
+                        validator: (val) => (val == null || val.isEmpty) ? 'Nomor KK wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 14),
+                    ],
 
-                    // INPUT NO HP / WA
-                    _buildTextField(
-                      controller: _noHpController,
-                      label: 'Nomor WhatsApp / HP',
-                      hint: 'Contoh: 081234567890',
-                      icon: Icons.phone_android_rounded,
-                      keyboardType: TextInputType.phone,
-                      validator: (val) => (val == null || val.isEmpty) ? 'Nomor HP wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 14),
+                    // INPUT NO HP / WA (DINAMIS SENSITIF KONFIGURASI ADMIN)
+                    if (requiresNoHp) ...[
+                      _buildTextField(
+                        controller: _noHpController,
+                        label: 'Nomor WhatsApp / HP',
+                        hint: 'Contoh: 081234567890',
+                        icon: Icons.phone_android_rounded,
+                        keyboardType: TextInputType.phone,
+                        validator: (val) => (val == null || val.isEmpty) ? 'Nomor HP wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 14),
+                    ],
 
-                    // INPUT ALASAN / KETERANGAN
-                    _buildTextField(
-                      controller: _keteranganController,
-                      label: 'Keterangan / Alasan Permohonan',
-                      hint: 'Jelaskan keperluan permohonan Anda...',
-                      icon: Icons.notes_rounded,
-                      maxLines: 3,
-                      validator: (val) => (val == null || val.isEmpty) ? 'Keterangan wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // SEKSI UPLOAD DOKUMEN (HANYA SUPPORT JPG, PNG, JPEG)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Unggah Dokumen Syarat',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                            fontFamily: 'Poppins',
+                    // INPUT FIELD KUSTOM BUATAN ADMIN
+                    if (customFields.isNotEmpty)
+                      ...customFields.map((fieldTitle) {
+                        final ctrl = _customControllers[fieldTitle] ?? TextEditingController();
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14.0),
+                          child: _buildTextField(
+                            controller: ctrl,
+                            label: fieldTitle,
+                            hint: 'Masukkan $fieldTitle...',
+                            icon: Icons.edit_note_rounded,
+                            validator: (val) => (val == null || val.isEmpty) ? '$fieldTitle wajib diisi' : null,
                           ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'JPG, PNG, JPEG',
+                        );
+                      }),
+
+                    // INPUT ALASAN / KETERANGAN (DINAMIS SENSITIF KONFIGURASI ADMIN)
+                    if (requiresKeterangan) ...[
+                      _buildTextField(
+                        controller: _keteranganController,
+                        label: 'Keterangan / Alasan Permohonan',
+                        hint: 'Jelaskan keperluan permohonan Anda...',
+                        icon: Icons.notes_rounded,
+                        maxLines: 3,
+                        validator: (val) => (val == null || val.isEmpty) ? 'Keterangan wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // SEKSI UPLOAD DOKUMEN (DINAMIS SENSITIF KONFIGURASI ADMIN)
+                    if (requiresUploadDokumen) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Unggah Dokumen Syarat',
                             style: TextStyle(
-                              color: primaryColor,
-                              fontSize: 10.5,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
+                              color: primaryColor,
                               fontFamily: 'Poppins',
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Hanya mendukung 3 format file gambar: .JPG, .PNG, .JPEG (Maks 2MB)',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: Colors.grey.shade600,
-                        fontFamily: 'Poppins',
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: accentColor.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'JPG, PNG, JPEG',
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 10),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Hanya mendukung 3 format file gambar: .JPG, .PNG, .JPEG (Maks 2MB)',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.grey.shade600,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      const SizedBox(height: 10),
 
-                    GestureDetector(
-                      onTap: _bukaModalPilihDokumen,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: _fileTerunggah ? const Color(0xFFE8F5E9) : Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: _fileTerunggah ? Colors.green : primaryColor.withOpacity(0.3),
-                            width: 1.5,
+                      GestureDetector(
+                        onTap: _bukaModalPilihDokumen,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: _fileTerunggah ? const Color(0xFFE8F5E9) : Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: _fileTerunggah ? Colors.green : primaryColor.withOpacity(0.3),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                _fileTerunggah ? Icons.check_circle_rounded : Icons.cloud_upload_rounded,
+                                color: _fileTerunggah ? Colors.green : primaryColor,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _fileTerunggah ? (_selectedFileName ?? 'Dokumen Terunggah') : 'Pilih File Dokumen Syarat',
+                                      style: TextStyle(
+                                        color: _fileTerunggah ? Colors.green.shade900 : primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _fileTerunggah
+                                          ? 'Format .${_selectedFileExtension?.toUpperCase()} (Valid)'
+                                          : 'Klik untuk memilih file (.jpg, .png, .jpeg)',
+                                      style: TextStyle(
+                                        color: _fileTerunggah ? Colors.green.shade700 : Colors.grey,
+                                        fontSize: 11,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (_fileTerunggah)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                                  onPressed: _hapusDokumen,
+                                  tooltip: 'Hapus Dokumen',
+                                ),
+                            ],
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              _fileTerunggah ? Icons.check_circle_rounded : Icons.cloud_upload_rounded,
-                              color: _fileTerunggah ? Colors.green : primaryColor,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _fileTerunggah ? (_selectedFileName ?? 'Dokumen Terunggah') : 'Pilih File Dokumen Syarat',
-                                    style: TextStyle(
-                                      color: _fileTerunggah ? Colors.green.shade900 : primaryColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _fileTerunggah
-                                        ? 'Format .${_selectedFileExtension?.toUpperCase()} (Valid)'
-                                        : 'Klik untuk memilih file (.jpg, .png, .jpeg)',
-                                    style: TextStyle(
-                                      color: _fileTerunggah ? Colors.green.shade700 : Colors.grey,
-                                      fontSize: 11,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (_fileTerunggah)
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                                onPressed: _hapusDokumen,
-                                tooltip: 'Hapus Dokumen',
-                              ),
-                          ],
-                        ),
                       ),
-                    ),
-
-                    const SizedBox(height: 28),
+                      const SizedBox(height: 28),
+                    ],
 
                     // TOMBOL SUBMIT FORUM
                     SizedBox(

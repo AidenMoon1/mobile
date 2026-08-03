@@ -8,7 +8,16 @@ class LayananModel {
   final String deskripsi;
   final List<String> persyaratan;
   final String urlPortal;
-  final String iconName; // asset path or icon identifier
+  final String iconName;
+
+  // KONFIGURASI FIELD FORMULIR PERMOHONAN OLEH ADMIN
+  final bool requiresNik;
+  final bool requiresNama;
+  final bool requiresNoKk;
+  final bool requiresNoHp;
+  final bool requiresKeterangan;
+  final bool requiresUploadDokumen;
+  final List<String> customFields;
 
   LayananModel({
     required this.id,
@@ -21,6 +30,13 @@ class LayananModel {
     required this.persyaratan,
     required this.urlPortal,
     required this.iconName,
+    this.requiresNik = true,
+    this.requiresNama = true,
+    this.requiresNoKk = true,
+    this.requiresNoHp = true,
+    this.requiresKeterangan = true,
+    this.requiresUploadDokumen = true,
+    this.customFields = const [],
   });
 
   Map<String, dynamic> toMap() {
@@ -35,6 +51,13 @@ class LayananModel {
       'persyaratanJson': persyaratan.join('|||'),
       'urlPortal': urlPortal,
       'iconName': iconName,
+      'requiresNik': requiresNik ? 1 : 0,
+      'requiresNama': requiresNama ? 1 : 0,
+      'requiresNoKk': requiresNoKk ? 1 : 0,
+      'requiresNoHp': requiresNoHp ? 1 : 0,
+      'requiresKeterangan': requiresKeterangan ? 1 : 0,
+      'requiresUploadDokumen': requiresUploadDokumen ? 1 : 0,
+      'customFieldsJson': customFields.join('|||'),
     };
   }
 
@@ -43,6 +66,12 @@ class LayananModel {
     if (map['persyaratanJson'] != null && map['persyaratanJson'].toString().isNotEmpty) {
       reqList = map['persyaratanJson'].toString().split('|||');
     }
+
+    List<String> cfList = [];
+    if (map['customFieldsJson'] != null && map['customFieldsJson'].toString().isNotEmpty) {
+      cfList = map['customFieldsJson'].toString().split('|||');
+    }
+
     return LayananModel(
       id: map['id'] ?? '',
       kodeInstansi: map['kodeInstansi'] ?? '',
@@ -54,6 +83,13 @@ class LayananModel {
       persyaratan: reqList,
       urlPortal: map['urlPortal'] ?? '',
       iconName: map['iconName'] ?? '',
+      requiresNik: map['requiresNik'] == 1 || map['requiresNik'] == true || map['requiresNik'] == null,
+      requiresNama: map['requiresNama'] == 1 || map['requiresNama'] == true || map['requiresNama'] == null,
+      requiresNoKk: map['requiresNoKk'] == 1 || map['requiresNoKk'] == true || map['requiresNoKk'] == null,
+      requiresNoHp: map['requiresNoHp'] == 1 || map['requiresNoHp'] == true || map['requiresNoHp'] == null,
+      requiresKeterangan: map['requiresKeterangan'] == 1 || map['requiresKeterangan'] == true || map['requiresKeterangan'] == null,
+      requiresUploadDokumen: map['requiresUploadDokumen'] == 1 || map['requiresUploadDokumen'] == true || map['requiresUploadDokumen'] == null,
+      customFields: cfList,
     );
   }
 
@@ -68,6 +104,13 @@ class LayananModel {
     List<String>? persyaratan,
     String? urlPortal,
     String? iconName,
+    bool? requiresNik,
+    bool? requiresNama,
+    bool? requiresNoKk,
+    bool? requiresNoHp,
+    bool? requiresKeterangan,
+    bool? requiresUploadDokumen,
+    List<String>? customFields,
   }) {
     return LayananModel(
       id: id ?? this.id,
@@ -80,6 +123,13 @@ class LayananModel {
       persyaratan: persyaratan ?? this.persyaratan,
       urlPortal: urlPortal ?? this.urlPortal,
       iconName: iconName ?? this.iconName,
+      requiresNik: requiresNik ?? this.requiresNik,
+      requiresNama: requiresNama ?? this.requiresNama,
+      requiresNoKk: requiresNoKk ?? this.requiresNoKk,
+      requiresNoHp: requiresNoHp ?? this.requiresNoHp,
+      requiresKeterangan: requiresKeterangan ?? this.requiresKeterangan,
+      requiresUploadDokumen: requiresUploadDokumen ?? this.requiresUploadDokumen,
+      customFields: customFields ?? this.customFields,
     );
   }
 }
