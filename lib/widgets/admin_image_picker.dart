@@ -85,13 +85,17 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Pilih / Unggah ${widget.label}',
-                    style: const TextStyle(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF123457),
-                      fontFamily: 'Poppins',
+                  Expanded(
+                    child: Text(
+                      'Pilih / Unggah ${widget.label}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF123457),
+                        fontFamily: 'Poppins',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   IconButton(

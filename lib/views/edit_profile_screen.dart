@@ -172,7 +172,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 12),
               AdminImagePicker(
-                label: 'Path Foto Profil / URL Gambar',
+                label: 'Foto Profil',
                 currentImagePath: user.profileImagePath,
                 onImageSelected: (path) async {
                   final messenger = ScaffoldMessenger.of(context);
