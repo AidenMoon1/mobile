@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../services/opd_service.dart';
 import 'admin_instansi_list_screen.dart';
-import 'admin_layanan_list_screen.dart';
 import 'admin_form_instansi_screen.dart';
+import 'admin_layanan_list_screen.dart';
 import 'admin_form_layanan_screen.dart';
+import 'admin_sektor_list_screen.dart';
+import 'admin_form_sektor_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -38,6 +40,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     final totalInstansi = _opdService.getInstansiList().length;
     final totalLayanan = _opdService.getLayananList().length;
+    final totalSektor = _opdService.getSektorList().length;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
@@ -49,7 +52,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Panel Kelola Admin',
+          'Pusat Kontrol Admin',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -59,258 +62,229 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // HERO BANNER ADMIN
+            // BANNER PERNYATAAN KONTROL ADMIN
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [primaryColor, Color(0xFF1E4B7A)],
+                  colors: [primaryColor, Color(0xFF1A4570)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x30000000),
-                    blurRadius: 8,
+                    color: Color(0x20000000),
+                    blurRadius: 10,
                     offset: Offset(0, 4),
                   )
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: accentColor,
-                          borderRadius: BorderRadius.circular(12),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.admin_panel_settings_rounded, color: accentColor, size: 36),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Panel Manajemen Terpadu',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                          ),
                         ),
-                        child: const Icon(Icons.admin_panel_settings_rounded, color: primaryColor, size: 28),
-                      ),
-                      const SizedBox(width: 14),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Pusat Kontrol SuperAdmin',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Kelola Instansi OPD & Layanan Publik Kota Sukabumi secara bebas & fleksibel.',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11.5,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ],
+                        SizedBox(height: 4),
+                        Text(
+                          'Kelola Instansi OPD, Layanan Publik, Form Builder, & Sektor secara fleksibel realtime.',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                            fontFamily: 'Poppins',
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 20),
 
-            // RINGKASAN STATISTIK DUA KARTU
+            // CARD STATISTIK UTAMA
+            const Text(
+              'Ringkasan Data Terdaftar',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: primaryColor,
+                fontFamily: 'Poppins',
+              ),
+            ),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: primaryColor.withOpacity(0.2)),
-                      boxShadow: const [
-                        BoxShadow(color: Color(0x0A000000), blurRadius: 6, offset: Offset(0, 3)),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.account_balance_rounded, color: primaryColor, size: 30),
-                        const SizedBox(height: 10),
-                        Text(
-                          '$totalInstansi',
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                        const Text(
-                          'Total Instansi OPD',
-                          style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
-                        ),
-                      ],
-                    ),
+                  child: _buildStatCard(
+                    title: 'Total OPD',
+                    count: '$totalInstansi',
+                    icon: Icons.account_balance_rounded,
+                    color: primaryColor,
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 10),
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: accentColor.withOpacity(0.4)),
-                      boxShadow: const [
-                        BoxShadow(color: Color(0x0A000000), blurRadius: 6, offset: Offset(0, 3)),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.miscellaneous_services_rounded, color: accentColor, size: 30),
-                        const SizedBox(height: 10),
-                        Text(
-                          '$totalLayanan',
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                        const Text(
-                          'Total Layanan Publik',
-                          style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
-                        ),
-                      ],
-                    ),
+                  child: _buildStatCard(
+                    title: 'Total Layanan',
+                    count: '$totalLayanan',
+                    icon: Icons.miscellaneous_services_rounded,
+                    color: accentColor,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _buildStatCard(
+                    title: 'Total Sektor',
+                    count: '$totalSektor',
+                    icon: Icons.category_rounded,
+                    color: Colors.teal,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
+            // MENU MANAGEMENT CARDS
             const Text(
-              'Menu Manajemen Utama',
+              'Menu Kelola Data',
               style: TextStyle(
-                fontSize: 16.5,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: primaryColor,
                 fontFamily: 'Poppins',
               ),
             ),
+            const SizedBox(height: 10),
+
+            // 1. KELOLA SEKTOR (FASE KEHIDUPAN)
+            _buildAdminMenuTile(
+              title: 'Kelola Sektor (Fase Kehidupan)',
+              subtitle: 'Tambah, edit, atau hapus kategori sektor fase kehidupan.',
+              icon: Icons.category_rounded,
+              onTapList: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminSektorListScreen()),
+                );
+              },
+              onTapAdd: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminFormSektorScreen()),
+                );
+              },
+            ),
             const SizedBox(height: 12),
 
-            // KARTU AKSI 1: KELOLA INSTANSI
+            // 2. KELOLA INSTANSI (OPD)
             _buildAdminMenuTile(
               title: 'Kelola Instansi (OPD)',
-              subtitle: 'Tambah, edit detail jam operasional/kontak, atau hapus instansi dinas.',
-              icon: Icons.business_center_rounded,
-              color: primaryColor,
-              onTap: () {
+              subtitle: 'Tambah, edit, atau hapus data instansi dinas.',
+              icon: Icons.account_balance_rounded,
+              onTapList: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AdminInstansiListScreen()),
                 );
               },
+              onTapAdd: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminFormInstansiScreen()),
+                );
+              },
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
 
-            // KARTU AKSI 2: KELOLA LAYANAN PUBLIK
+            // 3. KELOLA LAYANAN PUBLIK
             _buildAdminMenuTile(
               title: 'Kelola Layanan Publik',
-              subtitle: 'Tambah layanan baru (e.g. KTP, KK, NIB), edit syarat & deskripsi, atau hapus.',
-              icon: Icons.cleaning_services_rounded,
-              color: accentColor,
-              onTap: () {
+              subtitle: 'Tambah, edit, atau hapus layanan & konfigurasi Form Builder.',
+              icon: Icons.design_services_rounded,
+              onTapList: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const AdminLayananListScreen()),
                 );
               },
+              onTapAdd: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminFormLayananScreen()),
+                );
+              },
             ),
-            const SizedBox(height: 24),
-
-            const Text(
-              'Aksi Cepat (+)',
-              style: TextStyle(
-                fontSize: 16.5,
-                fontWeight: FontWeight.bold,
-                color: primaryColor,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AdminFormInstansiScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.add_rounded, color: Colors.white),
-                    label: const Text(
-                      'Instansi Baru',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Poppins',
-                        color: Colors.white,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AdminFormLayananScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.post_add_rounded, color: primaryColor),
-                    label: const Text(
-                      'Layanan Baru',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Poppins',
-                        color: primaryColor,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accentColor,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 30),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String count,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade300, width: 1.2),
+        boxShadow: const [
+          BoxShadow(color: Color(0x08000000), blurRadius: 4, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: color,
+              fontFamily: 'Poppins',
+            ),
+          ),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 11,
+              color: Colors.grey,
+              fontFamily: 'Poppins',
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -319,58 +293,96 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     required String title,
     required String subtitle,
     required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
+    required VoidCallback onTapList,
+    required VoidCallback onTapAdd,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Colors.grey.shade300, width: 1.2),
-          boxShadow: const [
-            BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 3)),
-          ],
-        ),
-        child: Row(
+    const Color primaryColor = Color(0xFF123457);
+    const Color accentColor = Color(0xFFE8A33D);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade300, width: 1.2),
+        boxShadow: const [
+          BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 3)),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14.0),
+        child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 30),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: primaryColor, size: 26),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.grey.shade700,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF123457),
-                      fontFamily: 'Poppins',
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onTapList,
+                    icon: const Icon(Icons.list_alt_rounded, size: 18),
+                    label: const Text('Daftar Data', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: primaryColor,
+                      side: BorderSide(color: primaryColor.withOpacity(0.3)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: Colors.grey.shade600,
-                      fontFamily: 'Poppins',
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: onTapAdd,
+                    icon: const Icon(Icons.add_rounded, size: 18),
+                    label: const Text('Tambah Baru (+)', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: accentColor,
+                      foregroundColor: primaryColor,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            Icon(Icons.chevron_right_rounded, color: Colors.grey.shade600, size: 26),
           ],
         ),
       ),

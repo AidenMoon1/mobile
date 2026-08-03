@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/instansi_model.dart';
 import '../models/layanan_model.dart';
 import '../models/custom_field_config.dart';
+import '../models/sektor_model.dart';
 
 class OpdService extends ChangeNotifier {
   static final OpdService _instance = OpdService._internal();
@@ -13,12 +14,88 @@ class OpdService extends ChangeNotifier {
 
   final List<InstansiModel> _instansiList = [];
   final List<LayananModel> _layananList = [];
+  final List<SektorModel> _sektorList = [];
 
   List<InstansiModel> get instansiList => List.unmodifiable(_instansiList);
   List<LayananModel> get layananList => List.unmodifiable(_layananList);
+  List<SektorModel> get sektorList => List.unmodifiable(_sektorList);
 
   void _initDefaultData() {
     if (_instansiList.isNotEmpty) return;
+
+    // Seed 10 Sektor Kategori Utama (Fase Kehidupan)
+    _sektorList.addAll([
+      SektorModel(
+        id: 's1',
+        title: 'Keluarga',
+        imagePath: 'assets/icon/keluarga.png',
+        desc: 'Administrasi Kependudukan, Pernikahan, KK & Akta',
+        iconName: 'family_restroom_rounded',
+      ),
+      SektorModel(
+        id: 's2',
+        title: 'Pendidikan',
+        imagePath: 'assets/icon/pendidikan.png',
+        desc: 'Beasiswa, PPDB, Pendaftaran Sekolah',
+        iconName: 'school_rounded',
+      ),
+      SektorModel(
+        id: 's3',
+        title: 'Usaha',
+        imagePath: 'assets/icon/usaha.png',
+        desc: 'Izin Usaha, NIB, UMKM Kota Sukabumi',
+        iconName: 'store_rounded',
+      ),
+      SektorModel(
+        id: 's4',
+        title: 'Lingkungan & Tempat Tinggal',
+        imagePath: 'assets/icon/lingkungan.png',
+        desc: 'PBB, Kebersihan, Izin Bangunan (PBG)',
+        iconName: 'home_work_rounded',
+      ),
+      SektorModel(
+        id: 's5',
+        title: 'Kendaraan',
+        imagePath: 'assets/icon/kendaraan.png',
+        desc: 'Pajak Kendaraan, SIM, Uji KIR',
+        iconName: 'directions_car_rounded',
+      ),
+      SektorModel(
+        id: 's6',
+        title: 'Kesehatan',
+        imagePath: 'assets/icon/kesehatan.png',
+        desc: 'BPJS, Puskesmas, Antrean RSUD',
+        iconName: 'local_hospital_rounded',
+      ),
+      SektorModel(
+        id: 's7',
+        title: 'Tanggap Darurat',
+        imagePath: 'assets/icon/tanggapdarurat.png',
+        desc: 'BPBD, Pemadam Kebakaran, Ambulans 112',
+        iconName: 'warning_amber_rounded',
+      ),
+      SektorModel(
+        id: 's8',
+        title: 'Karier',
+        imagePath: 'assets/icon/karier.png',
+        desc: 'Lowongan Kerja, Pelatihan Disnaker',
+        iconName: 'work_rounded',
+      ),
+      SektorModel(
+        id: 's9',
+        title: 'Rekreasi',
+        imagePath: 'assets/icon/rekreasi.png',
+        desc: 'Wisata Kota, Fasilitas Olahraga & Taman',
+        iconName: 'sports_soccer_rounded',
+      ),
+      SektorModel(
+        id: 's10',
+        title: 'Sosial & Hukum',
+        imagePath: 'assets/icon/sosialhukum.png',
+        desc: 'Bantuan Sosial, Konsultasi Hukum Warga',
+        iconName: 'gavel_rounded',
+      ),
+    ]);
 
     // Seed 5 Instansi Utama Pemkot Sukabumi
     _instansiList.addAll([
@@ -150,7 +227,7 @@ class OpdService extends ChangeNotifier {
         ],
       ),
 
-      // Disdukcapil (Keluarga) - Kartu Keluarga (KK) -> TANPA DIPERLUKAN NOMOR HP (Sesuai contoh user!)
+      // Disdukcapil (Keluarga) - Kartu Keluarga (KK)
       LayananModel(
         id: '102',
         kodeInstansi: 'disdukcapil',
@@ -208,6 +285,35 @@ class OpdService extends ChangeNotifier {
         ],
       ),
     ]);
+  }
+
+  // --- CRUD SEKTOR ---
+  List<SektorModel> getSektorList() => _sektorList;
+
+  SektorModel? getSektorById(String id) {
+    try {
+      return _sektorList.firstWhere((e) => e.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void addSektor(SektorModel item) {
+    _sektorList.add(item);
+    notifyListeners();
+  }
+
+  void updateSektor(SektorModel updated) {
+    int idx = _sektorList.indexWhere((e) => e.id == updated.id);
+    if (idx != -1) {
+      _sektorList[idx] = updated;
+      notifyListeners();
+    }
+  }
+
+  void deleteSektor(String id) {
+    _sektorList.removeWhere((e) => e.id == id);
+    notifyListeners();
   }
 
   // --- CRUD INSTANSI ---

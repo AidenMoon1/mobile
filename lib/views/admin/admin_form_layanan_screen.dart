@@ -456,13 +456,15 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
-                    value: _selectedSektor,
+                    value: _opdService.getSektorList().any((s) => s.title == _selectedSektor)
+                        ? _selectedSektor
+                        : (_opdService.getSektorList().isNotEmpty ? _opdService.getSektorList().first.title : 'Keluarga'),
                     isExpanded: true,
                     style: const TextStyle(fontSize: 13, color: primaryColor, fontFamily: 'Poppins'),
-                    items: _sektorOptions.map((s) {
+                    items: _opdService.getSektorList().map((s) {
                       return DropdownMenuItem(
-                        value: s,
-                        child: Text('Sektor $s'),
+                        value: s.title,
+                        child: Text('Sektor ${s.title}'),
                       );
                     }).toList(),
                     onChanged: (val) {
