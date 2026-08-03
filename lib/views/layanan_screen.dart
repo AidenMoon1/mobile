@@ -10,52 +10,62 @@ class LayananScreen extends StatelessWidget {
   final List<Map<String, dynamic>> _faseKehidupan = const [
     {
       'title': 'Keluarga',
-      'icon': Icons.family_restroom_rounded,
+      'imagePath': 'assets/icon/keluarga.png',
+      'fallbackIcon': Icons.family_restroom_rounded,
       'desc': 'Administrasi Kependudukan, Pernikahan, KK & Akta',
     },
     {
       'title': 'Pendidikan',
-      'icon': Icons.school_rounded,
+      'imagePath': 'assets/icon/pendidikan.png',
+      'fallbackIcon': Icons.school_rounded,
       'desc': 'Beasiswa, PPDB, Pendaftaran Sekolah',
     },
     {
       'title': 'Usaha',
-      'icon': Icons.store_rounded,
+      'imagePath': 'assets/icon/usaha.png',
+      'fallbackIcon': Icons.store_rounded,
       'desc': 'Izin Usaha, NIB, UMKM Kota Sukabumi',
     },
     {
       'title': 'Lingkungan & Tempat Tinggal',
-      'icon': Icons.home_work_rounded,
+      'imagePath': 'assets/icon/lingkungan.png',
+      'fallbackIcon': Icons.home_work_rounded,
       'desc': 'PBB, Kebersihan, Izin Bangunan (PBG)',
     },
     {
       'title': 'Kendaraan',
-      'icon': Icons.directions_car_rounded,
+      'imagePath': 'assets/icon/kendaraan.png',
+      'fallbackIcon': Icons.directions_car_rounded,
       'desc': 'Pajak Kendaraan, SIM, Uji KIR',
     },
     {
       'title': 'Kesehatan',
-      'icon': Icons.local_hospital_rounded,
+      'imagePath': 'assets/icon/kesehatan.png',
+      'fallbackIcon': Icons.local_hospital_rounded,
       'desc': 'BPJS, Puskesmas, Antrean RSUD',
     },
     {
       'title': 'Tanggap Darurat',
-      'icon': Icons.warning_amber_rounded,
+      'imagePath': 'assets/icon/tanggapdarurat.png',
+      'fallbackIcon': Icons.warning_amber_rounded,
       'desc': 'BPBD, Pemadam Kebakaran, Ambulans 112',
     },
     {
       'title': 'Karier',
-      'icon': Icons.work_rounded,
+      'imagePath': 'assets/icon/karier.png',
+      'fallbackIcon': Icons.work_rounded,
       'desc': 'Lowongan Kerja, Pelatihan Disnaker',
     },
     {
       'title': 'Rekreasi',
-      'icon': Icons.sports_soccer_rounded,
+      'imagePath': 'assets/icon/rekreasi.png',
+      'fallbackIcon': Icons.sports_soccer_rounded,
       'desc': 'Wisata Kota, Fasilitas Olahraga & Taman',
     },
     {
       'title': 'Sosial & Hukum',
-      'icon': Icons.gavel_rounded,
+      'imagePath': 'assets/icon/sosialhukum.png',
+      'fallbackIcon': Icons.gavel_rounded,
       'desc': 'Bantuan Sosial, Konsultasi Hukum Warga',
     },
   ];
@@ -136,6 +146,9 @@ class LayananScreen extends StatelessWidget {
               ),
               itemBuilder: (context, index) {
                 final item = _faseKehidupan[index];
+                final String? imagePath = item['imagePath'] as String?;
+                final IconData fallbackIcon = item['fallbackIcon'] as IconData;
+
                 return GestureDetector(
                   onTap: () {
                     if (item['title'] == 'Keluarga') {
@@ -160,7 +173,7 @@ class LayananScreen extends StatelessWidget {
                           builder: (context) => FormPengajuanScreen(
                             judulLayanan: 'Layanan ${item['title']}',
                             deskripsi: item['desc'] as String,
-                            icon: item['icon'] as IconData,
+                            icon: fallbackIcon,
                           ),
                         ),
                       );
@@ -181,7 +194,7 @@ class LayananScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        // # BAGIAN ATAS (BAGIAN BIRU NAVY DENGAN IKON DI TENGAH)
+                        // # BAGIAN ATAS (BAGIAN BIRU NAVY DENGAN IKON/GAMBAR DI TENGAH)
                         Expanded(
                           child: Container(
                             decoration: const BoxDecoration(
@@ -192,11 +205,23 @@ class LayananScreen extends StatelessWidget {
                               ),
                             ),
                             child: Center(
-                              child: Icon(
-                                item['icon'] as IconData,
-                                color: const Color(0xFFE8A33D),
-                                size: 44,
-                              ),
+                              child: imagePath != null
+                                  ? Image.asset(
+                                      imagePath,
+                                      width: 48,
+                                      height: 48,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) => Icon(
+                                        fallbackIcon,
+                                        color: const Color(0xFFE8A33D),
+                                        size: 44,
+                                      ),
+                                    )
+                                  : Icon(
+                                      fallbackIcon,
+                                      color: const Color(0xFFE8A33D),
+                                      size: 44,
+                                    ),
                             ),
                           ),
                         ),
