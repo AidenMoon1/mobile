@@ -4,6 +4,7 @@ import 'terms_and_policy_screen.dart';
 import 'about_screen.dart';
 import 'feedback_screen.dart';
 import 'help_center_screen.dart';
+import 'admin/admin_dashboard_screen.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
 
@@ -246,6 +247,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 30),
               child: Column(
                 children: [
+                  _buildMenuItem(
+                    icon: Icons.admin_panel_settings_rounded,
+                    title: 'Panel Kelola Admin',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminDashboardScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   _buildMenuItem(
                     icon: Icons.lock_outline,
                     title: 'Kebijakan dan Ketentuan',
