@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/layanan_model.dart';
+import '../../models/layanan_model.dart';
 import 'form_pengajuan_screen.dart';
 
 class DetailLayananKeluargaScreen extends StatelessWidget {

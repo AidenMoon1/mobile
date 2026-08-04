@@ -1,84 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'detail_layanan_usaha.dart';
+import '../layanan/detail_layanan_usaha.dart';
 
-class InfoDpmpstp extends StatefulWidget {
-  const InfoDpmpstp({super.key});
+class InfoDkp3 extends StatefulWidget {
+  const InfoDkp3({super.key});
 
   @override
-  State<InfoDpmpstp> createState() => _InfoDpmpstpState();
+  State<InfoDkp3> createState() => _InfoDkp3State();
 }
 
-class _InfoDpmpstpState extends State<InfoDpmpstp> {
+class _InfoDkp3State extends State<InfoDkp3> {
   bool _isTentangExpanded = true;
 
   final List<Map<String, dynamic>> _layananTersedia = const [
     {
-      'title': 'Izin\nReklame',
-      'rawTitle': 'Perizinan Reklame',
-      'icon': Icons.assignment_turned_in_outlined,
-      'subjudul': 'Layanan SAKTI – DPMPTSP',
+      'title': 'Kesehatan\nHewan',
+      'rawTitle': 'Kesehatan Hewan',
+      'icon': Icons.pets_outlined,
+      'subjudul': 'Layanan DKP3 – Peternakan',
       'deskripsiTentang':
-          'PBG & Reklame adalah izin dan retribusi yang harus dikeluarkan atas keberadaan media reklame atau bangunan yang memberi nilai ekonomi di Kota Sukabumi.',
+          'Layanan pemeriksaan kesehatan, surat keterangan kesehatan hewan (SKKH), serta vaksinasi hewan ternak dan hewan peliharaan dari DKP3 Kota Sukabumi.',
       'persyaratan': [
-        'Fotokopi KTP Pemohon',
-        'Jenis Reklame & Desain/Konstruksi',
-        'Nomor Induk Berusaha (NIB)',
-        'Surat Kuasa (Jika dikuasakan)',
-        'Foto Lokasi Penempatan Reklame',
-        'Bukti Pelunasan PBB Terakhir',
-        'Dokumen Perjanjian Sewa Lahan',
+        'Fotokopi KTP Pemilik Hewan',
+        'Buku Catatan Kesehatan Hewan',
+        'Surat Pengantar dari Kelurahan',
+        'Bukti Vaksinasi Terakhir',
       ],
-      'urlPortal': 'https://dpmptsp.sukabumikota.go.id',
+      'urlPortal': 'https://dkp3.sukabumikota.go.id',
     },
     {
-      'title': 'PBG\nBangunan',
-      'rawTitle': 'Izin Bangunan Usaha',
-      'icon': Icons.business_outlined,
-      'subjudul': 'Persetujuan Bangunan Gedung (PBG)',
+      'title': 'Pangan &\nPertanian',
+      'rawTitle': 'Pangan & Pertanian',
+      'icon': Icons.grass_outlined,
+      'subjudul': 'Layanan Pertanian & Ketahanan Pangan',
       'deskripsiTentang':
-          'Perizinan yang diberikan kepada pemilik bangunan gedung untuk membangun, mengubah, memelihara, atau membongkar bangunan gedung tempat usaha.',
+          'Fasilitasi bantuan benih pertanian, penyuluhan teknologi tani, dan pengawasan mutu pangan segar di Kota Sukabumi.',
       'persyaratan': [
-        'KTP Pemohon',
-        'Sertifikat Hak Atas Tanah',
-        'Gambar Rencana Teknis Bangunan',
-        'Dokumen Lingkungan (SPPL/UKL-UPL)',
+        'KTP Pemohon / Anggota Kelompok Tani',
+        'Surat Rekomendasi Kelompok Tani (Poktan)',
       ],
-      'urlPortal': 'https://simbg.pu.go.id',
+      'urlPortal': 'https://dkp3.sukabumikota.go.id',
     },
     {
-      'title': 'NIB\nOSS',
-      'rawTitle': 'NIB (OSS RBA)',
-      'icon': Icons.storefront_outlined,
-      'subjudul': 'Nomor Induk Berusaha Perorangan',
+      'title': 'Perikanan\nBudidaya',
+      'rawTitle': 'Perikanan Budidaya',
+      'icon': Icons.water_drop_outlined,
+      'subjudul': 'Budidaya & Pembinaan Perikanan',
       'deskripsiTentang':
-          'Penerbitan NIB untuk usahawan perorangan dan UMKM secara mudah dan instan terintegrasi dengan OSS Nasional.',
+          'Pendampingan teknis budidaya ikan air tawar dan sertifikasi mutu pakan perikanan.',
       'persyaratan': [
-        'KTP Pemohon',
-        'NPWP Pemohon (Jika ada)',
-        'Alamat Email & No HP Aktif',
+        'KTP Pembudidaya Ikan',
+        'Foto Lokasi Kolam Budidaya',
       ],
-      'urlPortal': 'https://oss.go.id',
-    },
-    {
-      'title': 'Sertifikat\nHalal',
-      'rawTitle': 'Sertifikasi Halal',
-      'icon': Icons.verified_outlined,
-      'subjudul': 'Fasilitasi Sertifikat Halal UMKM',
-      'deskripsiTentang':
-          'Layanan pendampingan proses produk halal (PPH) bagi pelaku usaha makanan dan minuman skala mikro dan kecil di Kota Sukabumi.',
-      'persyaratan': [
-        'KTP Pemilik Usaha',
-        'NIB Terbitan OSS',
-        'Daftar Bahan & Komposisi Produk',
-      ],
-      'urlPortal': 'https://halal.go.id',
+      'urlPortal': 'https://dkp3.sukabumikota.go.id',
     },
   ];
 
   Future<void> _bukaGoogleMaps() async {
     final Uri uri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=DPMPTSP+Kota+Sukabumi');
+        'https://www.google.com/maps/search/?api=1&query=DKP3+Kota+Sukabumi');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -125,7 +105,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                         child: Opacity(
                           opacity: 0.22,
                           child: Image.asset(
-                            'assets/images/dpmptsp.png',
+                            'assets/images/dkp3.png',
                             width: 320,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) => const SizedBox(),
@@ -153,10 +133,10 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                               ],
                             ),
                             child: Image.asset(
-                              'assets/images/dpmptsp.png',
+                              'assets/images/dkp3.png',
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) => const Icon(
-                                Icons.store_rounded,
+                                Icons.grass_rounded,
                                 color: primaryColor,
                                 size: 48,
                               ),
@@ -169,7 +149,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'DPMPTSP',
+                                  'DKP3',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 22,
@@ -180,7 +160,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                                 ),
                                 SizedBox(height: 3),
                                 Text(
-                                  'Dinas Penanaman Modal dan Pelayanan Terpadu Satu Pintu',
+                                  'Dinas Ketahanan Pangan, Pertanian dan Perikanan',
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 13,
@@ -252,7 +232,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                         _buildInfoItem(
                           icon: Icons.location_on_outlined,
                           label: 'ALAMAT',
-                          content: 'Jl. Mayjend S. Parman No. 6, Kota Sukabumi, Jawa Barat',
+                          content: 'Jl. Baros No. 115, Kota Sukabumi, Jawa Barat',
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 10),
@@ -270,7 +250,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                         _buildInfoItem(
                           icon: Icons.phone_outlined,
                           label: 'KONTAK',
-                          content: '(0266) 221764',
+                          content: '(0266) 225313',
                         ),
                       ],
                     ),
@@ -303,7 +283,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                               height: double.infinity,
                               color: const Color(0xFFE8ECEF),
                               child: CustomPaint(
-                                painter: MapPatternPainterDPMPTSP(),
+                                painter: MapPatternPainterDKP3(),
                               ),
                             ),
                             Center(
@@ -317,7 +297,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Text(
-                                      'DPMPTSP Kota Sukabumi',
+                                      'DKP3 Kota Sukabumi',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 11,
@@ -516,7 +496,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                                 const Divider(height: 1, color: Color(0xFFEEEEEE)),
                                 const SizedBox(height: 14),
                                 Text(
-                                  'DPMPTSP Kota Sukabumi adalah instansi pemerintah yang menyelenggarakan pelayanan perizinan non-perizinan secara terpadu satu pintu serta memfasilitasi penanaman modal dan investasi daerah.',
+                                  'DKP3 Kota Sukabumi adalah Dinas Ketahanan Pangan, Pertanian dan Perikanan yang mengelola ketahanan pangan daerah, perizinan peternakan/kesehatan hewan, serta pembinaan kelompok tani dan pembudidaya ikan.',
                                   style: TextStyle(
                                     color: Colors.grey.shade800,
                                     fontSize: 13,
@@ -536,19 +516,19 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
                                 ),
                                 const SizedBox(height: 8),
                                 _buildBulletPoint(
-                                  title: 'Pelayanan Perizinan Terpadu',
+                                  title: 'Kesehatan Hewan & Ternak',
                                   desc:
-                                      'Menerbitkan izin usaha, NIB (OSS RBA), Izin Reklame, PBG Bangunan, serta izin tenaga medis secara cepat dan transparan.',
+                                      'Pemeriksaan hewan, penerbitan SKKH, dan program vaksinasi hewan ternak/peliharaan.',
                                 ),
                                 _buildBulletPoint(
-                                  title: 'Fasilitasi Penanaman Modal',
+                                  title: 'Ketahanan Pangan & Pertanian',
                                   desc:
-                                      'Mendorong pertumbuhan investasi daerah dan mendampingi kemitraan usaha mikro, kecil, hingga skala besar.',
+                                      'Pengawasan mutu pangan segar, pembinaan kelompok tani, dan penyaluran bantuan bibit pertanian.',
                                 ),
                                 _buildBulletPoint(
-                                  title: 'Pengawasan & Pengaduan',
+                                  title: 'Perikanan Budidaya',
                                   desc:
-                                      'Melakukan pengendalian perizinan usaha dan mengelola pengaduan perizinan warga Kota Sukabumi.',
+                                      'Pendampingan budidaya ikan air tawar dan sertifikasi pakan perikanan Kota Sukabumi.',
                                 ),
                               ],
                             ),
@@ -655,7 +635,7 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
   }
 }
 
-class MapPatternPainterDPMPTSP extends CustomPainter {
+class MapPatternPainterDKP3 extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final roadPaint = Paint()
@@ -669,12 +649,12 @@ class MapPatternPainterDPMPTSP extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final path1 = Path();
-    path1.moveTo(0, size.height * 0.5);
-    path1.lineTo(size.width, size.height * 0.4);
+    path1.moveTo(0, size.height * 0.35);
+    path1.lineTo(size.width, size.height * 0.65);
     canvas.drawPath(path1, mainRoadPaint);
 
     final path2 = Path();
-    path2.moveTo(size.width * 0.5, 0);
+    path2.moveTo(size.width * 0.4, 0);
     path2.lineTo(size.width * 0.5, size.height);
     canvas.drawPath(path2, roadPaint);
   }

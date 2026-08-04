@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'views/dashboard_screen.dart';
-import 'views/report_screen.dart';
-import 'views/notification_screen.dart';
-import 'views/profile_screen.dart';
-import 'widgets/custom_navbar.dart';
+import 'package:mobile/views/berita_dan_fitur/dashboard_screen.dart';
+import 'package:mobile/views/berita_dan_fitur/report_screen.dart';
+import 'package:mobile/views/berita_dan_fitur/notification_screen.dart';
+import 'package:mobile/views/profile/profile_screen.dart';
+import 'package:mobile/widgets/custom_navbar.dart';
 
 import 'services/notification_service.dart';
 import 'services/feedback_service.dart';

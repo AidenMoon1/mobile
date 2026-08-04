@@ -2,17 +2,16 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-import '../services/api_service.dart';
-import 'package:mobile/views/instansi_screen.dart';
-
-import 'info_diskominfo.dart';
-import 'info_dpmpstp.dart';
-import 'info_dkp3.dart';
-import 'layanan_screen.dart';
-import 'layanan_keluarga.dart';
-import 'layanan_usaha.dart';
-import 'layanan_lingkungan.dart';
-import 'detail_berita_screen.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/views/instansi/instansi_screen.dart';
+import 'package:mobile/views/instansi/info_diskominfo.dart';
+import 'package:mobile/views/instansi/info_dpmpstp.dart';
+import 'package:mobile/views/instansi/info_dkp3.dart';
+import 'package:mobile/views/layanan/layanan_screen.dart';
+import 'package:mobile/views/layanan/layanan_keluarga.dart';
+import 'package:mobile/views/layanan/layanan_usaha.dart';
+import 'package:mobile/views/layanan/layanan_lingkungan.dart';
+import 'package:mobile/views/berita_dan_fitur/detail_berita_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

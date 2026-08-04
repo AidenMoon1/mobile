@@ -1,72 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'detail_layanan_lingkungan.dart';
+import '../layanan/detail_layanan_usaha.dart';
 
-class InfoBpkpd extends StatefulWidget {
-  const InfoBpkpd({super.key});
+class InfoDpmpstp extends StatefulWidget {
+  const InfoDpmpstp({super.key});
 
   @override
-  State<InfoBpkpd> createState() => _InfoBpkpdState();
+  State<InfoDpmpstp> createState() => _InfoDpmpstpState();
 }
 
-class _InfoBpkpdState extends State<InfoBpkpd> {
+class _InfoDpmpstpState extends State<InfoDpmpstp> {
   bool _isTentangExpanded = true;
 
   final List<Map<String, dynamic>> _layananTersedia = const [
     {
-      'title': 'Pajak\nPBB',
-      'rawTitle': 'Pajak PBB',
-      'icon': Icons.receipt_long_outlined,
-      'subjudul': 'Layanan PANTAS – BPKPD',
+      'title': 'Izin\nReklame',
+      'rawTitle': 'Perizinan Reklame',
+      'icon': Icons.assignment_turned_in_outlined,
+      'subjudul': 'Layanan SAKTI – DPMPTSP',
       'deskripsiTentang':
-          'Pajak tahunan yang wajib dibayar oleh pemilik tanah dan/atau bangunan di Kota Sukabumi. Dikenal juga dengan istilah resmi PBB, dikelola melalui sistem SIMPBB.',
+          'PBG & Reklame adalah izin dan retribusi yang harus dikeluarkan atas keberadaan media reklame atau bangunan yang memberi nilai ekonomi di Kota Sukabumi.',
       'persyaratan': [
-        'Fotocopy KTP Pemilik',
-        'Surat Kuasa (apabila bukan dari subjek pajak)',
-        'Mengisi formulir SPOP dan LSPOP',
-        'Fotocopy Sertifikat Tanah / SKT Tanah',
-        'Akta Jual Beli',
-        'Surat Penunjukan Kasting',
-        'Surat Pengantar dari Kelurahan atau Desa',
-        'Fotocopy Izin Mendirikan Bangunan (bila ada bangunan)',
-        'Surat Keterangan lainnya sebagai pendukung',
+        'Fotokopi KTP Pemohon',
+        'Jenis Reklame & Desain/Konstruksi',
+        'Nomor Induk Berusaha (NIB)',
+        'Surat Kuasa (Jika dikuasakan)',
+        'Foto Lokasi Penempatan Reklame',
+        'Bukti Pelunasan PBB Terakhir',
+        'Dokumen Perjanjian Sewa Lahan',
       ],
-      'urlPortal': 'https://bpkpd.sukabumikota.go.id',
+      'urlPortal': 'https://dpmptsp.sukabumikota.go.id',
     },
     {
-      'title': 'Pajak\nBPHTB',
-      'rawTitle': 'Pajak BPHTB',
-      'icon': Icons.real_estate_agent_outlined,
-      'subjudul': 'Layanan PANTAS – BPKPD',
+      'title': 'PBG\nBangunan',
+      'rawTitle': 'Izin Bangunan Usaha',
+      'icon': Icons.business_outlined,
+      'subjudul': 'Persetujuan Bangunan Gedung (PBG)',
       'deskripsiTentang':
-          'Bea Perolehan Hak atas Tanah dan Bangunan (BPHTB) adalah pajak yang dikenakan atas perolehan hak atas tanah dan/atau bangunan di wilayah Kota Sukabumi.',
+          'Perizinan yang diberikan kepada pemilik bangunan gedung untuk membangun, mengubah, memelihara, atau membongkar bangunan gedung tempat usaha.',
       'persyaratan': [
-        'Fotocopy KTP Pembeli & Penjual',
-        'Fotocopy Sertifikat Tanah',
-        'Fotocopy SPPT PBB Tahun Berjalan',
-        'Surat Setoran Bukan Pajak (SSBP)',
-        'Akta Jual Beli / Hibah / Waris',
+        'KTP Pemohon',
+        'Sertifikat Hak Atas Tanah',
+        'Gambar Rencana Teknis Bangunan',
+        'Dokumen Lingkungan (SPPL/UKL-UPL)',
       ],
-      'urlPortal': 'https://bpkpd.sukabumikota.go.id',
+      'urlPortal': 'https://simbg.pu.go.id',
     },
     {
-      'title': 'Retribusi\nDaerah',
-      'rawTitle': 'Retribusi Daerah',
-      'icon': Icons.account_balance_wallet_outlined,
-      'subjudul': 'Retribusi Daerah Kota Sukabumi',
+      'title': 'NIB\nOSS',
+      'rawTitle': 'NIB (OSS RBA)',
+      'icon': Icons.storefront_outlined,
+      'subjudul': 'Nomor Induk Berusaha Perorangan',
       'deskripsiTentang':
-          'Pengelolaan dan pembayaran retribusi daerah atas jasa umum, jasa usaha, dan perizinan tertentu Kota Sukabumi.',
+          'Penerbitan NIB untuk usahawan perorangan dan UMKM secara mudah dan instan terintegrasi dengan OSS Nasional.',
       'persyaratan': [
-        'SKRD / Surat Ketetapan Retribusi',
-        'Fotocopy KTP Wajib Retribusi',
+        'KTP Pemohon',
+        'NPWP Pemohon (Jika ada)',
+        'Alamat Email & No HP Aktif',
       ],
-      'urlPortal': 'https://bpkpd.sukabumikota.go.id',
+      'urlPortal': 'https://oss.go.id',
+    },
+    {
+      'title': 'Sertifikat\nHalal',
+      'rawTitle': 'Sertifikasi Halal',
+      'icon': Icons.verified_outlined,
+      'subjudul': 'Fasilitasi Sertifikat Halal UMKM',
+      'deskripsiTentang':
+          'Layanan pendampingan proses produk halal (PPH) bagi pelaku usaha makanan dan minuman skala mikro dan kecil di Kota Sukabumi.',
+      'persyaratan': [
+        'KTP Pemilik Usaha',
+        'NIB Terbitan OSS',
+        'Daftar Bahan & Komposisi Produk',
+      ],
+      'urlPortal': 'https://halal.go.id',
     },
   ];
 
   Future<void> _bukaGoogleMaps() async {
     final Uri uri = Uri.parse(
-        'https://www.google.com/maps/search/?api=1&query=BPKPD+Kota+Sukabumi');
+        'https://www.google.com/maps/search/?api=1&query=DPMPTSP+Kota+Sukabumi');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
@@ -113,7 +125,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                         child: Opacity(
                           opacity: 0.22,
                           child: Image.asset(
-                            'assets/images/bpkpd.png',
+                            'assets/images/dpmptsp.png',
                             width: 320,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) => const SizedBox(),
@@ -141,10 +153,10 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                               ],
                             ),
                             child: Image.asset(
-                              'assets/images/bpkpd.png',
+                              'assets/images/dpmptsp.png',
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) => const Icon(
-                                Icons.account_balance_rounded,
+                                Icons.store_rounded,
                                 color: primaryColor,
                                 size: 48,
                               ),
@@ -157,7 +169,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'BPKPD',
+                                  'DPMPTSP',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 22,
@@ -168,7 +180,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                                 ),
                                 SizedBox(height: 3),
                                 Text(
-                                  'Badan Pengelolaan Keuangan dan Pendapatan Daerah',
+                                  'Dinas Penanaman Modal dan Pelayanan Terpadu Satu Pintu',
                                   style: TextStyle(
                                     color: Colors.white70,
                                     fontSize: 13,
@@ -240,7 +252,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                         _buildInfoItem(
                           icon: Icons.location_on_outlined,
                           label: 'ALAMAT',
-                          content: 'Jl. Mayjend S. Parman No. 5, Kota Sukabumi, Jawa Barat',
+                          content: 'Jl. Mayjend S. Parman No. 6, Kota Sukabumi, Jawa Barat',
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 10),
@@ -291,7 +303,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                               height: double.infinity,
                               color: const Color(0xFFE8ECEF),
                               child: CustomPaint(
-                                painter: MapPatternPainterBPKPD(),
+                                painter: MapPatternPainterDPMPTSP(),
                               ),
                             ),
                             Center(
@@ -305,7 +317,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Text(
-                                      'BPKPD Kota Sukabumi',
+                                      'DPMPTSP Kota Sukabumi',
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 11,
@@ -390,7 +402,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => DetailLayananLingkunganScreen(
+                                builder: (context) => DetailLayananUsahaScreen(
                                   judulLayanan: rawTitle,
                                   subjudul: item['subjudul'] as String,
                                   deskripsiTentang: item['deskripsiTentang'] as String,
@@ -504,7 +516,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                                 const Divider(height: 1, color: Color(0xFFEEEEEE)),
                                 const SizedBox(height: 14),
                                 Text(
-                                  'BPKPD Kota Sukabumi adalah Badan Pengelolaan Keuangan dan Pendapatan Daerah yang bertanggung jawab mengelola keuangan daerah, Pajak Bumi dan Bangunan (PBB), BPHTB, serta pendapatan asli daerah.',
+                                  'DPMPTSP Kota Sukabumi adalah instansi pemerintah yang menyelenggarakan pelayanan perizinan non-perizinan secara terpadu satu pintu serta memfasilitasi penanaman modal dan investasi daerah.',
                                   style: TextStyle(
                                     color: Colors.grey.shade800,
                                     fontSize: 13,
@@ -524,19 +536,19 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
                                 ),
                                 const SizedBox(height: 8),
                                 _buildBulletPoint(
-                                  title: 'Pengelolaan Pajak PBB & BPHTB',
+                                  title: 'Pelayanan Perizinan Terpadu',
                                   desc:
-                                      'Mengelola pendataan, verifikasi, dan pembayaran Pajak Bumi Bangunan serta Bea Perolehan Hak atas Tanah dan Bangunan.',
+                                      'Menerbitkan izin usaha, NIB (OSS RBA), Izin Reklame, PBG Bangunan, serta izin tenaga medis secara cepat dan transparan.',
                                 ),
                                 _buildBulletPoint(
-                                  title: 'Pengelolaan Keuangan Daerah',
+                                  title: 'Fasilitasi Penanaman Modal',
                                   desc:
-                                      'Menyusun, mengevaluasi, dan mengawasi pelaksanaan APBD dan pendapatan daerah Kota Sukabumi.',
+                                      'Mendorong pertumbuhan investasi daerah dan mendampingi kemitraan usaha mikro, kecil, hingga skala besar.',
                                 ),
                                 _buildBulletPoint(
-                                  title: 'Layanan Pajak PANTAS',
+                                  title: 'Pengawasan & Pengaduan',
                                   desc:
-                                      'Menyediakan sistem pelayanan pajak dan cek tagihan PBB online terpadu bagi masyarakat.',
+                                      'Melakukan pengendalian perizinan usaha dan mengelola pengaduan perizinan warga Kota Sukabumi.',
                                 ),
                               ],
                             ),
@@ -643,7 +655,7 @@ class _InfoBpkpdState extends State<InfoBpkpd> {
   }
 }
 
-class MapPatternPainterBPKPD extends CustomPainter {
+class MapPatternPainterDPMPTSP extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final roadPaint = Paint()
@@ -657,13 +669,13 @@ class MapPatternPainterBPKPD extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     final path1 = Path();
-    path1.moveTo(0, size.height * 0.45);
-    path1.lineTo(size.width, size.height * 0.55);
+    path1.moveTo(0, size.height * 0.5);
+    path1.lineTo(size.width, size.height * 0.4);
     canvas.drawPath(path1, mainRoadPaint);
 
     final path2 = Path();
-    path2.moveTo(size.width * 0.35, 0);
-    path2.lineTo(size.width * 0.45, size.height);
+    path2.moveTo(size.width * 0.5, 0);
+    path2.lineTo(size.width * 0.5, size.height);
     canvas.drawPath(path2, roadPaint);
   }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'info_diskominfo.dart';
+import '../instansi/info_diskominfo.dart';
 
 class DetailBeritaScreen extends StatelessWidget {
   final String judul;

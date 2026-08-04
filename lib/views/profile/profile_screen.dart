@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'edit_profile_screen.dart';
-import 'terms_and_policy_screen.dart';
-import 'about_screen.dart';
-import 'feedback_screen.dart';
-import 'help_center_screen.dart';
-import 'admin/admin_dashboard_screen.dart';
-import '../services/user_service.dart';
-import '../models/user_model.dart';
-import '../services/notification_service.dart';
-import '../models/notification_model.dart';
-import '../widgets/smart_image.dart';
-import '../widgets/admin_image_picker.dart';
+import '../informasi/terms_and_policy_screen.dart';
+import '../informasi/about_screen.dart';
+import '../informasi/feedback_screen.dart';
+import '../informasi/help_center_screen.dart';
+import '../admin/admin_dashboard_screen.dart';
+import '../../services/user_service.dart';
+import '../../models/user_model.dart';
+import '../../services/notification_service.dart';
+import '../../models/notification_model.dart';
+import '../../widgets/smart_image.dart';
+import '../../widgets/admin_image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

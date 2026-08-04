@@ -3,7 +3,7 @@ import 'layanan_keluarga.dart';
 import 'layanan_usaha.dart';
 import 'layanan_lingkungan.dart';
 import 'form_pengajuan_screen.dart';
-import '../widgets/smart_image.dart';
+import '../../widgets/smart_image.dart';
 
 class LayananScreen extends StatelessWidget {
   const LayananScreen({super.key});
