@@ -3,6 +3,7 @@ import 'layanan_keluarga.dart';
 import 'layanan_usaha.dart';
 import 'layanan_lingkungan.dart';
 import 'form_pengajuan_screen.dart';
+import '../widgets/smart_image.dart';
 
 class LayananScreen extends StatelessWidget {
   const LayananScreen({super.key});
@@ -170,7 +171,7 @@ class LayananScreen extends StatelessWidget {
                           builder: (context) => FormPengajuanScreen(
                             judulLayanan: 'Layanan ${item['title']}',
                             deskripsi: item['desc'] as String,
-                            icon: item['icon'] as IconData,
+                            icon: (item['fallbackIcon'] ?? Icons.article_rounded) as IconData,
                           ),
                         ),
                       );
@@ -202,10 +203,13 @@ class LayananScreen extends StatelessWidget {
                               ),
                             ),
                             child: Center(
-                              child: Icon(
-                                item['icon'] as IconData,
-                                color: const Color(0xFFE8A33D),
-                                size: 44,
+                              child: SmartImage(
+                                imagePath: (item['imagePath'] as String?) ?? '',
+                                width: 46,
+                                height: 46,
+                                fit: BoxFit.contain,
+                                fallbackIcon: (item['fallbackIcon'] as IconData?) ?? Icons.category_rounded,
+                                fallbackColor: const Color(0xFFE8A33D),
                               ),
                             ),
                           ),
