@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../models/feedback_model.dart';
-import '../models/notification_model.dart';
-import '../services/feedback_service.dart';
-import '../services/notification_service.dart';
+import '../../models/feedback_model.dart';
+import '../../models/notification_model.dart';
+import '../../services/feedback_service.dart';
+import '../../services/notification_service.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});

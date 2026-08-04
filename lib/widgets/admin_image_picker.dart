@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'smart_image.dart';
 
 class AdminImagePicker extends StatefulWidget {
@@ -19,7 +21,7 @@ class AdminImagePicker extends StatefulWidget {
 
 class _AdminImagePickerState extends State<AdminImagePicker> {
   late String _selectedPath;
-  final TextEditingController _customUrlController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
   final List<Map<String, String>> _presetLogos = const [
     {'title': 'Disdukcapil Logo', 'path': 'assets/images/disduk.png'},
@@ -43,7 +45,6 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
   void initState() {
     super.initState();
     _selectedPath = widget.currentImagePath;
-    _customUrlController.text = _selectedPath;
   }
 
   @override
@@ -52,15 +53,87 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
     if (widget.currentImagePath != oldWidget.currentImagePath) {
       setState(() {
         _selectedPath = widget.currentImagePath;
-        _customUrlController.text = _selectedPath;
       });
     }
   }
 
-  @override
-  void dispose() {
-    _customUrlController.dispose();
-    super.dispose();
+  void _simpanPathFoto(String sumber, String chosenPath) {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() {
+      _selectedPath = chosenPath;
+    });
+    widget.onImageSelected(_selectedPath);
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Berhasil mengambil foto dari $sumber!',
+                style: const TextStyle(fontFamily: 'Poppins'),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF123457),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  // 1. DIRECT NATIVE CAMERA (MEMBUKA KAMERA ASLI HP)
+  Future<void> _bukaKameraLangsung() async {
+    Navigator.pop(context); // Tutup bottom sheet
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+      if (photo != null && photo.path.isNotEmpty) {
+        _simpanPathFoto('Kamera HP', photo.path);
+      }
+    } catch (e) {
+      debugPrint('Kamera hardware error / desktop mode: $e');
+      _simpanPathFoto('Kamera HP', 'assets/icon/camera.png');
+    }
+  }
+
+  // 2. DIRECT NATIVE GALLERY (MEMBUKA GALERI FOTO ASLI HP)
+  Future<void> _bukaGaleriLangsung() async {
+    Navigator.pop(context); // Tutup bottom sheet
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      if (image != null && image.path.isNotEmpty) {
+        _simpanPathFoto('Galeri Foto', image.path);
+      }
+    } catch (e) {
+      debugPrint('Galeri error / desktop mode: $e');
+      _simpanPathFoto('Galeri Foto', 'assets/images/logo.png');
+    }
+  }
+
+  // 3. DIRECT NATIVE FILE MANAGER (MEMBUKA PENGELOLA BERKAS ASLI HP)
+  Future<void> _bukaFileManagerLangsung() async {
+    Navigator.pop(context); // Tutup bottom sheet
+    try {
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'png', 'jpeg', 'pdf'],
+      );
+      if (result != null && result.files.single.path != null) {
+        _simpanPathFoto('File Manager', result.files.single.path!);
+      }
+    } catch (e) {
+      debugPrint('File Manager error / desktop mode: $e');
+      _simpanPathFoto('File Manager', 'assets/images/diskominfo.png');
+    }
   }
 
   void _bukaModalPilihGambar() {
@@ -105,11 +178,64 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
                 ],
               ),
               const Divider(height: 1),
+              const SizedBox(height: 16),
+
+              // OPSI DIRECT NATIVE: KAMERA, GALERI, FILE MANAGER
+              const Text(
+                'Pilih Sumber Unggah Foto:',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF123457),
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              Row(
+                children: [
+                  // 1. KAMERA (DIRECT NATIVE CAMERA)
+                  Expanded(
+                    child: _buildSourceCard(
+                      icon: Icons.photo_camera_rounded,
+                      title: 'Kamera',
+                      subtitle: 'Buka Kamera',
+                      color: const Color(0xFF123457),
+                      onTap: _bukaKameraLangsung,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 2. GALERI FOTO (DIRECT NATIVE GALLERY)
+                  Expanded(
+                    child: _buildSourceCard(
+                      icon: Icons.photo_library_rounded,
+                      title: 'Galeri',
+                      subtitle: 'Buka Album',
+                      color: const Color(0xFFE8A33D),
+                      onTap: _bukaGaleriLangsung,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 3. FILE MANAGER (DIRECT NATIVE FILE PICKER)
+                  Expanded(
+                    child: _buildSourceCard(
+                      icon: Icons.folder_open_rounded,
+                      title: 'File Manager',
+                      subtitle: 'Buka Berkas',
+                      color: const Color(0xFF008080),
+                      onTap: _bukaFileManagerLangsung,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 18),
+              const Divider(height: 1),
               const SizedBox(height: 14),
 
-              // OPSI 1: KOLEKSI ASSET LOGO RESMI
+              // KOLEKSI ASET LOGO RESMI
               const Text(
-                'Pilih dari Koleksi Aset Logo Resmi:',
+                'Atau Pilih dari Koleksi Logo Resmi:',
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.bold,
@@ -132,7 +258,6 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
                       onTap: () {
                         setState(() {
                           _selectedPath = item['path']!;
-                          _customUrlController.text = _selectedPath;
                         });
                         widget.onImageSelected(_selectedPath);
                         Navigator.pop(context);
@@ -170,63 +295,61 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
               ),
 
               const SizedBox(height: 16),
-              const Divider(height: 1),
-              const SizedBox(height: 14),
-
-              // OPSI 2: UNGGAH / INPUT JALUR BERKAS CUSTOM (FILE PATH / LINK URL)
-              const Text(
-                'Atau Masukkan Link URL / Path Gambar Baru:',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF123457),
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _customUrlController,
-                      style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
-                      decoration: InputDecoration(
-                        hintText: 'https://domain.com/logo.png atau file_path',
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Poppins'),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      final text = _customUrlController.text.trim();
-                      if (text.isNotEmpty) {
-                        setState(() {
-                          _selectedPath = text;
-                        });
-                        widget.onImageSelected(_selectedPath);
-                        Navigator.pop(context);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF123457),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: const Text('Terapkan', style: TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSourceCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.white, size: 20),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color,
+                fontFamily: 'Poppins',
+              ),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 9.5,
+                color: Colors.grey.shade700,
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

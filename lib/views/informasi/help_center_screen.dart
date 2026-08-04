@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import '../models/chat_message_model.dart';
+import '../../models/chat_message_model.dart';
 
 class HelpCenterScreen extends StatefulWidget {
   const HelpCenterScreen({super.key});
@@ -354,9 +354,52 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           Text('Ada yang bisa kami bantu?', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 12),
           ..._faqResponses.keys.map((question) => _buildFAQItem(question)),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _hubungiAdminDirectly,
+              icon: const Icon(Icons.headset_mic_rounded, color: Color(0xFFE8A33D), size: 18),
+              label: const Text(
+                '💬 Hubungi Petugas Admin (Live Agent)',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0A1E33),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  void _hubungiAdminDirectly() {
+    setState(() {
+      _messages.add(ChatMessage(
+        text: 'Saya ingin mengobrol langsung dengan Petugas Admin.',
+        sender: MessageSender.user,
+        timestamp: DateTime.now(),
+      ));
+      _isTyping = true;
+    });
+    _scrollToBottom();
+
+    Timer(const Duration(seconds: 1), () {
+      if (!mounted) return;
+      setState(() {
+        _messages.add(ChatMessage(
+          text: 'Pesan Anda telah dialihkan ke Inbox Live Agent Admin Sukabumi One Access. Petugas admin sedang memproses antrean Anda...',
+          sender: MessageSender.bot,
+          timestamp: DateTime.now(),
+        ));
+        _isTyping = false;
+      });
+      _scrollToBottom();
+    });
   }
 
   Widget _buildFAQItem(String text) {

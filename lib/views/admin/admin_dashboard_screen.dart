@@ -6,6 +6,7 @@ import 'admin_layanan_list_screen.dart';
 import 'admin_form_layanan_screen.dart';
 import 'admin_sektor_list_screen.dart';
 import 'admin_form_sektor_screen.dart';
+import 'admin_chat_inbox_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -180,6 +181,73 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             const SizedBox(height: 10),
+
+            // 0. LIVE CHAT INBOX WARGA (TERHUBUNG LANGSUNG DARI BOT)
+            Container(
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF0A1E33), Color(0xFF1E3A5F)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x20000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  )
+                ],
+              ),
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE8A33D),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.mark_chat_unread_rounded, color: Color(0xFF0A1E33), size: 24),
+                ),
+                title: Row(
+                  children: [
+                    const Text(
+                      'Pusat Chat Masuk Warga',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: const BoxDecoration(
+                        color: Colors.redAccent,
+                        borderRadius: BorderRadius.all(Radius.circular(6)),
+                      ),
+                      child: const Text(
+                        'Live Chat',
+                        style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                      ),
+                    ),
+                  ],
+                ),
+                subtitle: const Text(
+                  'Balas obrolan langsung warga yang dialihkan oleh AI Bot.',
+                  style: TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'Poppins'),
+                ),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminChatInboxScreen()),
+                  );
+                },
+              ),
+            ),
 
             // 1. KELOLA SEKTOR (FASE KEHIDUPAN)
             _buildAdminMenuTile(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/activity_log_model.dart';
+import '../../models/activity_log_model.dart';
 
 class ActivityLogScreen extends StatelessWidget {
   const ActivityLogScreen({super.key});

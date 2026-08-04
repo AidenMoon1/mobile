@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/opd_service.dart';
-import '../widgets/smart_image.dart';
+import '../../services/opd_service.dart';
+import '../../widgets/smart_image.dart';
 import 'info_disdukcapil.dart';
 import 'info_diskominfo.dart';
 import 'info_dpmpstp.dart';

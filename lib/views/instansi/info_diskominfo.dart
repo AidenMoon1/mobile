@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'form_pengajuan_screen.dart';
+import '../layanan/form_pengajuan_screen.dart';
 
 class InfoDiskominfo extends StatefulWidget {
   const InfoDiskominfo({super.key});
