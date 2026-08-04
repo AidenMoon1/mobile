@@ -19,7 +19,6 @@ class AdminImagePicker extends StatefulWidget {
 
 class _AdminImagePickerState extends State<AdminImagePicker> {
   late String _selectedPath;
-  final TextEditingController _customUrlController = TextEditingController();
 
   final List<Map<String, String>> _presetLogos = const [
     {'title': 'Disdukcapil Logo', 'path': 'assets/images/disduk.png'},
@@ -43,7 +42,6 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
   void initState() {
     super.initState();
     _selectedPath = widget.currentImagePath;
-    _customUrlController.text = _selectedPath;
   }
 
   @override
@@ -52,15 +50,8 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
     if (widget.currentImagePath != oldWidget.currentImagePath) {
       setState(() {
         _selectedPath = widget.currentImagePath;
-        _customUrlController.text = _selectedPath;
       });
     }
-  }
-
-  @override
-  void dispose() {
-    _customUrlController.dispose();
-    super.dispose();
   }
 
   void _pilihGambarDariSumber(String sumber, String samplePath) {
@@ -68,7 +59,6 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
     Navigator.pop(context);
     setState(() {
       _selectedPath = samplePath;
-      _customUrlController.text = _selectedPath;
     });
     widget.onImageSelected(_selectedPath);
 
@@ -185,7 +175,7 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
                 ],
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
               const Divider(height: 1),
               const SizedBox(height: 14),
 
@@ -214,7 +204,6 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
                       onTap: () {
                         setState(() {
                           _selectedPath = item['path']!;
-                          _customUrlController.text = _selectedPath;
                         });
                         widget.onImageSelected(_selectedPath);
                         Navigator.pop(context);
@@ -252,67 +241,6 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
               ),
 
               const SizedBox(height: 16),
-              const Divider(height: 1),
-              const SizedBox(height: 14),
-
-              // INPUT JALUR BERKAS CUSTOM (FILE PATH / LINK URL)
-              const Text(
-                'Atau Masukkan Link URL / Path Gambar Baru:',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF123457),
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _customUrlController,
-                      style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
-                      decoration: InputDecoration(
-                        hintText: 'https://domain.com/logo.png atau file_path',
-                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Poppins'),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: Color(0xFF123457), width: 1.5),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      final text = _customUrlController.text.trim();
-                      if (text.isNotEmpty) {
-                        setState(() {
-                          _selectedPath = text;
-                        });
-                        widget.onImageSelected(_selectedPath);
-                        Navigator.pop(context);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF123457),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: const Text('Terapkan', style: TextStyle(fontFamily: 'Poppins', fontSize: 12, fontWeight: FontWeight.bold)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
             ],
           ),
         );
