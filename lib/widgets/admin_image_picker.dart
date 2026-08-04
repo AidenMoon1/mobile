@@ -63,6 +63,35 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
     super.dispose();
   }
 
+  void _pilihGambarDariSumber(String sumber, String samplePath) {
+    final messenger = ScaffoldMessenger.of(context);
+    Navigator.pop(context);
+    setState(() {
+      _selectedPath = samplePath;
+      _customUrlController.text = _selectedPath;
+    });
+    widget.onImageSelected(_selectedPath);
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Gambar berhasil dipilih dari $sumber!',
+                style: const TextStyle(fontFamily: 'Poppins'),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF123457),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   void _bukaModalPilihGambar() {
     showModalBottomSheet(
       context: context,
@@ -105,11 +134,64 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
                 ],
               ),
               const Divider(height: 1),
+              const SizedBox(height: 16),
+
+              // OPSI UTAMA: KAMERA, GALERI, FILE MANAGER
+              const Text(
+                'Pilih Sumber Unggah Foto:',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF123457),
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              Row(
+                children: [
+                  // 1. KAMERA
+                  Expanded(
+                    child: _buildSourceCard(
+                      icon: Icons.photo_camera_rounded,
+                      title: 'Kamera',
+                      subtitle: 'Ambil Foto',
+                      color: const Color(0xFF123457),
+                      onTap: () => _pilihGambarDariSumber('Kamera', 'assets/icon/camera.png'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 2. GALERI FOTO
+                  Expanded(
+                    child: _buildSourceCard(
+                      icon: Icons.photo_library_rounded,
+                      title: 'Galeri',
+                      subtitle: 'Pilih Album',
+                      color: const Color(0xFFE8A33D),
+                      onTap: () => _pilihGambarDariSumber('Galeri Foto', 'assets/images/logo.png'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // 3. FILE MANAGER
+                  Expanded(
+                    child: _buildSourceCard(
+                      icon: Icons.folder_open_rounded,
+                      title: 'File Manager',
+                      subtitle: 'Pilih Berkas',
+                      color: const Color(0xFF008080),
+                      onTap: () => _pilihGambarDariSumber('File Manager', 'assets/images/diskominfo.png'),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+              const Divider(height: 1),
               const SizedBox(height: 14),
 
-              // OPSI 1: KOLEKSI ASSET LOGO RESMI
+              // KOLEKSI ASET LOGO RESMI
               const Text(
-                'Pilih dari Koleksi Aset Logo Resmi:',
+                'Atau Pilih dari Koleksi Logo Resmi:',
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.bold,
@@ -173,7 +255,7 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
               const Divider(height: 1),
               const SizedBox(height: 14),
 
-              // OPSI 2: UNGGAH / INPUT JALUR BERKAS CUSTOM (FILE PATH / LINK URL)
+              // INPUT JALUR BERKAS CUSTOM (FILE PATH / LINK URL)
               const Text(
                 'Atau Masukkan Link URL / Path Gambar Baru:',
                 style: TextStyle(
@@ -197,6 +279,14 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Color(0xFF123457), width: 1.5),
                         ),
                       ),
                     ),
@@ -227,6 +317,57 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSourceCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: Colors.white, size: 20),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: color,
+                fontFamily: 'Poppins',
+              ),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 9.5,
+                color: Colors.grey.shade700,
+                fontFamily: 'Poppins',
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
