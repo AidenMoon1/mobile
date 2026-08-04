@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'edit_profile_screen.dart';
+import 'login_screen.dart';
 import '../informasi/terms_and_policy_screen.dart';
 import '../informasi/about_screen.dart';
 import '../informasi/feedback_screen.dart';
@@ -551,6 +552,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const TermsAndPolicyScreen()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 12),
+
+                  // 6. HALAMAN LOGIN AKUN
+                  _buildMenuItem(
+                    icon: Icons.vpn_key_outlined,
+                    title: 'Halaman Login (Warga & Admin)',
+                    subtitle: 'Masuk sebagai Warga Kota atau Admin OPD',
+                    iconColor: accentColor,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginScreen()),
                       );
                     },
                   ),
