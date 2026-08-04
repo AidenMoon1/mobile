@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/user_service.dart';
 import '../../services/notification_service.dart';
 import '../../models/notification_model.dart';
+import '../../main.dart';
 import '../admin/admin_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -75,12 +76,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
       messenger.showSnackBar(
         const SnackBar(
-          content: Text('Berhasil masuk ke akun Warga!'),
+          content: Text('Berhasil masuk ke Beranda Warga!'),
           backgroundColor: Color(0xFF0A1E33),
         ),
       );
 
-      navigator.pop();
+      navigator.pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+      );
     }
   }
 
@@ -115,10 +118,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
@@ -131,9 +130,21 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
                         ),
                       ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                          );
+                        },
+                        child: const Text(
+                          'Lewati',
+                          style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Image.asset(
                     'assets/images/logo.png',
                     height: 70,
@@ -165,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
 
             // FORMULIR LOGIN CONTAINER
             Padding(
@@ -401,6 +412,25 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ],
                                   ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // TOMBOL JELAJAH TAMU / TANPA LOGIN
+                        Center(
+                          child: TextButton.icon(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                              );
+                            },
+                            icon: const Icon(Icons.arrow_forward_rounded, size: 16, color: primaryColor),
+                            label: const Text(
+                              'Jelajah Layanan Tanpa Login (Tamu)',
+                              style: TextStyle(color: primaryColor, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                            ),
                           ),
                         ),
                       ],

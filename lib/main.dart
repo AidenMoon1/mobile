@@ -3,6 +3,7 @@ import 'package:mobile/views/berita_dan_fitur/dashboard_screen.dart';
 import 'package:mobile/views/berita_dan_fitur/report_screen.dart';
 import 'package:mobile/views/berita_dan_fitur/notification_screen.dart';
 import 'package:mobile/views/profile/profile_screen.dart';
+import 'package:mobile/views/profile/login_screen.dart';
 import 'package:mobile/widgets/custom_navbar.dart';
 
 import 'services/notification_service.dart';
@@ -40,7 +41,7 @@ class MyApp extends StatelessWidget {
           foregroundColor: Colors.white,
         ),
       ),
-      home: const MainNavigationScreen(),
+      home: const LoginScreen(),
     );
   }
 }
