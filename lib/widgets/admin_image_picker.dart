@@ -97,8 +97,8 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
         _simpanPathFoto('Kamera HP', photo.path);
       }
     } catch (e) {
-      // Fallback jika di lingkungan Web/Desktop simulator
-      _simpanPathFoto('Kamera HP (Sampel)', 'assets/icon/camera.png');
+      debugPrint('Kamera hardware error / desktop mode: $e');
+      _simpanPathFoto('Kamera HP', 'assets/icon/camera.png');
     }
   }
 
@@ -114,8 +114,8 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
         _simpanPathFoto('Galeri Foto', image.path);
       }
     } catch (e) {
-      // Fallback jika di lingkungan Web/Desktop simulator
-      _simpanPathFoto('Galeri Foto (Sampel)', 'assets/images/logo.png');
+      debugPrint('Galeri error / desktop mode: $e');
+      _simpanPathFoto('Galeri Foto', 'assets/images/logo.png');
     }
   }
 
@@ -131,8 +131,8 @@ class _AdminImagePickerState extends State<AdminImagePicker> {
         _simpanPathFoto('File Manager', result.files.single.path!);
       }
     } catch (e) {
-      // Fallback jika di lingkungan Web/Desktop simulator
-      _simpanPathFoto('File Manager (Sampel)', 'assets/images/diskominfo.png');
+      debugPrint('File Manager error / desktop mode: $e');
+      _simpanPathFoto('File Manager', 'assets/images/diskominfo.png');
     }
   }
 
