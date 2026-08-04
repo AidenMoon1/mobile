@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/smart_image.dart';
 
 class TermsAndPolicyScreen extends StatefulWidget {
   const TermsAndPolicyScreen({super.key});
@@ -8,10 +9,10 @@ class TermsAndPolicyScreen extends StatefulWidget {
 }
 
 class _TermsAndPolicyScreenState extends State<TermsAndPolicyScreen> {
-  // Map status ekspansi accordion (Dasar Hukum default true)
+  // Map status ekspansi accordion (Secara bawaan 'Dasar Hukum' atau item lain dapat diklik)
   final Map<String, bool> _expandedMap = {
-    'Dasar Hukum': true,
-    'Data Pribadi Pengguna': false,
+    'Dasar Hukum': false,
+    'Data Pribadi Pengguna': true, // Sesuai screenshot terbaru
     'Data Non-Pribadi Pengguna': false,
     'Cookies': false,
     'Bagaimana Kami Menggunakan Data': false,
@@ -19,6 +20,8 @@ class _TermsAndPolicyScreenState extends State<TermsAndPolicyScreen> {
     'Berbagi Data Pribadi Dan Data Non-Pribadi': false,
     'Jangka Waktu Data': false,
     'Perubahan Kebijakan Privasi': false,
+    'Mengubah, Menghapus, Dan Meminta': false,
+    'Perangkat Lunak Dan Ekstensi Yang Digunakan': false,
     'Persetujuan': false,
   };
 
@@ -127,7 +130,7 @@ class _TermsAndPolicyScreenState extends State<TermsAndPolicyScreen> {
               ),
               const SizedBox(height: 20),
 
-              // LIST SECTION ACCORDION
+              // ACCORDION LIST ITEMS
               _buildAccordionItem(
                 title: 'Dasar Hukum',
                 contentWidget: _buildDasarHukumContent(),
@@ -135,8 +138,8 @@ class _TermsAndPolicyScreenState extends State<TermsAndPolicyScreen> {
               _buildAccordionItem(
                 title: 'Data Pribadi Pengguna',
                 contentWidget: const Text(
-                  'Data pribadi yang dikumpulkan meliputi Nama Lengkap, NIK, Nomor Kartu Keluarga, Alamat Email, Nomor WhatsApp, dan Data Geopolitik Domisili untuk keperluan verifikasi layanan publik.',
-                  style: TextStyle(fontSize: 12.5, color: Colors.black87, height: 1.5, fontFamily: 'Poppins'),
+                  'Kami mengumpulkan data pribadi dari Anda melalui berbagai cara, termasuk namun tidak terbatas pada, ketika Anda mengunjungi Aplikasi dan menggunakan layanan, mendaftar sebagai Pengguna, menggunakan layanan tertentu, mengisi dan melengkapi formulir, dan yang berkaitan dengan kegiatan, layanan, fitur, atau konten yang Kami sediakan dalam Aplikasi. Anda dapat diminta memberikan data, termasuk namun tidak terbatas pada nama, alamat email, alamat sesuai Kartu Tanda Penduduk (KTP), alamat domisili, foto diri, foto KTP, foto diri dengan memegang KTP, Nomor Induk Kependudukan, Nomor Kartu Keluarga, tanggal lahir, jenis kelamin, tempat lahir, status perkawinan, nomor telepon, dan dokumen surat keputusan rukun warga. Kami mengumpulkan data pribadi dari Pengguna, yang secara sukarela diberikan kepada Kami. Anda dapat setiap saat menolak memberikan data pribadi, kecuali jika hal tersebut dapat membatasi mereka untuk mengakses bagian tertentu dalam Aplikasi.',
+                  style: TextStyle(fontSize: 12.5, color: Colors.black87, height: 1.55, fontFamily: 'Poppins'),
                 ),
               ),
               _buildAccordionItem(
@@ -189,6 +192,20 @@ class _TermsAndPolicyScreenState extends State<TermsAndPolicyScreen> {
                 ),
               ),
               _buildAccordionItem(
+                title: 'Mengubah, Menghapus, Dan Meminta',
+                contentWidget: const Text(
+                  'Pengguna memiliki hak penuh untuk memperbarui, mengoreksi, atau mengajukan permohonan penghapusan data pribadi sesuai prosedur perlindungan data pribadi (UU PDP).',
+                  style: TextStyle(fontSize: 12.5, color: Colors.black87, height: 1.5, fontFamily: 'Poppins'),
+                ),
+              ),
+              _buildAccordionItem(
+                title: 'Perangkat Lunak Dan Ekstensi Yang Digunakan',
+                contentWidget: const Text(
+                  'Aplikasi menggunakan komponen perangkat lunak resmi yang terverifikasi dan bebas dari malware maupun pelacak pihak ketiga yang tidak sah.',
+                  style: TextStyle(fontSize: 12.5, color: Colors.black87, height: 1.5, fontFamily: 'Poppins'),
+                ),
+              ),
+              _buildAccordionItem(
                 title: 'Persetujuan',
                 contentWidget: const Text(
                   'Dengan mengunduh dan menggunakan aplikasi Sukabumi One Access, Anda menyatakan menyetujui seluruh ketentuan dalam Kebijakan Privasi ini.',
@@ -196,7 +213,18 @@ class _TermsAndPolicyScreenState extends State<TermsAndPolicyScreen> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 36),
+
+              // FOOTER LOGO SUKABUMI CITY ONE ACCESS
+              const Center(
+                child: SmartImage(
+                  imagePath: 'assets/images/logo.png',
+                  width: 140,
+                  height: 48,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
