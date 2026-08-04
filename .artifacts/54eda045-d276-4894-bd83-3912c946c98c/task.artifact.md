@@ -1,5 +1,10 @@
-- [x] Add `disaster` category to `NotificationCategory`
-- [ ] Implement filter state and logic in `NotificationScreen`
-- [ ] Create `PopupMenuButton` for notification filters
-- [ ] Style the dropdown to match the reference image
-- [ ] Verify filtering works with search
+- [x] User Data Isolation Implementation
+    - [x] Backend: Update `api.php` and Controllers to filter by `user_id`
+    - [x] Frontend: Update API calls in `ReportScreen`, `FeedbackService`, and `FormPengajuanScreen` to include `user_id`
+- [x] Sync Web Features with Mobile
+    - [x] Create Web Feedback form with 5-star rating (`feedback.blade.php`)
+    - [x] Update Web Notifications to fetch real database data (`notifications.blade.php`)
+    - [x] Update Web Navbar to include Feedback/Saran link
+- [x] Verification
+    - [x] Test data isolation by checking phpMyAdmin user_id values
+    - [x] Open `localhost:8001/feedback` to verify web form

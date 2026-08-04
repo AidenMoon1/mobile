@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import '../services/user_service.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -53,7 +54,8 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
     });
 
     try {
-      final response = await ApiService.get('aduan');
+      final user = UserService().currentUser;
+      final response = await ApiService.get('aduan?user_id=${user.id}');
       if (response.statusCode == 200) {
         setState(() {
           _reports = jsonDecode(response.body);
@@ -74,46 +76,57 @@ class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderSt
       _isSubmitting = true;
     });
 
+    final user = UserService().currentUser;
     final payload = {
       'title': _titleController.text,
       'category': _selectedCategory,
       'description': _descController.text,
+      'user_id': user.id,
     };
 
     try {
       final response = await ApiService.post('aduan', payload);
+      
+      if (!mounted) return;
+      setState(() {
+        _isSubmitting = false;
+      });
+
       if (response.statusCode == 200) {
         // Hapus input form
         _titleController.clear();
         _descController.clear();
         setState(() {
           _hasPhoto = false;
-          _isSubmitting = false;
         });
 
         // Tampilkan notifikasi sukses
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Pengaduan berhasil terkirim secara simulasi!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Pengaduan berhasil terkirim!'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
         // Ambil data riwayat baru dan pindah ke tab riwayat
         await _fetchHistory();
         _tabController.animateTo(1);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengirim: ${response.reasonPhrase}'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isSubmitting = false;
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal mengirim aduan: $e')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error Koneksi: $e')),
+      );
     }
   }
 

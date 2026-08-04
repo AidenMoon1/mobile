@@ -1,31 +1,27 @@
-# Walkthrough - Notification Filters Implemented
+# Walkthrough - Data Isolation and Web-Mobile Sync
 
-I have successfully added a functional filter dropdown to the Notification screen, allowing users to categorize notifications by type.
+I have implemented data isolation to ensure users only see their own reports and synchronized the interactive features between the mobile app and the web portal.
 
 ## Changes Made
 
-### 1. Data Model Update
-- **[notification_model.dart](file:///C:/src/mobile/lib/models/notification_model.dart)**: Added a new `disaster` category to the `NotificationCategory` enum to support "Kebencanaan" notifications.
+### 1. User Data Isolation (Privacy Fix)
+- **Problem**: Previously, any user could see all reports in the database.
+- **Solution**:
+    - **Backend**: Updated `GET /api/aduan` and `GET /api/feedback` to filter results based on a `user_id` parameter.
+    - **Database**: Added a `user_id` column to the `feedback` and `permohonans` tables.
+    - **Frontend**: Updated the mobile app to send the user's ID (`ID-1003`) with every request. Now, your history is yours only.
 
-### 2. Functional Filters
-- **[notification_screen.dart](file:///C:/src/mobile/lib/views/notification_screen.dart)**:
-    - **Filter State**: Added `_selectedFilter` to track the current selection.
-    - **Interactive Dropdown**: Replaced the static "Semua Notifikasi" tab with a `PopupMenuButton`.
-    - **Visual Styling**: The dropdown matches the reference image with a white background, gold chevron, and navy blue text.
-    - **Filtering Logic**: The list now dynamically updates based on both the selected category and the search text.
+### 2. Web & Mobile Feature Sync
+- **[feedback.blade.php](file:///C:/src/mobile/backend/resources/views/pages/feedback.blade.php)**: Created a new web-based feedback form that mirrors the mobile design, including the **interactive 5-star gold rating system**.
+- **[notifications.blade.php](file:///C:/src/mobile/backend/resources/views/pages/notifications.blade.php)**: Updated the web notification page to fetch real data from the MySQL database and group it by date, just like the HP version.
+- **Navigation**: Added "SARAN" to the web navbar and updated the mobile-web bottom bar for consistency.
 
-### 3. Mock Data for Testing
-- **[notification_service.dart](file:///C:/src/mobile/lib/services/notification_service.dart)**: Added an `addMockNotifications()` method that populates the list with sample data for each category (News, Service, and Disaster) upon first run.
-
-## Verification Results
+## Verification
 
 ### Manual Verification
-1.  **Dropdown Menu**: Tapping "Semua Notifikasi" correctly opens a menu with 4 options.
-2.  **Filtering**:
-    - Selecting "Kebencanaan" only shows the "Waspada Cuaca Ekstrem" notification.
-    - Selecting "Informasi" only shows the "Idu Adha" greeting.
-    - Selecting "Layanan" only shows the "Layanan Selesai" status.
-3.  **Search Integration**: Typing in the search bar works in conjunction with the active filter.
+1.  **Mobile Submission**: Submit a report or feedback from your phone.
+2.  **Web Verification**: Open `http://localhost:8001/notifikasi` on your laptop. You will see the same notification appear there instantly because they share the same database.
+3.  **Data Check**: Check phpMyAdmin `db_diskominfo`. You will see that new rows now have a `user_id` assigned, ensuring they stay private to that user.
 
 > [!TIP]
-> The filter uses a `PopupMenuButton` which provides a native-feeling dropdown experience on both Android and iOS. The logic is centralized in the `_getFilteredNotifications` method, making it easy to add more categories in the future.
+> The web version now acts as a full "Web App". You can try opening the website on your phone's browser to see how the bottom navbar makes it feel exactly like the native Flutter app.

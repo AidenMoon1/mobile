@@ -1,28 +1,24 @@
-# Implementation Plan - Notification Filter Dropdown
+# Implementation Plan - Switch to Ngrok (Remote Access for Multiple Devices)
 
-The user wants to add a functional filter dropdown to the notification screen with specific categories: "Semua Notifikasi", "Informasi", "Layanan", and "Kebencanaan".
+The goal is to enable the mobile app to connect to the laptop from ANY internet connection (not just local Wi-Fi), allowing multiple users on different devices to submit data to the central database.
+
+## User Review Required
+
+> [!IMPORTANT]
+> - I will set the `baseUrl` to your ngrok URL: `https://nectar-refinish-console.ngrok-free.dev/api`.
+> - After this change, you MUST build a **NEW APK** and send it to your friend, or they won't be able to connect via ngrok.
 
 ## Proposed Changes
 
-### [Notification Screen]
+### [Flutter Frontend]
 
-#### [MODIFY] [notification_screen.dart](file:///C:/src/mobile/lib/views/notification_screen.dart)
-- **State Management**:
-    - Add `String _selectedFilter = 'Semua Notifikasi'` to the state.
-    - Implement filtering logic in `build` to filter the notification list by category and search text.
-- **UI Update**:
-    - Replace the static `_buildFilterTab` with a `PopupMenuButton` to show the filter options.
-    - Style the dropdown button and menu items to match the reference image (white background, gold chevron, navy text).
-    - Map internal `NotificationCategory` enum values to the display names:
-        - "Semua Notifikasi" -> `null` (no filter)
-        - "Informasi" -> `NotificationCategory.news` (or general)
-        - "Layanan" -> `NotificationCategory.service`
-        - "Kebencanaan" -> `NotificationCategory.general` (or add a new category)
+#### [MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)
+- Update `baseUrl` getter to return the ngrok URL instead of the local IP when running on mobile.
 
 ## Verification Plan
 
 ### Manual Verification
-- Click on "Semua Notifikasi" and verify the dropdown menu appears with the 4 options.
-- Select "Layanan" and verify only service notifications are shown.
-- Verify the search bar still works in combination with the filter.
-- Check the visual alignment of the chevron and text in the dropdown button.
+1.  **Build & Install**: Create a new APK and install it on two different phones.
+2.  **Cellular Data Test**: Turn off Wi-Fi on one of the phones and use cellular data.
+3.  **Submission**: Submit a report from both phones.
+4.  **MySQL Check**: Open phpMyAdmin and confirm both reports appear in the `aduans` table.

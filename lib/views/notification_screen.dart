@@ -14,6 +14,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notificationService = NotificationService();
   final TextEditingController _searchController = TextEditingController();
   String _selectedFilter = 'Semua Notifikasi';
+  String _selectedSort = 'Terbaru';
 
   @override
   void initState() {
@@ -30,7 +31,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   List<NotificationModel> _getFilteredNotifications() {
-    return _notificationService.notifications.where((n) {
+    List<NotificationModel> filtered = _notificationService.notifications.where((n) {
       // Filter by Search Text
       bool matchesSearch = n.title.toLowerCase().contains(_searchController.text.toLowerCase()) ||
           n.description.toLowerCase().contains(_searchController.text.toLowerCase());
@@ -45,6 +46,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
       
       return true;
     }).toList();
+
+    // Apply Sorting
+    if (_selectedSort == 'Terbaru') {
+      filtered.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    } else if (_selectedSort == 'Terlama') {
+      filtered.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    } else if (_selectedSort == 'A ke Z') {
+      filtered.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+    } else if (_selectedSort == 'Z ke A') {
+      filtered.sort((a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()));
+    }
+
+    return filtered;
   }
 
   @override
@@ -209,14 +223,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     children: [
                       _buildFilterTab(accentColor),
                       const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.tune, color: Colors.white70, size: 22),
-                        onPressed: () {},
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.more_vert, color: accentColor, size: 22),
-                        onPressed: () {},
-                      ),
+                      _buildSortButton(),
+                      _buildMoreOptionsButton(accentColor),
                     ],
                   ),
                 ),
@@ -305,18 +313,132 @@ class _NotificationScreenState extends State<NotificationScreen> {
     );
   }
 
+  Widget _buildSortButton() {
+    return PopupMenuButton<String>(
+      onSelected: (String value) {
+        setState(() {
+          _selectedSort = value;
+        });
+      },
+      offset: const Offset(0, 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      icon: const Icon(Icons.tune, color: Colors.white70, size: 22),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildPopupMenuItem('Terbaru'),
+        _buildPopupMenuItem('Terlama'),
+        _buildPopupMenuItemWithIcon('A ke Z', Icons.sort_by_alpha_rounded),
+        _buildPopupMenuItemWithIcon('Z ke A', Icons.sort_by_alpha_rounded),
+      ],
+    );
+  }
+
+  Widget _buildMoreOptionsButton(Color accentColor) {
+    return PopupMenuButton<String>(
+      onSelected: (String value) {
+        if (value == 'read_all') {
+          _notificationService.markAllAsRead();
+          setState(() {});
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Semua notifikasi ditandai telah dibaca')),
+          );
+        } else if (value == 'delete_all') {
+          _showDeleteConfirmation();
+        }
+      },
+      offset: const Offset(0, 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      icon: Icon(Icons.more_vert, color: accentColor, size: 22),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        const PopupMenuItem<String>(
+          value: 'read_all',
+          height: 40,
+          child: Text(
+            'Tandai telah dibaca',
+            style: TextStyle(
+              color: Color(0xFF123457),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'delete_all',
+          height: 40,
+          child: Text(
+            'Hapus',
+            style: TextStyle(
+              color: Color(0xFF123457),
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Notifikasi?', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Seluruh riwayat notifikasi akan dihapus secara permanen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _notificationService.deleteAllNotifications();
+              setState(() {});
+            },
+            child: const Text('Hapus Semua', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   PopupMenuItem<String> _buildPopupMenuItem(String value) {
+    bool isSelected = _selectedFilter == value || _selectedSort == value;
     return PopupMenuItem<String>(
       value: value,
       height: 40,
       child: Text(
         value,
-        style: const TextStyle(
-          color: Color(0xFF123457),
+        style: TextStyle(
+          color: isSelected ? const Color(0xFFE8A33D) : const Color(0xFF123457),
           fontSize: 12,
-          fontWeight: FontWeight.w600,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
           fontFamily: 'Poppins',
         ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildPopupMenuItemWithIcon(String value, IconData icon) {
+    bool isSelected = _selectedSort == value;
+    return PopupMenuItem<String>(
+      value: value,
+      height: 40,
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: isSelected ? const Color(0xFFE8A33D) : const Color(0xFF123457)),
+          const SizedBox(width: 8),
+          Text(
+            value,
+            style: TextStyle(
+              color: isSelected ? const Color(0xFFE8A33D) : const Color(0xFF123457),
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              fontFamily: 'Poppins',
+            ),
+          ),
+        ],
       ),
     );
   }

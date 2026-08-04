@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'activity_log_screen.dart';
 import '../services/api_service.dart';
+import '../services/user_service.dart';
 
 class FormPengajuanScreen extends StatefulWidget {
   final String judulLayanan;
@@ -244,7 +245,9 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
       });
 
       // Persiapan data untuk dikirim ke MySQL
+      final user = UserService().currentUser;
       final Map<String, dynamic> payload = {
+        'user_id': user.id,
         'nama': _namaController.text,
         'nik': _nikController.text,
         'no_kk': _noKkController.text,

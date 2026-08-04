@@ -1,4 +1,5 @@
 import '../models/notification_model.dart';
+import 'api_service.dart';
 import 'database_helper.dart';
 
 class NotificationService {
@@ -89,6 +90,22 @@ class NotificationService {
       notification.isRead = true;
       await _dbHelper.update('notifications', {'isRead': 1}, 'id', notification.id);
     }
+    // Update ke Server
+    await ApiService.post('notifications/read-all', {});
+  }
+
+  Future<void> deleteAllNotifications() async {
+    // 1. Hapus dari Memori
+    _notifications.clear();
+    
+    // 2. Hapus dari Database Lokal
+    final db = await _dbHelper.database;
+    if (db != null) {
+      await db.delete('notifications');
+    }
+
+    // 3. Hapus dari Server
+    await ApiService.delete('notifications');
   }
 
   int get unreadCount => _notifications.where((n) => !n.isRead).length;

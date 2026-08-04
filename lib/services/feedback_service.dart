@@ -1,5 +1,6 @@
 import '../models/feedback_model.dart';
 import 'api_service.dart';
+import 'user_service.dart';
 import 'database_helper.dart';
 
 class FeedbackService {
@@ -27,6 +28,15 @@ class FeedbackService {
         date: DateTime.parse(map['date']),
       ));
     }
+    
+    // Opsional: Tarik juga riwayat dari server untuk user ini saja
+    try {
+      final user = UserService().currentUser;
+      final response = await ApiService.get('feedback?user_id=${user.id}');
+      if (response.statusCode == 200) {
+        // Gabungkan atau update riwayat lokal jika diperlukan
+      }
+    } catch (_) {}
   }
 
   Future<bool> addFeedback(FeedbackModel feedback) async {
@@ -42,7 +52,9 @@ class FeedbackService {
     });
 
     // 3. Kirim ke Server
+    final user = UserService().currentUser;
     final payload = {
+      'user_id': user.id,
       'rating': feedback.rating,
       'factor': feedback.factor,
       'reason': feedback.reason,
