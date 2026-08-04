@@ -7,6 +7,8 @@ import 'help_center_screen.dart';
 import 'admin/admin_dashboard_screen.dart';
 import '../services/user_service.dart';
 import '../models/user_model.dart';
+import '../services/notification_service.dart';
+import '../models/notification_model.dart';
 import '../widgets/smart_image.dart';
 import '../widgets/admin_image_picker.dart';
 
@@ -148,7 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 12),
               AdminImagePicker(
-                label: 'Path Foto Profil / URL Gambar',
+                label: 'Foto Profil',
                 currentImagePath: user.profileImagePath,
                 onImageSelected: (path) async {
                   final messenger = ScaffoldMessenger.of(context);
@@ -185,44 +187,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Keluar Akun Sukabumi One Access',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+              const Text(
+                'Keluar Akun Sukabumi One Access',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins',
                 ),
               ),
               const SizedBox(height: 12),
               const Text(
                 'Apakah anda yakin ingin keluar dari akun Sukabumi One Access?',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                style: TextStyle(color: Colors.white70, fontSize: 14, fontFamily: 'Poppins'),
               ),
               const SizedBox(height: 20),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Center(
                   child: Text(
                     'Semua data Anda akan tetap tersimpan secara otomatis.',
-                    style: TextStyle(color: Colors.white, fontSize: 13),
+                    style: TextStyle(color: Colors.white, fontSize: 13, fontFamily: 'Poppins'),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -232,8 +235,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
                     Navigator.pop(context);
+
+                    // TAMBAH NOTIFIKASI SISTEM KELUAR AKUN
+                    await NotificationService().addNotification(
+                      title: 'Berhasil Keluar Akun',
+                      description: 'Anda telah keluar dari akun Sukabumi One Access. Sesi diakhiri secara aman.',
+                      category: NotificationCategory.general,
+                    );
+
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Row(
+                          children: [
+                            Icon(Icons.check_circle_outline, color: Colors.white),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Anda berhasil keluar dari akun Sukabumi One Access.',
+                                style: TextStyle(fontFamily: 'Poppins'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: Color(0xFF123457),
+                        duration: Duration(seconds: 3),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -241,10 +271,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    elevation: 0,
                   ),
                   child: const Text(
                     'Ya, Keluar Sekarang',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
                   ),
                 ),
               ),
@@ -255,8 +286,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text(
-                    'Batal',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    'Batal Keluar',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
                 ),
               ),
