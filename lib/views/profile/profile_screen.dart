@@ -5,7 +5,6 @@ import '../informasi/terms_and_policy_screen.dart';
 import '../informasi/about_screen.dart';
 import '../informasi/feedback_screen.dart';
 import '../informasi/help_center_screen.dart';
-import '../admin/admin_dashboard_screen.dart';
 import '../../services/user_service.dart';
 import '../../models/user_model.dart';
 import '../../services/notification_service.dart';
@@ -486,22 +485,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
               child: Column(
                 children: [
-                  // 1. MENU PANEL KELOLA ADMIN
-                  _buildMenuItem(
-                    icon: Icons.admin_panel_settings_rounded,
-                    title: 'Panel Kelola Admin',
-                    subtitle: 'Pusat Kontrol SuperAdmin Instansi & Layanan',
-                    iconColor: accentColor,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  // 2. KRLIK & SARAN (FEEDBACK)
+                  // 1. KRLIK & SARAN (FEEDBACK)
                   _buildMenuItem(
                     icon: Icons.rate_review_outlined,
                     title: 'Kritik & Saran',
