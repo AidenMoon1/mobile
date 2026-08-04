@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'http://13.13.13.216:8001/api';
+  static const String baseUrl = 'https://nectar-refinish-console.ngrok-free.dev/api';
 
   // SET KE 'true' UNTUK MODE OFFLINE/SIMULASI TANPA SERVER LARAVEL
   static const bool useMockData = false;
