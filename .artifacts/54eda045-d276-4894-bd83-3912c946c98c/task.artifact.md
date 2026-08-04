@@ -1,10 +1,5 @@
-- [x] Backend: Data Integration
-    - [x] Modify `permohonans` table migration (make fields nullable)
-    - [x] Run `php artisan migrate`
-    - [x] Create `PermohonanApiController`
-    - [x] Update `routes/api.php` with `permohonan` endpoint
-- [x] Frontend: Connect Forms to API
-    - [x] Update `FormPengajuanScreen.dart` to send data to server
-    - [x] Verify `ReportScreen.dart` connection
-- [x] Verification
-    - [x] Test form submission from phone to MySQL
+- [x] Add `disaster` category to `NotificationCategory`
+- [ ] Implement filter state and logic in `NotificationScreen`
+- [ ] Create `PopupMenuButton` for notification filters
+- [ ] Style the dropdown to match the reference image
+- [ ] Verify filtering works with search

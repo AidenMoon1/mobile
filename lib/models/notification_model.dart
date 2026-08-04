@@ -1,4 +1,4 @@
-enum NotificationCategory { general, service, feedback, news }
+enum NotificationCategory { general, service, feedback, news, disaster }
 
 class NotificationModel {
   final String id;

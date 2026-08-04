@@ -13,6 +13,15 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   final NotificationService _notificationService = NotificationService();
   final TextEditingController _searchController = TextEditingController();
+  String _selectedFilter = 'Semua Notifikasi';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {});
+    });
+  }
 
   @override
   void dispose() {
@@ -20,11 +29,29 @@ class _NotificationScreenState extends State<NotificationScreen> {
     super.dispose();
   }
 
+  List<NotificationModel> _getFilteredNotifications() {
+    return _notificationService.notifications.where((n) {
+      // Filter by Search Text
+      bool matchesSearch = n.title.toLowerCase().contains(_searchController.text.toLowerCase()) ||
+          n.description.toLowerCase().contains(_searchController.text.toLowerCase());
+      
+      if (!matchesSearch) return false;
+
+      // Filter by Category
+      if (_selectedFilter == 'Semua Notifikasi') return true;
+      if (_selectedFilter == 'Informasi') return n.category == NotificationCategory.news;
+      if (_selectedFilter == 'Layanan') return n.category == NotificationCategory.service;
+      if (_selectedFilter == 'Kebencanaan') return n.category == NotificationCategory.disaster;
+      
+      return true;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     const Color accentColor = Color(0xFFE8A33D);
 
-    final notifications = _notificationService.notifications;
+    final notifications = _getFilteredNotifications();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F8FB),
@@ -221,6 +248,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    suffixIcon: Icon(Icons.search, color: Colors.grey, size: 20),
                   ),
                 ),
               ),
@@ -238,26 +266,57 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Widget _buildFilterTab(Color accentColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Semua Notifikasi',
-            style: TextStyle(
-              color: Color(0xFF123457),
-              fontWeight: FontWeight.bold,
-              fontSize: 11,
+    return PopupMenuButton<String>(
+      onSelected: (String value) {
+        setState(() {
+          _selectedFilter = value;
+        });
+      },
+      offset: const Offset(0, 40),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        _buildPopupMenuItem('Semua Notifikasi'),
+        _buildPopupMenuItem('Informasi'),
+        _buildPopupMenuItem('Layanan'),
+        _buildPopupMenuItem('Kebencanaan'),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              _selectedFilter,
+              style: const TextStyle(
+                color: Color(0xFF123457),
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
             ),
-          ),
-          const SizedBox(width: 6),
-          Icon(Icons.chevron_right, color: accentColor, size: 14),
-        ],
+            const SizedBox(width: 6),
+            Icon(Icons.keyboard_arrow_down_rounded, color: accentColor, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<String> _buildPopupMenuItem(String value) {
+    return PopupMenuItem<String>(
+      value: value,
+      height: 40,
+      child: Text(
+        value,
+        style: const TextStyle(
+          color: Color(0xFF123457),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Poppins',
+        ),
       ),
     );
   }
@@ -387,7 +446,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         iconData = Icons.description_outlined;
         break;
       case NotificationCategory.news:
-        iconData = Icons.wb_sunny_outlined;
+        iconData = Icons.info_outline;
+        break;
+      case NotificationCategory.disaster:
+        iconData = Icons.warning_amber_rounded;
         break;
       default:
         iconData = Icons.notifications_none_rounded;

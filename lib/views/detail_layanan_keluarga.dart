@@ -82,7 +82,6 @@ class DetailLayananKeluargaScreen extends StatelessWidget {
                           judulLayanan: 'Pengajuan $judulLayanan',
                           deskripsi: 'Formulir Permohonan Digital Resmi Kota Sukabumi',
                           icon: Icons.badge_rounded,
-                          layananModel: layananModel,
                         ),
                       ),
                     );

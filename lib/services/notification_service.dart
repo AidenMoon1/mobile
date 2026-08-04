@@ -8,6 +8,7 @@ class NotificationService {
 
   Future<void> init() async {
     await _loadFromDatabase();
+    await addMockNotifications();
   }
 
   final List<NotificationModel> _notifications = [];
@@ -58,6 +59,29 @@ class NotificationService {
       'category': newNotification.category.toString(),
       'isRead': newNotification.isRead ? 1 : 0,
     });
+  }
+
+  // MOCK DATA UNTUK TESTING
+  Future<void> addMockNotifications() async {
+    if (_notifications.isNotEmpty) return;
+    
+    await addNotification(
+      title: 'Selamat Hari Raya Idu Adha 1447 H! ✨',
+      description: 'Mari jadikan momen kurban tahun ini untuk mempererat kebersamaan dan kepedulian terhadap sesama.',
+      category: NotificationCategory.news,
+    );
+    
+    await addNotification(
+      title: 'Waspada Ada Potensi Cuaca Ekstrem di Daerah Anda!',
+      description: 'Peringatan Dini Cuaca Jawa Barat, Tanggal 22 Juli 2026 berpotensi hujan dengan intensitas sedang hingga lebat...',
+      category: NotificationCategory.disaster,
+    );
+    
+    await addNotification(
+      title: 'Layanan Anda Telah Selesai di Proses',
+      description: 'Layanan yang Anda ajukan telah selesai di proses. Silahkan lihat hasil atau informasi lebih lanjut melalui website resmi instansi terkait.',
+      category: NotificationCategory.service,
+    );
   }
 
   Future<void> markAllAsRead() async {
