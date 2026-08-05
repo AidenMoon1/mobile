@@ -20,6 +20,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   String get _threadId => 'CHAT-${_userService.currentUser.name}-${_userService.currentUser.phoneNumber}';
 
   bool _isTyping = false;
+  bool _isLiveAgentMode = false; // Mode Handoff ke Admin Manusia
 
   // Data Jawaban FAQ untuk AI Bot SOA
   final Map<String, String> _faqResponses = {
@@ -28,7 +29,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     'Bagaimana cara melihat status pengaduan saya?':
         'Status pengaduan dapat dipantau melalui menu "Log Aktivitas" di halaman profil Anda. Anda akan mendapatkan notifikasi real-time setiap kali ada perubahan status.',
     'Berapa lama pengaduan diproses?':
-        'Proses pengaduan biasanya memakan waktu 1-3 hari kerja tergantung pada tingkat kompleksitas masalah dan instansi yang berwenang menanganinya.',
+        'Proses pengaduan dan permohonan layanan biasanya memakan waktu 1-3 hari kerja tergantung pada tingkat kompleksitas masalah dan instansi yang berwenang menanganinya.',
     'Apa saja layanan yang tersedia?':
         'Saat ini tersedia layanan Pengaduan Infrastruktur, Layanan Dukcapil Digital, Informasi Cuaca, Berita Kota Sukabumi, dan Integrasi SSO IKD.',
     'Di mana lokasi kantor pelayanan?':
@@ -43,14 +44,22 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     _initInitialGreeting();
   }
 
+  String _getFriendlyName() {
+    final name = _userService.currentUser.name.trim();
+    if (name.isEmpty || name.toLowerCase() == 'wa' || name.toLowerCase() == 'warga' || name.length <= 2) {
+      return 'Warga Sukabumi';
+    }
+    return name;
+  }
+
   void _initInitialGreeting() {
     Future.delayed(const Duration(milliseconds: 200), () async {
-      final String userName = _userService.currentUser.name;
+      final String displayName = _getFriendlyName();
       await _chatService.sendMessage(
         threadId: _threadId,
-        text: 'Halo $userName! 👋 Selamat datang di Pusat Layanan Publik Sukabumi One Access. Saya AI Bot SOA, asisten digital 24 jam Kota Sukabumi. Silakan pilih pertanyaan FAQ di atas atau ketik pesan Anda!',
+        text: 'Halo Kak $displayName! 👋 Selamat datang di Pusat Layanan Publik Sukabumi One Access. Saya AI Bot SOA, asisten digital 24 jam Kota Sukabumi. Silakan pilih pertanyaan FAQ di atas atau ketik pesan Anda!',
         sender: MessageSender.bot,
-        userName: userName,
+        userName: displayName,
         topic: 'Umum / Pusat Bantuan',
       );
       _scrollToBottom();
@@ -61,7 +70,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
 
-    final String userName = _userService.currentUser.name;
+    final String displayName = _getFriendlyName();
 
     _messageController.clear();
     FocusScope.of(context).unfocus();
@@ -71,42 +80,71 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       threadId: _threadId,
       text: trimmed,
       sender: MessageSender.user,
-      userName: userName,
+      userName: displayName,
       topic: 'Umum / Pusat Bantuan',
     );
 
     _scrollToBottom();
+
+    final qLower = trimmed.toLowerCase();
+
+    // 2. CEK JIKA USER INGIN MENGOBROL DENGAN ADMIN MANUSIA / MODE LIVE AGENT
+    if (_isLiveAgentMode || qLower.contains('petugas admin') || qLower.contains('hubungi admin') || qLower.contains('live agent') || qLower.contains('mengobrol langsung')) {
+      if (!_isLiveAgentMode) {
+        setState(() {
+          _isLiveAgentMode = true;
+          _isTyping = true;
+        });
+
+        Timer(const Duration(milliseconds: 600), () async {
+          if (!mounted) return;
+          await _chatService.sendMessage(
+            threadId: _threadId,
+            text: 'Pesan Anda telah dialihkan ke Inbox Live Agent Admin Sukabumi One Access. Petugas admin sedang memproses antrean Anda. Mohon tunggu balasan langsung dari Admin...',
+            sender: MessageSender.bot,
+          );
+          if (mounted) setState(() => _isTyping = false);
+          _scrollToBottom();
+        });
+      }
+      // JIKA SUDAH MODE LIVE AGENT: BOT STOP AUTO-REPLY LENGKAP!! (Murni menunggu balasan Admin di Admin Panel)
+      return;
+    }
+
+    // 3. JIKA MASIH MODE AI BOT: RESPON CERDAS & PRESISI
     if (mounted) setState(() => _isTyping = true);
 
-    // 2. AI Bot SOA Respon Otomatis (Garansi 100% Berjalan)
     Timer(const Duration(milliseconds: 500), () async {
       if (!mounted) return;
 
       String reply = 'Terima kasih atas pertanyaan Anda. Petugas Admin SOA telah menerima pesan Anda dan akan segera merespon secara langsung jika diperlukan.';
 
-      final qLower = trimmed.toLowerCase();
-
-      // Cek matching FAQ case-insensitive
-      bool matchedFaq = false;
-      for (var entry in _faqResponses.entries) {
-        if (entry.key.toLowerCase().trim() == qLower) {
-          reply = entry.value;
-          matchedFaq = true;
-          break;
-        }
+      // PRIORTAS 1: SALAM & SAPAAN
+      if (qLower.contains('halo') || qLower.contains('hai') || qLower.contains('pagi') || qLower.contains('siang') || qLower.contains('sore') || qLower.contains('malam') || qLower.contains('assalamu')) {
+        reply = 'Halo Kak $displayName! 👋 Ada yang bisa AI Bot SOA bantu hari ini mengenai layanan publik Kota Sukabumi?';
       }
+      // PRIORITAS 2: FAQ EXACT MATCHING
+      else {
+        bool matchedFaq = false;
+        for (var entry in _faqResponses.entries) {
+          if (entry.key.toLowerCase().trim() == qLower) {
+            reply = entry.value;
+            matchedFaq = true;
+            break;
+          }
+        }
 
-      if (!matchedFaq) {
-        if (qLower.contains('berapa lama') || qLower.contains('lama') || qLower.contains('proses')) {
-          reply = 'Proses pengaduan dan permohonan layanan biasanya memakan waktu 1-3 hari kerja tergantung tingkat kompleksitas dan OPD terkait.';
-        } else if (qLower.contains('ktp') || qLower.contains('dukcapil') || qLower.contains('kk')) {
-          reply = 'Untuk permohonan KTP-el atau KK Digital, Anda dapat mengakses menu "Layanan" -> Kategori "Dukcapil" atau datang ke Kantor Disdukcapil Kota Sukabumi.';
-        } else if (qLower.contains('pengaduan') || qLower.contains('lapor')) {
-          reply = 'Untuk membuat laporan pengaduan, silakan buka menu "Layanan" di navigasi bawah, pilih jenis pengaduan dan unggah bukti foto pendukung.';
-        } else if (qLower.contains('izin') || qLower.contains('pbg') || qLower.contains('usaha')) {
-          reply = 'Layanan Perizinan PBG & Usaha dikelola oleh DPMPTSP Kota Sukabumi. Anda dapat mengecek alur perizinan di menu Instansi DPMPTSP.';
-        } else if (qLower.contains('halo') || qLower.contains('hai') || qLower.contains('pagi') || qLower.contains('siang')) {
-          reply = 'Halo $userName! Ada yang bisa AI Bot SOA bantu hari ini mengenai layanan publik Kota Sukabumi?';
+        // PRIORITAS 3: KEYWORD INTENT MATCHING
+        if (!matchedFaq) {
+          if (qLower.contains('berapa lama') || qLower.contains('lama diproses') || qLower.contains('durasi')) {
+            reply = 'Proses pengaduan dan permohonan layanan biasanya memakan waktu 1-3 hari kerja tergantung tingkat kompleksitas dan OPD terkait.';
+          } else if (qLower.contains('ktp') || qLower.contains('dukcapil') || qLower.contains('kk')) {
+            reply = 'Untuk permohonan KTP-el atau KK Digital, Anda dapat mengakses menu "Layanan" -> Kategori "Dukcapil" atau datang ke Kantor Disdukcapil Kota Sukabumi.';
+          } else if (qLower.contains('pengaduan') || qLower.contains('lapor')) {
+            reply = 'Untuk membuat laporan pengaduan, silakan buka menu "Layanan" di navigasi bawah, pilih jenis pengaduan dan unggah bukti foto pendukung.';
+          } else if (qLower.contains('izin') || qLower.contains('pbg') || qLower.contains('usaha')) {
+            reply = 'Layanan Perizinan PBG & Usaha dikelola oleh DPMPTSP Kota Sukabumi. Anda dapat mengecek alur perizinan di menu Instansi DPMPTSP.';
+          }
         }
       }
 
@@ -155,18 +193,42 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           // 2. MAIN HEADER (Weather & Profile)
           _buildMainHeader(primaryColor, accentColor),
 
+          // 3. LIVE AGENT HANDOFF STATUS BADGE (JIKA SUDAH TERHUBUNG ADMIN)
+          if (_isLiveAgentMode)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: const Color(0xFFE2F7E2),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.circle, color: Color(0xFF2E7D32), size: 10),
+                  SizedBox(width: 8),
+                  Text(
+                    '🟢 Terhubung dengan Live Agent Admin Sukabumi',
+                    style: TextStyle(
+                      color: Color(0xFF2E7D32),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
               child: Column(
                 children: [
-                  // 3. HERO SECTION
+                  // 4. HERO SECTION
                   _buildHeroSection(accentColor),
 
-                  // 4. CHAT NAV BAR
+                  // 5. CHAT NAV BAR
                   _buildChatNavBar(context, primaryColor, accentColor),
 
-                  // 5. FAQ & CHAT AREA
+                  // 6. FAQ & CHAT AREA
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
@@ -220,16 +282,19 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                 color: const Color(0xFFF0F2F5),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  SizedBox(
+                                  const SizedBox(
                                     width: 12,
                                     height: 12,
                                     child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF0A1E33)),
                                   ),
-                                  SizedBox(width: 8),
-                                  Text('AI Bot SOA sedang mengetik...', style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins')),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _isLiveAgentMode ? 'Petugas Admin sedang memproses...' : 'AI Bot SOA sedang mengetik...',
+                                    style: const TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                                  ),
                                 ],
                               ),
                             ),
@@ -244,7 +309,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             ),
           ),
 
-          // 6. CHAT INPUT BAR
+          // 7. CHAT INPUT BAR
           _buildInputBar(primaryColor),
         ],
       ),
@@ -272,6 +337,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   }
 
   Widget _buildMainHeader(Color primaryColor, Color accentColor) {
+    final displayName = _getFriendlyName();
+
     return Container(
       color: primaryColor,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -290,7 +357,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(_userService.currentUser.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins')),
+              Text(displayName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins')),
               Text(_userService.currentUser.status, style: TextStyle(color: accentColor, fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
             ],
           ),
@@ -383,12 +450,12 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             child: ElevatedButton.icon(
               onPressed: _hubungiAdminDirectly,
               icon: const Icon(Icons.headset_mic_rounded, color: Color(0xFFE8A33D), size: 18),
-              label: const Text(
-                '💬 Hubungi Petugas Admin (Live Agent)',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+              label: Text(
+                _isLiveAgentMode ? '🟢 Terhubung Dengan Live Agent Admin' : '💬 Hubungi Petugas Admin (Live Agent)',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0A1E33),
+                backgroundColor: _isLiveAgentMode ? const Color(0xFF2E7D32) : const Color(0xFF0A1E33),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 10),
@@ -401,31 +468,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   }
 
   void _hubungiAdminDirectly() {
-    final String userName = _userService.currentUser.name;
-
-    _chatService.sendMessage(
-      threadId: _threadId,
-      text: 'Saya ingin mengobrol langsung dengan Petugas Admin.',
-      sender: MessageSender.user,
-      userName: userName,
-      topic: 'Umum / Pusat Bantuan',
-    );
-
-    if (mounted) setState(() => _isTyping = true);
-    _scrollToBottom();
-
-    Timer(const Duration(milliseconds: 600), () async {
-      if (!mounted) return;
-
-      await _chatService.sendMessage(
-        threadId: _threadId,
-        text: 'Pesan Anda telah dialihkan ke Inbox Live Agent Admin Sukabumi One Access. Petugas admin sedang memproses antrean Anda...',
-        sender: MessageSender.bot,
-      );
-
-      if (mounted) setState(() => _isTyping = false);
-      _scrollToBottom();
-    });
+    _handleSendMessage('Saya ingin mengobrol langsung dengan Petugas Admin.');
   }
 
   Widget _buildFAQItem(String text) {
@@ -461,7 +504,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
           color: isUser ? accentColor : const Color(0xFFF0F2F5),
           borderRadius: BorderRadius.circular(16).copyWith(
@@ -504,14 +547,23 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.chat_bubble_outline_rounded, color: Color(0xFF0A1E33), size: 20),
+                  Icon(
+                    _isLiveAgentMode ? Icons.headset_mic_rounded : Icons.chat_bubble_outline_rounded,
+                    color: _isLiveAgentMode ? const Color(0xFF2E7D32) : const Color(0xFF0A1E33),
+                    size: 20,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: _messageController,
                       onSubmitted: _handleSendMessage,
                       style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-                      decoration: const InputDecoration(hintText: 'Tulis pesan atau pertanyaan Anda...', hintStyle: TextStyle(color: Colors.grey, fontSize: 12.5, fontFamily: 'Poppins'), border: InputBorder.none, isDense: true),
+                      decoration: InputDecoration(
+                        hintText: _isLiveAgentMode ? 'Kirim pesan langsung ke Petugas Admin...' : 'Tulis pesan atau pertanyaan Anda...',
+                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 12.5, fontFamily: 'Poppins'),
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
                     ),
                   ),
                 ],
@@ -520,8 +572,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           ),
           const SizedBox(width: 8),
           Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFF0A1E33),
+            decoration: BoxDecoration(
+              color: _isLiveAgentMode ? const Color(0xFF2E7D32) : const Color(0xFF0A1E33),
               shape: BoxShape.circle,
             ),
             child: IconButton(
