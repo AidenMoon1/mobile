@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import '../models/notification_model.dart';
 import 'api_service.dart';
 import 'database_helper.dart';
 
-class NotificationService {
+class NotificationService extends ChangeNotifier {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
@@ -33,6 +34,7 @@ class NotificationService {
         isRead: map['isRead'] == 1,
       ));
     }
+    notifyListeners();
   }
 
   Future<void> addNotification({
@@ -50,6 +52,7 @@ class NotificationService {
 
     // Simpan ke Memori
     _notifications.add(newNotification);
+    notifyListeners();
 
     // Simpan ke Database Lokal
     await _dbHelper.insert('notifications', {
@@ -67,7 +70,7 @@ class NotificationService {
     if (_notifications.isNotEmpty) return;
     
     await addNotification(
-      title: 'Selamat Hari Raya Idu Adha 1447 H! ✨',
+      title: 'Selamat Hari Raya Idul Adha 1447 H! ✨',
       description: 'Mari jadikan momen kurban tahun ini untuk mempererat kebersamaan dan kepedulian terhadap sesama.',
       category: NotificationCategory.news,
     );
@@ -90,6 +93,8 @@ class NotificationService {
       notification.isRead = true;
       await _dbHelper.update('notifications', {'isRead': 1}, 'id', notification.id);
     }
+    notifyListeners();
+    
     // Update ke Server
     await ApiService.post('notifications/read-all', {});
   }
@@ -97,6 +102,7 @@ class NotificationService {
   Future<void> deleteAllNotifications() async {
     // 1. Hapus dari Memori
     _notifications.clear();
+    notifyListeners();
     
     // 2. Hapus dari Database Lokal
     final db = await _dbHelper.database;

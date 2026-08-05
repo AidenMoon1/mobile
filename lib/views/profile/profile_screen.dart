@@ -237,7 +237,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     final messenger = ScaffoldMessenger.of(context);
-                    Navigator.pop(context);
+                    final navigator = Navigator.of(context);
+                    navigator.pop();
 
                     // TAMBAH NOTIFIKASI SISTEM KELUAR AKUN
                     await NotificationService().addNotification(
@@ -263,6 +264,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundColor: Color(0xFF123457),
                         duration: Duration(seconds: 3),
                       ),
+                    );
+
+                    navigator.pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                      (route) => false,
                     );
                   },
                   style: ElevatedButton.styleFrom(
