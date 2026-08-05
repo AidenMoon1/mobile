@@ -201,7 +201,7 @@ class _AdminLayananListScreenState extends State<AdminLayananListScreen> {
                                 },
                                 icon: const Icon(Icons.add_rounded, size: 18),
                                 label: const Text(
-                                  '+ Tambah Layanan',
+                                  'Tambah Layanan',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import '../../models/instansi_model.dart';
+import '../../models/layanan_model.dart';
+import '../../models/sektor_model.dart';
 import '../../services/opd_service.dart';
-import 'admin_instansi_list_screen.dart';
+import '../../widgets/smart_image.dart';
 import 'admin_form_instansi_screen.dart';
-import 'admin_layanan_list_screen.dart';
 import 'admin_form_layanan_screen.dart';
-import 'admin_sektor_list_screen.dart';
+import 'admin_form_sektor_screen.dart';
 import 'admin_chat_inbox_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
-  const AdminDashboardScreen({super.key});
+  final int initialNavIndex;
+
+  const AdminDashboardScreen({super.key, this.initialNavIndex = 0});
 
   @override
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
@@ -16,22 +20,119 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final OpdService _opdService = OpdService();
-  int _selectedNavIndex = 0; // 0: Dashboard, 1: Kelola Instansi, 2: Kelola Layanan, 3: Kelola Sektor, 4: Live Chat
+  late int _selectedNavIndex;
+
+  // CONTROLLERS FOR SEARCHING IN SUB-VIEWS
+  final TextEditingController _instansiSearchController = TextEditingController();
+  final TextEditingController _layananSearchController = TextEditingController();
+  final TextEditingController _sektorSearchController = TextEditingController();
+
+  String _instansiSearchQuery = '';
+  String _layananSearchQuery = '';
+  String _sektorSearchQuery = '';
 
   @override
   void initState() {
     super.initState();
+    _selectedNavIndex = widget.initialNavIndex;
     _opdService.addListener(_refresh);
   }
 
   @override
   void dispose() {
     _opdService.removeListener(_refresh);
+    _instansiSearchController.dispose();
+    _layananSearchController.dispose();
+    _sektorSearchController.dispose();
     super.dispose();
   }
 
   void _refresh() {
     if (mounted) setState(() {});
+  }
+
+  void _konfirmasiHapusInstansi(BuildContext context, InstansiModel instansi) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: Text('Hapus ${instansi.namaSingkat}?', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+        content: Text('Apakah Anda yakin ingin menghapus instansi "${instansi.namaLengkap}"?', style: const TextStyle(fontFamily: 'Poppins')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _opdService.deleteInstansi(instansi.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Instansi ${instansi.namaSingkat} berhasil dihapus.')),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Hapus', style: TextStyle(fontFamily: 'Poppins')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _konfirmasiHapusLayanan(BuildContext context, LayananModel layanan) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Hapus Layanan?', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+        content: Text('Apakah Anda yakin ingin menghapus layanan "${layanan.rawTitle}"?', style: const TextStyle(fontFamily: 'Poppins')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _opdService.deleteLayanan(layanan.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Layanan ${layanan.rawTitle} berhasil dihapus.')),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Hapus', style: TextStyle(fontFamily: 'Poppins')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _konfirmasiHapusSektor(BuildContext context, SektorModel sektor) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Hapus Sektor?', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+        content: Text('Apakah Anda yakin ingin menghapus sektor "${sektor.title}"?', style: const TextStyle(fontFamily: 'Poppins')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _opdService.deleteSektor(sektor.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Sektor ${sektor.title} berhasil dihapus.')),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Hapus', style: TextStyle(fontFamily: 'Poppins')),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -55,9 +156,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),
-              title: const Text(
-                'Sukabumi One Access Admin',
-                style: TextStyle(
+              title: Text(
+                _getNavTitle(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -74,87 +175,52 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       drawer: isWideScreen ? null : Drawer(child: _buildSidebar(context, sidebarBg, accentGold)),
       body: Row(
         children: [
-          // SIDEBAR UNTUK LAYAR MONITOR PC / TABLET
+          // SIDEBAR NAVIGATION PERMANEN UNTUK MONITOR PC / TABLET
           if (isWideScreen) SizedBox(width: 250, child: _buildSidebar(context, sidebarBg, accentGold)),
 
-          // MAIN CONTENT AREA
+          // AREA KONTEN UTAMA KANAN (DYNAMICAL SINGLE PAGE SWITCHER)
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // TOP HEADER TITLE
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Dashboard',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F2942),
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Pusat Kontrol Eksekutif Layanan Publik Kota Sukabumi',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (isWideScreen)
-                        OutlinedButton.icon(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back_rounded, size: 16),
-                          label: const Text('Kembali ke Aplikasi Warga', style: TextStyle(fontFamily: 'Poppins', fontSize: 12)),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: sidebarBg,
-                            side: const BorderSide(color: sidebarBg),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 1. METRIC CARDS ROW (4 KARTU RINGKASAN)
-                  _buildMetricCardsRow(accentGold),
-
-                  const SizedBox(height: 24),
-
-                  // 2. KARTU ANTREAN LIVE CHAT WARGA (REAL-TIME ESCALATION)
-                  _buildLiveChatQueueCard(context, sidebarBg, accentGold),
-
-                  const SizedBox(height: 24),
-
-                  // 3. DAFTAR INSTANSI DATA TABLE CARD
-                  _buildInstansiTableCard(context, sidebarBg, accentGold),
-
-                  const SizedBox(height: 24),
-
-                  // 4. LAYANAN PUBLIK TERPOPULER DATA TABLE CARD
-                  _buildPopularLayananTableCard(context, sidebarBg, accentGold),
-
-                  const SizedBox(height: 24),
-
-                  // 5. GRID RINGKASAN SEKTOR FASE KEHIDUPAN
-                  _buildSektorGridCard(context, sidebarBg, accentGold),
-                ],
-              ),
+              child: _buildActiveContentView(context, sidebarBg, accentGold),
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _getNavTitle() {
+    switch (_selectedNavIndex) {
+      case 1:
+        return 'Kelola Instansi';
+      case 2:
+        return 'Kelola Layanan';
+      case 3:
+        return 'Kelola Sektor';
+      case 4:
+        return 'Live Chat Warga';
+      default:
+        return 'Dashboard Admin';
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // KONTEN SWITCHER DINAMIS (MEMAKSA TAMPILAN BERGANTI TOTAL SESUAI NAV)
+  // ---------------------------------------------------------------------------
+  Widget _buildActiveContentView(BuildContext context, Color sidebarBg, Color accentGold) {
+    switch (_selectedNavIndex) {
+      case 1:
+        return _buildKelolaInstansiView(context, sidebarBg, accentGold);
+      case 2:
+        return _buildKelolaLayananView(context, sidebarBg, accentGold);
+      case 3:
+        return _buildKelolaSektorView(context, sidebarBg, accentGold);
+      case 4:
+        return _buildLiveChatInboxView(context, sidebarBg, accentGold);
+      default:
+        return _buildDashboardOverviewView(context, sidebarBg, accentGold);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -241,80 +307,44 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 10),
 
-          // NAV ITEM 1: DASHBOARD
+          // NAV ITEM 0: DASHBOARD
           _buildSidebarNavItem(
             index: 0,
             icon: Icons.grid_view_rounded,
             label: 'Dashboard',
             accentGold: accentGold,
-            onTap: () {
-              setState(() => _selectedNavIndex = 0);
-              if (Scaffold.of(context).isDrawerOpen) Navigator.pop(context);
-            },
           ),
 
-          // NAV ITEM 2: KELOLA INSTANSI
+          // NAV ITEM 1: KELOLA INSTANSI
           _buildSidebarNavItem(
             index: 1,
             icon: Icons.account_balance_rounded,
             label: 'Kelola Instansi',
             accentGold: accentGold,
-            onTap: () {
-              setState(() => _selectedNavIndex = 1);
-              if (Scaffold.of(context).isDrawerOpen) Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AdminInstansiListScreen()),
-              );
-            },
           ),
 
-          // NAV ITEM 3: KELOLA LAYANAN
+          // NAV ITEM 2: KELOLA LAYANAN
           _buildSidebarNavItem(
             index: 2,
             icon: Icons.format_list_bulleted_rounded,
             label: 'Kelola Layanan',
             accentGold: accentGold,
-            onTap: () {
-              setState(() => _selectedNavIndex = 2);
-              if (Scaffold.of(context).isDrawerOpen) Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AdminLayananListScreen()),
-              );
-            },
           ),
 
-          // NAV ITEM 4: KELOLA SEKTOR
+          // NAV ITEM 3: KELOLA SEKTOR
           _buildSidebarNavItem(
             index: 3,
             icon: Icons.widgets_outlined,
             label: 'Kelola Sektor',
             accentGold: accentGold,
-            onTap: () {
-              setState(() => _selectedNavIndex = 3);
-              if (Scaffold.of(context).isDrawerOpen) Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AdminSektorListScreen()),
-              );
-            },
           ),
 
-          // NAV ITEM 5: LIVE CHAT WARGA
+          // NAV ITEM 4: LIVE CHAT WARGA
           _buildSidebarNavItem(
             index: 4,
             icon: Icons.mark_chat_unread_rounded,
             label: 'Live Chat Warga',
             accentGold: accentGold,
-            onTap: () {
-              setState(() => _selectedNavIndex = 4);
-              if (Scaffold.of(context).isDrawerOpen) Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AdminChatInboxScreen()),
-              );
-            },
           ),
 
           const Spacer(),
@@ -354,14 +384,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     required IconData icon,
     required String label,
     required Color accentGold,
-    required VoidCallback onTap,
   }) {
     final bool isSelected = _selectedNavIndex == index;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          setState(() {
+            _selectedNavIndex = index;
+          });
+          if (Scaffold.of(context).isDrawerOpen) {
+            Navigator.pop(context);
+          }
+        },
         borderRadius: BorderRadius.circular(10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -389,8 +425,771 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  // ===========================================================================
+  // VIEW 0: DASHBOARD OVERVIEW VIEW (RINGKASAN EKSEKUTIF LENGKAP)
+  // ===========================================================================
+  Widget _buildDashboardOverviewView(BuildContext context, Color sidebarBg, Color accentGold) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // TOP HEADER BAR WITH BACK BUTTON
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F2942)),
+                  onPressed: () => Navigator.pop(context),
+                  tooltip: 'Kembali ke Aplikasi Warga',
+                ),
+                const SizedBox(width: 8),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Dashboard',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F2942),
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    Text(
+                      'Pusat Kontrol Terpadu Portal Layanan Publik Sukabumi',
+                      style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_rounded, size: 16),
+              label: const Text('Kembali ke Aplikasi Warga', style: TextStyle(fontFamily: 'Poppins', fontSize: 12)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: sidebarBg,
+                side: BorderSide(color: sidebarBg),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // 1. METRIC CARDS ROW (4 KARTU RINGKASAN DATUM)
+        _buildMetricCardsRow(accentGold),
+
+        const SizedBox(height: 24),
+
+        // 2. KARTU ANTREAN LIVE CHAT WARGA
+        _buildLiveChatQueueCard(context, sidebarBg, accentGold),
+
+        const SizedBox(height: 24),
+
+        // 3. TABEL DAFTAR INSTANSI
+        _buildInstansiTableCard(context, sidebarBg, accentGold),
+
+        const SizedBox(height: 24),
+
+        // 4. TABEL LAYANAN PUBLIK TERPOPULER
+        _buildPopularLayananTableCard(context, sidebarBg, accentGold),
+
+        const SizedBox(height: 24),
+
+        // 5. GRID KATEGORI SEKTOR FASE KEHIDUPAN (DISAMAKAN 100% DENGAN SEKTOR LIST SCREEN)
+        _buildSektorGridCard(context, sidebarBg, accentGold),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // VIEW 1: KELOLA INSTANSI VIEW
+  // ===========================================================================
+  Widget _buildKelolaInstansiView(BuildContext context, Color sidebarBg, Color accentGold) {
+    final allList = _opdService.getInstansiList();
+    final filteredList = allList.where((item) {
+      final q = _instansiSearchQuery.toLowerCase();
+      return item.namaSingkat.toLowerCase().contains(q) ||
+          item.namaLengkap.toLowerCase().contains(q) ||
+          item.kodeInstansi.toLowerCase().contains(q);
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // CARD CONTAINER MAIN
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x08000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              )
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // HEADER TITLE & + TAMBAH INSTANSI BUTTON
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F2942)),
+                          onPressed: () => setState(() => _selectedNavIndex = 0),
+                          tooltip: 'Kembali ke Dashboard',
+                        ),
+                        const SizedBox(width: 6),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Kelola Instansi',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F2942),
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            Text(
+                              '${allList.length} Instansi Terdaftar',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AdminFormInstansiScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text(
+                        'Tambah Instansi',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentGold,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // SEARCH INPUT BAR
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                child: TextFormField(
+                  controller: _instansiSearchController,
+                  onChanged: (val) => setState(() => _instansiSearchQuery = val),
+                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                  decoration: InputDecoration(
+                    hintText: 'Cari Nama Instansi...',
+                    hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13, fontFamily: 'Poppins'),
+                    prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400),
+                    fillColor: const Color(0xFFF4F6F9),
+                    filled: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // TABLE HEADER (GREY BG)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                color: const Color(0xFFF7F9FC),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text('Instansi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Center(child: Text('Jumlah Layanan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Center(child: Text('Status', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                    ),
+                    SizedBox(
+                      width: 50,
+                      child: Center(child: Text('Aksi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                    ),
+                  ],
+                ),
+              ),
+
+              // TABLE ROWS LIST
+              if (filteredList.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(30),
+                  child: Center(child: Text('Tidak ada instansi yang sesuai pencarian.', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'))),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredList.length,
+                  separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
+                  itemBuilder: (context, index) {
+                    final instansi = filteredList[index];
+                    final totalLayanan = _opdService.getLayananList().where((l) => l.kodeInstansi.toLowerCase() == instansi.kodeInstansi.toLowerCase()).length;
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              instansi.namaSingkat.toUpperCase(),
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins'),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Center(
+                              child: Text('$totalLayanan', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                                decoration: BoxDecoration(color: const Color(0xFFE2F7E2), borderRadius: BorderRadius.circular(20)),
+                                child: const Text('Aktif', style: TextStyle(color: Color(0xFF2E7D32), fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 50,
+                            child: PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
+                              onSelected: (val) {
+                                if (val == 'edit') {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminFormInstansiScreen(instansi: instansi)));
+                                } else if (val == 'hapus') {
+                                  _konfirmasiHapusInstansi(context, instansi);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)),
+                                      SizedBox(width: 8),
+                                      Text('Edit Instansi', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'hapus',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                                      SizedBox(width: 8),
+                                      Text('Hapus Instansi', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins')),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // VIEW 2: KELOLA LAYANAN VIEW
+  // ===========================================================================
+  Widget _buildKelolaLayananView(BuildContext context, Color sidebarBg, Color accentGold) {
+    final allList = _opdService.getLayananList();
+    final filteredList = allList.where((item) {
+      final q = _layananSearchQuery.toLowerCase();
+      return item.rawTitle.toLowerCase().contains(q) ||
+          item.judulLayanan.toLowerCase().contains(q) ||
+          item.kodeInstansi.toLowerCase().contains(q) ||
+          item.sektor.toLowerCase().contains(q);
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x08000000),
+                blurRadius: 10,
+                offset: Offset(0, 4),
+              )
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F2942)),
+                          onPressed: () => setState(() => _selectedNavIndex = 0),
+                          tooltip: 'Kembali ke Dashboard',
+                        ),
+                        const SizedBox(width: 6),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Kelola Layanan Publik',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F2942),
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                            Text(
+                              '${allList.length} Layanan Publik Terdaftar',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AdminFormLayananScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text(
+                        'Tambah Layanan',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentGold,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                child: TextFormField(
+                  controller: _layananSearchController,
+                  onChanged: (val) => setState(() => _layananSearchQuery = val),
+                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                  decoration: InputDecoration(
+                    hintText: 'Cari Nama atau Kode Layanan...',
+                    hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13, fontFamily: 'Poppins'),
+                    prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400),
+                    fillColor: const Color(0xFFF4F6F9),
+                    filled: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                color: const Color(0xFFF7F9FC),
+                child: const Row(
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Text('Nama Layanan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Center(child: Text('Instansi OPD', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Center(child: Text('Sektor', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                    ),
+                    SizedBox(
+                      width: 50,
+                      child: Center(child: Text('Aksi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                    ),
+                  ],
+                ),
+              ),
+
+              if (filteredList.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(30),
+                  child: Center(child: Text('Tidak ada layanan yang sesuai pencarian.', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'))),
+                )
+              else
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredList.length,
+                  separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
+                  itemBuilder: (context, index) {
+                    final layanan = filteredList[index];
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Text(
+                              layanan.rawTitle,
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins'),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Center(
+                              child: Text(layanan.kodeInstansi.toUpperCase(), style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF1E88E5), fontFamily: 'Poppins')),
+                            ),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(color: const Color(0xFFFFF6E5), borderRadius: BorderRadius.circular(12)),
+                                child: Text(layanan.sektor, style: const TextStyle(color: Color(0xFFE8A33D), fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 50,
+                            child: PopupMenuButton<String>(
+                              icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
+                              onSelected: (val) {
+                                if (val == 'edit') {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminFormLayananScreen(layanan: layanan)));
+                                } else if (val == 'hapus') {
+                                  _konfirmasiHapusLayanan(context, layanan);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)),
+                                      SizedBox(width: 8),
+                                      Text('Edit Layanan', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                                    ],
+                                  ),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'hapus',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                                      SizedBox(width: 8),
+                                      Text('Hapus Layanan', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins')),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // VIEW 3: KELOLA SEKTOR VIEW (GRID CARDS 3-KOLOM EXACT DASHBOARD DESIGN)
+  // ===========================================================================
+  Widget _buildKelolaSektorView(BuildContext context, Color sidebarBg, Color accentGold) {
+    final allList = _opdService.getSektorList();
+    final filteredList = allList.where((item) {
+      final q = _sektorSearchQuery.toLowerCase();
+      return item.title.toLowerCase().contains(q) || item.desc.toLowerCase().contains(q);
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // CARD HEADER: TITLE & + TAMBAH SEKTOR BUTTON
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F2942)),
+                  onPressed: () => setState(() => _selectedNavIndex = 0),
+                  tooltip: 'Kembali ke Dashboard',
+                ),
+                const SizedBox(width: 6),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Kelola Sektor Fase Kehidupan',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F2942),
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    Text(
+                      '${allList.length} Sektor Terdaftar',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AdminFormSektorScreen()),
+                );
+              },
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text(
+                'Tambah Sektor',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentGold,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        // SEARCH INPUT BAR
+        TextFormField(
+          controller: _sektorSearchController,
+          onChanged: (val) => setState(() => _sektorSearchQuery = val),
+          style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+          decoration: InputDecoration(
+            hintText: 'Cari Nama Sektor Fase Kehidupan...',
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13, fontFamily: 'Poppins'),
+            prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400),
+            fillColor: Colors.white,
+            filled: true,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade200)),
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+        // GRID CARD KARTU SEKTOR INTERAKTIF (3 KOLOM)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            int crossAxisCount = 3;
+            if (constraints.maxWidth < 600) {
+              crossAxisCount = 1;
+            } else if (constraints.maxWidth < 900) {
+              crossAxisCount = 2;
+            }
+
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 2.6,
+              ),
+              itemCount: filteredList.length,
+              itemBuilder: (context, index) {
+                final sektor = filteredList[index];
+                final totalLayanan = _opdService.getLayananList().where((l) => l.sektor.toLowerCase() == sektor.title.toLowerCase()).length;
+                final displayCount = totalLayanan > 0 ? totalLayanan : 6;
+
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade200),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x06000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4F7FC),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: SmartImage(
+                            imagePath: sektor.imagePath,
+                            width: 28,
+                            height: 28,
+                            fit: BoxFit.contain,
+                            fallbackIcon: Icons.widgets_rounded,
+                            fallbackColor: const Color(0xFF0F2942),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              sektor.title,
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F2942),
+                                fontFamily: 'Poppins',
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '$displayCount Layanan',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      PopupMenuButton<String>(
+                        icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AdminFormSektorScreen(sektor: sektor),
+                              ),
+                            );
+                          } else if (value == 'hapus') {
+                            _konfirmasiHapusSektor(context, sektor);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)),
+                                SizedBox(width: 8),
+                                Text('Edit Sektor', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'hapus',
+                            child: Row(
+                              children: [
+                                Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text('Hapus Sektor', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins')),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // VIEW 4: LIVE CHAT INBOX VIEW
+  // ===========================================================================
+  Widget _buildLiveChatInboxView(BuildContext context, Color sidebarBg, Color accentGold) {
+    return const AdminChatInboxScreen();
+  }
+
   // ---------------------------------------------------------------------------
-  // 1. METRIC CARDS ROW (4 KARTU RINGKASAN DATUM)
+  // HELPER WIDGETS FOR DASHBOARD OVERVIEW
   // ---------------------------------------------------------------------------
   Widget _buildMetricCardsRow(Color accentGold) {
     final totalInstansi = _opdService.getInstansiList().length;
@@ -405,38 +1204,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         if (isMobile) {
           return Column(
             children: [
-              _buildSingleMetricCard('Total Instansi', '$totalInstansi', Icons.account_balance_rounded, const Color(0xFFFFF6E5), accentGold, '100% Aktif & Terintegrasi'),
+              _buildSingleMetricCard('Total Instansi', '$totalInstansi', Icons.account_balance_rounded, const Color(0xFFFFF6E5), accentGold, '100% Aktif'),
               const SizedBox(height: 10),
-              _buildSingleMetricCard('Total Layanan', '$totalLayanan', Icons.format_list_bulleted_rounded, const Color(0xFFEBF3FE), const Color(0xFF1E88E5), 'Katalog Layanan Publik'),
+              _buildSingleMetricCard('Total Layanan', '$totalLayanan', Icons.format_list_bulleted_rounded, const Color(0xFFEBF3FE), const Color(0xFF1E88E5), 'Katalog Publik'),
               const SizedBox(height: 10),
-              _buildSingleMetricCard('Sektor Portal', '$totalSektor', Icons.widgets_outlined, const Color(0xFFE8F5E9), const Color(0xFF2E7D32), 'Fase Kehidupan Warga'),
+              _buildSingleMetricCard('Sektor Portal', '$totalSektor', Icons.widgets_outlined, const Color(0xFFE8F5E9), const Color(0xFF2E7D32), 'Fase Kehidupan'),
               const SizedBox(height: 10),
-              _buildSingleMetricCard('Live Chat Warga', '3', Icons.mark_chat_unread_rounded, const Color(0xFFFFEBEE), Colors.redAccent, 'Perlu Balasan Admin'),
+              _buildSingleMetricCard('Live Chat Warga', '3', Icons.mark_chat_unread_rounded, const Color(0xFFFFEBEE), Colors.redAccent, 'Perlu Balasan'),
             ],
           );
         }
 
         return Row(
           children: [
-            SizedBox(
-              width: cardWidth,
-              child: _buildSingleMetricCard('Total Instansi', '$totalInstansi', Icons.account_balance_rounded, const Color(0xFFFFF6E5), accentGold, '100% Terintegrasi'),
-            ),
+            SizedBox(width: cardWidth, child: _buildSingleMetricCard('Total Instansi', '$totalInstansi', Icons.account_balance_rounded, const Color(0xFFFFF6E5), accentGold, '100% Aktif')),
             const SizedBox(width: 10),
-            SizedBox(
-              width: cardWidth,
-              child: _buildSingleMetricCard('Total Layanan', '$totalLayanan', Icons.format_list_bulleted_rounded, const Color(0xFFEBF3FE), const Color(0xFF1E88E5), 'Katalog Layanan'),
-            ),
+            SizedBox(width: cardWidth, child: _buildSingleMetricCard('Total Layanan', '$totalLayanan', Icons.format_list_bulleted_rounded, const Color(0xFFEBF3FE), const Color(0xFF1E88E5), 'Katalog Publik')),
             const SizedBox(width: 10),
-            SizedBox(
-              width: cardWidth,
-              child: _buildSingleMetricCard('Sektor Portal', '$totalSektor', Icons.widgets_outlined, const Color(0xFFE8F5E9), const Color(0xFF2E7D32), 'Fase Kehidupan'),
-            ),
+            SizedBox(width: cardWidth, child: _buildSingleMetricCard('Sektor Portal', '$totalSektor', Icons.widgets_outlined, const Color(0xFFE8F5E9), const Color(0xFF2E7D32), 'Fase Kehidupan')),
             const SizedBox(width: 10),
-            SizedBox(
-              width: cardWidth,
-              child: _buildSingleMetricCard('Live Chat Warga', '3', Icons.mark_chat_unread_rounded, const Color(0xFFFFEBEE), Colors.redAccent, 'Perlu Balasan'),
-            ),
+            SizedBox(width: cardWidth, child: _buildSingleMetricCard('Live Chat Warga', '3', Icons.mark_chat_unread_rounded, const Color(0xFFFFEBEE), Colors.redAccent, 'Perlu Balasan')),
           ],
         );
       },
@@ -450,22 +1237,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x06000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          )
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 2))],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(12)),
             child: Icon(icon, color: iconColor, size: 24),
           ),
           const SizedBox(width: 14),
@@ -474,37 +1252,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'Poppins',
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(title, style: TextStyle(color: Colors.grey.shade600, fontSize: 11.5, fontWeight: FontWeight.w500, fontFamily: 'Poppins'), maxLines: 1, overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
-                Text(
-                  count,
-                  style: const TextStyle(
-                    color: Color(0xFF0F2942),
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Colors.grey,
-                    fontSize: 9.5,
-                    fontFamily: 'Poppins',
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(count, style: const TextStyle(color: Color(0xFF0F2942), fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 9.5, fontFamily: 'Poppins'), maxLines: 1, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
@@ -513,9 +1264,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 2. KARTU ANTREAN LIVE CHAT WARGA (REAL-TIME ESCALATION)
-  // ---------------------------------------------------------------------------
   Widget _buildLiveChatQueueCard(BuildContext context, Color sidebarBg, Color accentGold) {
     return Container(
       padding: const EdgeInsets.all(18),
@@ -526,13 +1274,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          )
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x1A000000), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -544,29 +1286,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 children: [
                   Icon(Icons.headset_mic_rounded, color: Color(0xFFE8A33D), size: 22),
                   SizedBox(width: 10),
-                  Text(
-                    'Pusat Antrean Live Chat Warga',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
+                  Text('Pusat Antrean Live Chat Warga', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
                 ],
               ),
               ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminChatInboxScreen()),
-                  );
-                },
+                onPressed: () => setState(() => _selectedNavIndex = 4),
                 icon: const Icon(Icons.reply_rounded, size: 16),
-                label: const Text(
-                  'Balas Chat Sekarang',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                ),
+                label: const Text('Balas Chat Sekarang', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: accentGold,
                   foregroundColor: const Color(0xFF0F2942),
@@ -578,17 +1304,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text(
-            '3 Warga memerlukan bantuan langsung petugas admin yang dialihkan oleh AI Bot SOA:',
-            style: TextStyle(color: Colors.white70, fontSize: 11.5, fontFamily: 'Poppins'),
-          ),
+          const Text('3 Warga memerlukan bantuan langsung petugas admin yang dialihkan oleh AI Bot SOA:', style: TextStyle(color: Colors.white70, fontSize: 11.5, fontFamily: 'Poppins')),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
             child: Column(
               children: [
                 _buildChatPreviewRow('mrn', 'Halo admin, mau tanya syarat cetak ulang KTP-el yang rusak...', '10 mnt lalu'),
@@ -607,41 +1327,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildChatPreviewRow(String name, String message, String time) {
     return Row(
       children: [
-        const CircleAvatar(
-          radius: 14,
-          backgroundColor: Color(0xFFE8A33D),
-          child: Icon(Icons.person_rounded, color: Color(0xFF0F2942), size: 16),
-        ),
+        const CircleAvatar(radius: 14, backgroundColor: Color(0xFFE8A33D), child: Icon(Icons.person_rounded, color: Color(0xFF0F2942), size: 16)),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                name,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12, fontFamily: 'Poppins'),
-              ),
-              Text(
-                message,
-                style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'Poppins'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12, fontFamily: 'Poppins')),
+              Text(message, style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'Poppins'), maxLines: 1, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          time,
-          style: const TextStyle(color: Colors.white38, fontSize: 10, fontFamily: 'Poppins'),
-        ),
+        Text(time, style: const TextStyle(color: Colors.white38, fontSize: 10, fontFamily: 'Poppins')),
       ],
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 3. TABEL "DAFTAR INSTANSI" CARD
-  // ---------------------------------------------------------------------------
   Widget _buildInstansiTableCard(BuildContext context, Color sidebarBg, Color accentGold) {
     final instansiList = _opdService.getInstansiList();
 
@@ -650,125 +1352,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          )
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // CARD HEADER: TITLE & + TAMBAH INSTANSI BUTTON
           Padding(
             padding: const EdgeInsets.all(18.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Daftar Instansi OPD Terdaftar',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0F2942),
-                    fontFamily: 'Poppins',
-                  ),
-                ),
+                const Text('Daftar Instansi OPD Terdaftar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminFormInstansiScreen()),
-                    );
-                  },
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminFormInstansiScreen())),
                   icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text(
-                    '+ Tambah Instansi',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accentGold,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+                  label: const Text('Tambah Instansi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                  style: ElevatedButton.styleFrom(backgroundColor: accentGold, foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 ),
               ],
             ),
           ),
-
-          // TABLE HEADER (GREY BG)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             color: const Color(0xFFF7F9FC),
             child: const Row(
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    'Instansi',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF5A6A85),
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Center(
-                    child: Text(
-                      'Jumlah Layanan',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF5A6A85),
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Center(
-                    child: Text(
-                      'Status',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF5A6A85),
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 50,
-                  child: Center(
-                    child: Text(
-                      'Aksi',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF5A6A85),
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                  ),
-                ),
+                Expanded(flex: 3, child: Text('Instansi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                Expanded(flex: 2, child: Center(child: Text('Jumlah Layanan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
+                Expanded(flex: 2, child: Center(child: Text('Status', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
+                SizedBox(width: 50, child: Center(child: Text('Aksi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
               ],
             ),
           ),
-
-          // TABLE ROWS LIST
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -782,97 +1397,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                 child: Row(
                   children: [
-                    // COLUMN 1: INSTANSI NAME
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        instansi.namaSingkat.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F2942),
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    ),
-
-                    // COLUMN 2: JUMLAH LAYANAN
-                    Expanded(
-                      flex: 2,
-                      child: Center(
-                        child: Text(
-                          '$totalLayananInstansi',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0F2942),
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // COLUMN 3: STATUS BADGE (GREEN PILL AKTIF)
-                    Expanded(
-                      flex: 2,
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE2F7E2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Aktif',
-                            style: TextStyle(
-                              color: Color(0xFF2E7D32),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // COLUMN 4: AKSI (THREE-DOT MENUS)
+                    Expanded(flex: 3, child: Text(instansi.namaSingkat.toUpperCase(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins'))),
+                    Expanded(flex: 2, child: Center(child: Text('$totalLayananInstansi', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')))),
+                    Expanded(flex: 2, child: Center(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4), decoration: BoxDecoration(color: const Color(0xFFE2F7E2), borderRadius: BorderRadius.circular(20)), child: const Text('Aktif', style: TextStyle(color: Color(0xFF2E7D32), fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Poppins'))))),
                     SizedBox(
                       width: 50,
                       child: PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
-                        onSelected: (value) {
-                          if (value == 'edit') {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AdminFormInstansiScreen(instansi: instansi),
-                              ),
-                            );
-                          } else if (value == 'hapus') {
-                            _konfirmasiHapus(context, instansi.id, instansi.namaSingkat);
+                        onSelected: (val) {
+                          if (val == 'edit') {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => AdminFormInstansiScreen(instansi: instansi)));
+                          } else if (val == 'hapus') {
+                            _konfirmasiHapusInstansi(context, instansi);
                           }
                         },
                         itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)),
-                                SizedBox(width: 8),
-                                Text('Edit Instansi', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
-                              ],
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'hapus',
-                            child: Row(
-                              children: [
-                                Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
-                                SizedBox(width: 8),
-                                Text('Hapus Instansi', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins')),
-                              ],
-                            ),
-                          ),
+                          const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)), SizedBox(width: 8), Text('Edit Instansi', style: TextStyle(fontSize: 12, fontFamily: 'Poppins'))])),
+                          const PopupMenuItem(value: 'hapus', child: Row(children: [Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red), SizedBox(width: 8), Text('Hapus Instansi', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins'))])),
                         ],
                       ),
                     ),
@@ -887,9 +1428,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 4. TABEL "LAYANAN PUBLIK TERPOPULER" CARD
-  // ---------------------------------------------------------------------------
   Widget _buildPopularLayananTableCard(BuildContext context, Color sidebarBg, Color accentGold) {
     final layananList = _opdService.getLayananList();
 
@@ -898,111 +1436,37 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          )
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // CARD HEADER: TITLE & + TAMBAH LAYANAN BUTTON
           Padding(
             padding: const EdgeInsets.all(18.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Katalog Layanan Publik Terdaftar',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0F2942),
-                    fontFamily: 'Poppins',
-                  ),
-                ),
+                const Text('Katalog Layanan Publik Terdaftar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const AdminFormLayananScreen()),
-                    );
-                  },
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminFormLayananScreen())),
                   icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text(
-                    '+ Tambah Layanan',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: sidebarBg,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
+                  label: const Text('Tambah Layanan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                  style: ElevatedButton.styleFrom(backgroundColor: sidebarBg, foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 ),
               ],
             ),
           ),
-
-          // TABLE HEADER (GREY BG)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
             color: const Color(0xFFF7F9FC),
             child: const Row(
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(
-                    'Nama Layanan',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF5A6A85),
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Center(
-                    child: Text(
-                      'Instansi OPD',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF5A6A85),
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Center(
-                    child: Text(
-                      'Sektor',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF5A6A85),
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                  ),
-                ),
+                Expanded(flex: 3, child: Text('Nama Layanan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                Expanded(flex: 2, child: Center(child: Text('Instansi OPD', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
+                Expanded(flex: 2, child: Center(child: Text('Sektor', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
               ],
             ),
           ),
-
-          // TABLE ROWS LIST
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -1015,58 +1479,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                 child: Row(
                   children: [
-                    // COLUMN 1: LAYANAN TITLE
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        layanan.rawTitle,
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F2942),
-                          fontFamily: 'Poppins',
-                        ),
-                      ),
-                    ),
-
-                    // COLUMN 2: KODE INSTANSI
-                    Expanded(
-                      flex: 2,
-                      child: Center(
-                        child: Text(
-                          layanan.kodeInstansi.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E88E5),
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // COLUMN 3: SEKTOR
-                    Expanded(
-                      flex: 2,
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF6E5),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            layanan.sektor,
-                            style: const TextStyle(
-                              color: Color(0xFFE8A33D),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    Expanded(flex: 3, child: Text(layanan.rawTitle, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins'))),
+                    Expanded(flex: 2, child: Center(child: Text(layanan.kodeInstansi.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF1E88E5), fontFamily: 'Poppins')))),
+                    Expanded(flex: 2, child: Center(child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3), decoration: BoxDecoration(color: const Color(0xFFFFF6E5), borderRadius: BorderRadius.circular(12)), child: Text(layanan.sektor, style: const TextStyle(color: Color(0xFFE8A33D), fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Poppins'))))),
                   ],
                 ),
               );
@@ -1078,9 +1493,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // 5. GRID RINGKASAN SEKTOR FASE KEHIDUPAN
-  // ---------------------------------------------------------------------------
+  // DISAMAKAN 100% DENGAN GRID KARTU 3-KOLOM DARI KELOLA SEKTOR
   Widget _buildSektorGridCard(BuildContext context, Color sidebarBg, Color accentGold) {
     final sektorList = _opdService.getSektorList();
 
@@ -1090,13 +1503,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.shade200),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          )
-        ],
+        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 10, offset: Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1104,95 +1511,94 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Kategori Sektor (Fase Kehidupan)',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0F2942),
-                  fontFamily: 'Poppins',
-                ),
-              ),
+              const Text('Kategori Sektor (Fase Kehidupan)', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
               TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminSektorListScreen()),
-                  );
-                },
+                onPressed: () => setState(() => _selectedNavIndex = 3),
                 child: const Text('Kelola Sektor', style: TextStyle(color: Color(0xFF1E88E5), fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 2.5,
-            ),
-            itemCount: sektorList.length,
-            itemBuilder: (context, index) {
-              final sektor = sektorList[index];
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF4F7FC),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.widgets_rounded, color: Color(0xFF0F2942), size: 18),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        sektor.title,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F2942),
-                          fontFamily: 'Poppins',
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+          LayoutBuilder(
+            builder: (context, constraints) {
+              int crossAxisCount = 3;
+              if (constraints.maxWidth < 600) {
+                crossAxisCount = 1;
+              } else if (constraints.maxWidth < 900) {
+                crossAxisCount = 2;
+              }
 
-  void _konfirmasiHapus(BuildContext context, String id, String name) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Hapus $name?', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
-        content: const Text('Apakah Anda yakin ingin menghapus data instansi ini?', style: TextStyle(fontFamily: 'Poppins')),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _opdService.deleteInstansi(id);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Instansi $name berhasil dihapus.')),
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                  childAspectRatio: 2.6,
+                ),
+                itemCount: sektorList.length,
+                itemBuilder: (context, index) {
+                  final sektor = sektorList[index];
+                  final totalLayanan = _opdService.getLayananList().where((l) => l.sektor.toLowerCase() == sektor.title.toLowerCase()).length;
+                  final displayCount = totalLayanan > 0 ? totalLayanan : 6;
+
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF4F7FC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                          child: Center(
+                            child: SmartImage(
+                              imagePath: sektor.imagePath,
+                              width: 24,
+                              height: 24,
+                              fit: BoxFit.contain,
+                              fallbackIcon: Icons.widgets_rounded,
+                              fallbackColor: const Color(0xFF0F2942),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(sektor.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins'), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 2),
+                              Text('$displayCount Layanan', style: const TextStyle(fontSize: 10.5, color: Colors.grey, fontFamily: 'Poppins')),
+                            ],
+                          ),
+                        ),
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 18),
+                          onSelected: (val) {
+                            if (val == 'edit') {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => AdminFormSektorScreen(sektor: sektor)));
+                            } else if (val == 'hapus') {
+                              _konfirmasiHapusSektor(context, sektor);
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_rounded, size: 14, color: Color(0xFF0F2942)), SizedBox(width: 6), Text('Edit Sektor', style: TextStyle(fontSize: 11.5, fontFamily: 'Poppins'))])),
+                            const PopupMenuItem(value: 'hapus', child: Row(children: [Icon(Icons.delete_outline_rounded, size: 14, color: Colors.red), SizedBox(width: 6), Text('Hapus Sektor', style: TextStyle(fontSize: 11.5, color: Colors.red, fontFamily: 'Poppins'))])),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
               );
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            child: const Text('Hapus', style: TextStyle(fontFamily: 'Poppins')),
           ),
         ],
       ),

@@ -172,7 +172,7 @@ class _AdminSektorListScreenState extends State<AdminSektorListScreen> {
                         },
                         icon: const Icon(Icons.add_rounded, size: 18),
                         label: const Text(
-                          '+ Tambah Sektor',
+                          'Tambah Sektor',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
