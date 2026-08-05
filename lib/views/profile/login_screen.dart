@@ -446,11 +446,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               side: const BorderSide(color: Color(0xFF123457), width: 1.5),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                const Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
-                                const SizedBox(width: 10),
+                                Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
+                                SizedBox(width: 10),
                                 Text(
                                   'Masuk dengan IKD',
                                   style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
@@ -483,7 +483,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.chat_rounded, size: 20),
-                                const SizedBox(width: 10),
+                                SizedBox(width: 10),
                                 Text(
                                   'Masuk dengan WhatsApp',
                                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
