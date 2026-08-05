@@ -347,10 +347,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
           // AREA KONTEN UTAMA KANAN (DYNAMICAL SINGLE PAGE SWITCHER)
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: _buildActiveContentView(context, sidebarBg, accentGold),
-            ),
+            child: _buildMainContentWrapper(context, sidebarBg, accentGold),
           ),
         ],
       ),
@@ -372,6 +369,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       default:
         return 'Dashboard Admin';
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // WRAPPER UNTUK KONTEN UTAMA (KONTROL SCROLLING)
+  // ---------------------------------------------------------------------------
+  Widget _buildMainContentWrapper(BuildContext context, Color sidebarBg, Color accentGold) {
+    // Menu Chat memerlukan scrolling internal (bukan global) agar rapi
+    if (_selectedNavIndex == 4) {
+      return _buildActiveContentView(context, sidebarBg, accentGold);
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: _buildActiveContentView(context, sidebarBg, accentGold),
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -1796,7 +1808,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   // VIEW 4: LIVE CHAT INBOX VIEW
   // ===========================================================================
   Widget _buildLiveChatInboxView(BuildContext context, Color sidebarBg, Color accentGold) {
-    return const AdminChatInboxScreen();
+    return const AdminChatInboxScreen(isEmbedded: true);
   }
 
   // ---------------------------------------------------------------------------

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../../models/chat_message_model.dart';
+import '../../services/chat_service.dart';
+import '../../services/user_service.dart';
 
 class HelpCenterScreen extends StatefulWidget {
   const HelpCenterScreen({super.key});
@@ -12,7 +14,11 @@ class HelpCenterScreen extends StatefulWidget {
 class _HelpCenterScreenState extends State<HelpCenterScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<ChatMessage> _messages = [];
+  final ChatService _chatService = ChatService();
+  final UserService _userService = UserService();
+  
+  String get _threadId => 'CHAT-${_userService.currentUser.name}-${_userService.currentUser.phoneNumber}';
+  
   bool _isTyping = false;
 
   // Data Jawaban FAQ untuk Bot
@@ -31,40 +37,42 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         'Mohon pastikan data yang diinput sudah lengkap. Jika sudah lebih dari 3 hari kerja, Anda bisa menggunakan fitur "Hubungi Admin" di detail pengaduan tersebut.',
   };
 
-  void _handleSendMessage(String text) {
+  void _handleSendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    setState(() {
-      _messages.add(ChatMessage(
-        text: text,
-        sender: MessageSender.user,
-        timestamp: DateTime.now(),
-      ));
-      _isTyping = true;
-    });
+    final String userName = _userService.currentUser.name;
+
+    // Kirim ke Firebase Online
+    await _chatService.sendMessage(
+      threadId: _threadId,
+      text: text,
+      sender: MessageSender.user,
+      userName: userName,
+      topic: 'Umum / Pusat Bantuan',
+    );
 
     _messageController.clear();
     _scrollToBottom();
 
-    // Simulasi Balasan Bot setelah 1 detik
-    Timer(const Duration(seconds: 1), () {
+    // Simulasi Balasan Bot (Tetap ada sebagai AI pembuka)
+    setState(() => _isTyping = true);
+    
+    Timer(const Duration(seconds: 1), () async {
       if (!mounted) return;
       
       String reply = 'Terima kasih atas pesan Anda. Mohon tunggu sebentar, agen SOA akan segera merespon Anda.';
       
-      // Cek apakah pesan user cocok dengan FAQ
       if (_faqResponses.containsKey(text)) {
         reply = _faqResponses[text]!;
       }
 
-      setState(() {
-        _messages.add(ChatMessage(
-          text: reply,
-          sender: MessageSender.bot,
-          timestamp: DateTime.now(),
-        ));
-        _isTyping = false;
-      });
+      await _chatService.sendMessage(
+        threadId: _threadId,
+        text: reply,
+        sender: MessageSender.bot,
+      );
+
+      if (mounted) setState(() => _isTyping = false);
       _scrollToBottom();
     });
   }
@@ -124,13 +132,41 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                         
                         const SizedBox(height: 30),
                         
-                        // Dynamic Message List
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _messages.length,
-                          itemBuilder: (context, index) {
-                            return _buildChatBubble(_messages[index], accentColor);
+                        // Dynamic Message List (DARI FIREBASE ONLINE)
+                        StreamBuilder<List<ChatMessage>>(
+                          stream: _chatService.getMessages(_threadId),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
+                            
+                            final messages = snapshot.data ?? [];
+                            
+                            if (messages.isEmpty) {
+                              return Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF0F2F5),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text(
+                                    'Lanjutkan chat dengan SOA?',
+                                    style: TextStyle(color: Colors.black87, fontSize: 13),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: messages.length,
+                              itemBuilder: (context, index) {
+                                return _buildChatBubble(messages[index], accentColor);
+                              },
+                            );
                           },
                         ),
                         
@@ -148,25 +184,6 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             ),
                           ),
 
-                        const SizedBox(height: 20),
-                        
-                        // Default Prompt
-                        if (_messages.isEmpty)
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF0F2F5),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Lanjutkan chat dengan SOA?',
-                                style: TextStyle(color: Colors.black87, fontSize: 13),
-                              ),
-                            ),
-                          ),
-                        
                         const SizedBox(height: 40),
                       ],
                     ),
@@ -377,27 +394,30 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     );
   }
 
-  void _hubungiAdminDirectly() {
-    setState(() {
-      _messages.add(ChatMessage(
-        text: 'Saya ingin mengobrol langsung dengan Petugas Admin.',
-        sender: MessageSender.user,
-        timestamp: DateTime.now(),
-      ));
-      _isTyping = true;
-    });
+  void _hubungiAdminDirectly() async {
+    final String userName = _userService.currentUser.name;
+    
+    await _chatService.sendMessage(
+      threadId: _threadId,
+      text: 'Saya ingin mengobrol langsung dengan Petugas Admin.',
+      sender: MessageSender.user,
+      userName: userName,
+      topic: 'Umum / Pusat Bantuan',
+    );
+    
+    if (mounted) setState(() => _isTyping = true);
     _scrollToBottom();
 
-    Timer(const Duration(seconds: 1), () {
+    Timer(const Duration(seconds: 1), () async {
       if (!mounted) return;
-      setState(() {
-        _messages.add(ChatMessage(
-          text: 'Pesan Anda telah dialihkan ke Inbox Live Agent Admin Sukabumi One Access. Petugas admin sedang memproses antrean Anda...',
-          sender: MessageSender.bot,
-          timestamp: DateTime.now(),
-        ));
-        _isTyping = false;
-      });
+      
+      await _chatService.sendMessage(
+        threadId: _threadId,
+        text: 'Pesan Anda telah dialihkan ke Inbox Live Agent Admin Sukabumi One Access. Petugas admin sedang memproses antrean Anda...',
+        sender: MessageSender.bot,
+      );
+      
+      if (mounted) setState(() => _isTyping = false);
       _scrollToBottom();
     });
   }

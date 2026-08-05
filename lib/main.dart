@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:mobile/views/berita_dan_fitur/dashboard_screen.dart';
 import 'package:mobile/views/berita_dan_fitur/report_screen.dart';
 import 'package:mobile/views/berita_dan_fitur/notification_screen.dart';
@@ -12,6 +14,11 @@ import 'services/user_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inisialisasi Firebase Online
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // Inisialisasi Service dan Database Lokal
   await UserService().init();
