@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../services/user_service.dart';
-import '../../services/notification_service.dart';
-import '../../models/notification_model.dart';
-import '../../main.dart';
-import '../admin/admin_dashboard_screen.dart';
+import 'package:mobile/services/user_service.dart';
+import 'package:mobile/services/notification_service.dart';
+import 'package:mobile/models/notification_model.dart';
+import 'package:mobile/main.dart';
+import 'package:mobile/views/admin/admin_dashboard_screen.dart';
+import 'package:mobile/views/profile/otp_login_screen.dart'; // Import layar OTP
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -412,6 +413,83 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ],
                                   ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // DIVIDER ATAU SOCIAL LOGIN
+                        const Row(
+                          children: [
+                            Expanded(child: Divider()),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 10),
+                              child: Text('ATAU MASUK DENGAN', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                            ),
+                            Expanded(child: Divider()),
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // TOMBOL LOGIN IKD (IDENTITAS KEPENDUDUKAN DIGITAL)
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Mengarahkan ke Portal Resmi IKD Dukcapil...')),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFF123457), width: 1.5),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Masuk dengan IKD',
+                                  style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // TOMBOL LOGIN WHATSAPP OTP
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const OtpLoginScreen()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.chat_rounded, size: 20),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Masuk dengan WhatsApp',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 

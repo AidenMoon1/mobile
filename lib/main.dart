@@ -6,9 +6,9 @@ import 'package:mobile/views/profile/profile_screen.dart';
 import 'package:mobile/views/profile/login_screen.dart';
 import 'package:mobile/widgets/custom_navbar.dart';
 
-import 'services/notification_service.dart';
-import 'services/feedback_service.dart';
-import 'services/user_service.dart';
+import 'package:mobile/services/notification_service.dart';
+import 'package:mobile/services/feedback_service.dart';
+import 'package:mobile/services/user_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

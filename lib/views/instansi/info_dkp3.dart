@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../layanan/detail_layanan_usaha.dart';
+import 'package:mobile/views/layanan/detail_layanan_usaha.dart';
 
 class InfoDkp3 extends StatefulWidget {
   const InfoDkp3({super.key});

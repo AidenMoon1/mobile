@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/chat_message_model.dart';
+import 'package:mobile/models/chat_message_model.dart';
 
 class AdminChatInboxScreen extends StatefulWidget {
   const AdminChatInboxScreen({super.key});

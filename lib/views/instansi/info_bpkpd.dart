@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../layanan/detail_layanan_lingkungan.dart';
+import 'package:mobile/views/layanan/detail_layanan_lingkungan.dart';
 
 class InfoBpkpd extends StatefulWidget {
   const InfoBpkpd({super.key});

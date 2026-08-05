@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/layanan_model.dart';
-import '../../services/opd_service.dart';
-import 'admin_form_layanan_screen.dart';
+import 'package:mobile/models/layanan_model.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/views/admin/admin_form_layanan_screen.dart';
 
 class AdminLayananListScreen extends StatefulWidget {
   const AdminLayananListScreen({super.key});

@@ -1,24 +1,31 @@
-# Implementation Plan - Switch to Ngrok (Remote Access for Multiple Devices)
+# Implementation Plan - Remote Connectivity with Simulated SSO
 
-The goal is to enable the mobile app to connect to the laptop from ANY internet connection (not just local Wi-Fi), allowing multiple users on different devices to submit data to the central database.
+The goal is to enable the app to work over the internet using your **Ngrok** URL while keeping the new SSO features (IKD & WhatsApp) in **Simulation Mode** as requested.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> - I will set the `baseUrl` to your ngrok URL: `https://nectar-refinish-console.ngrok-free.dev/api`.
-> - After this change, you MUST build a **NEW APK** and send it to your friend, or they won't be able to connect via ngrok.
+> [!TIP]
+> - **SSO Status**: Will remain **Simulated**. Users can enter any 6-digit code to log in via WhatsApp.
+> - **Database Status**: Will remain **Real**. Reports and Feedback will be saved to your laptop's MySQL database.
+> - **Connectivity**: I will use your Ngrok URL (`https://nectar-refinish-console.ngrok-free.dev`) so the app works over cellular data.
 
 ## Proposed Changes
 
 ### [Flutter Frontend]
 
 #### [MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)
-- Update `baseUrl` getter to return the ngrok URL instead of the local IP when running on mobile.
+- Update `_laptopIp` logic or replace with the fixed Ngrok URL.
+- Ensure the `ngrok-skip-browser-warning` header is active.
+
+### [Backend/Laravel]
+
+#### [MODIFY] [.env](file:///C:/src/mobile/backend/.env)
+- Set `APP_URL` to the Ngrok address.
 
 ## Verification Plan
 
 ### Manual Verification
-1.  **Build & Install**: Create a new APK and install it on two different phones.
-2.  **Cellular Data Test**: Turn off Wi-Fi on one of the phones and use cellular data.
-3.  **Submission**: Submit a report from both phones.
-4.  **MySQL Check**: Open phpMyAdmin and confirm both reports appear in the `aduans` table.
+1.  **Internet Test**: Turn off Wi-Fi on your phone.
+2.  **Submission**: Submit a "Pengaduan" from the phone.
+3.  **Check MySQL**: Verify the data appears in your laptop's phpMyAdmin.
+4.  **SSO Test**: Verify you can still log in with any random 6-digit code in the WhatsApp screen.

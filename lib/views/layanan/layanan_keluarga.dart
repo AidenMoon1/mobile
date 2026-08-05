@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'detail_layanan_keluarga.dart';
+import 'package:mobile/views/layanan/detail_layanan_keluarga.dart';
 
 class LayananKeluargaScreen extends StatelessWidget {
   const LayananKeluargaScreen({super.key});

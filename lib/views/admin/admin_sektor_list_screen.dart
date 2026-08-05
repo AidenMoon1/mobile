@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/sektor_model.dart';
-import '../../services/opd_service.dart';
-import 'admin_form_sektor_screen.dart';
+import 'package:mobile/models/sektor_model.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/views/admin/admin_form_sektor_screen.dart';
 
 class AdminSektorListScreen extends StatefulWidget {
   const AdminSektorListScreen({super.key});

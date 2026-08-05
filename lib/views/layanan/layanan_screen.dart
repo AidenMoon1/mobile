@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'layanan_keluarga.dart';
-import 'layanan_usaha.dart';
-import 'layanan_lingkungan.dart';
-import 'form_pengajuan_screen.dart';
-import '../../widgets/smart_image.dart';
+import 'package:mobile/views/layanan/layanan_keluarga.dart';
+import 'package:mobile/views/layanan/layanan_usaha.dart';
+import 'package:mobile/views/layanan/layanan_lingkungan.dart';
+import 'package:mobile/views/layanan/form_pengajuan_screen.dart';
+import 'package:mobile/widgets/smart_image.dart';
 
 class LayananScreen extends StatelessWidget {
   const LayananScreen({super.key});

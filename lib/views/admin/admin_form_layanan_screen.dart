@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/custom_field_config.dart';
-import '../../models/layanan_model.dart';
-import '../../services/opd_service.dart';
+import 'package:mobile/models/custom_field_config.dart';
+import 'package:mobile/models/layanan_model.dart';
+import 'package:mobile/services/opd_service.dart';
 
 class AdminFormLayananScreen extends StatefulWidget {
   final LayananModel? layanan;

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import '../services/user_service.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/user_service.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});

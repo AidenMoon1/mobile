@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../services/opd_service.dart';
-import 'admin_instansi_list_screen.dart';
-import 'admin_form_instansi_screen.dart';
-import 'admin_layanan_list_screen.dart';
-import 'admin_form_layanan_screen.dart';
-import 'admin_sektor_list_screen.dart';
-import 'admin_form_sektor_screen.dart';
-import 'admin_chat_inbox_screen.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/views/admin/admin_instansi_list_screen.dart';
+import 'package:mobile/views/admin/admin_form_instansi_screen.dart';
+import 'package:mobile/views/admin/admin_layanan_list_screen.dart';
+import 'package:mobile/views/admin/admin_form_layanan_screen.dart';
+import 'package:mobile/views/admin/admin_sektor_list_screen.dart';
+import 'package:mobile/views/admin/admin_form_sektor_screen.dart';
+import 'package:mobile/views/admin/admin_chat_inbox_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});

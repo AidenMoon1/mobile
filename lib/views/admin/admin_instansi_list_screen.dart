@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/instansi_model.dart';
-import '../../services/opd_service.dart';
-import 'admin_form_instansi_screen.dart';
+import 'package:mobile/models/instansi_model.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/views/admin/admin_form_instansi_screen.dart';
 
 class AdminInstansiListScreen extends StatefulWidget {
   const AdminInstansiListScreen({super.key});
