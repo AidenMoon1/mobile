@@ -21,7 +21,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
   bool _isTyping = false;
 
-  // Data Jawaban FAQ untuk Bot
+  // Data Jawaban FAQ untuk AI Bot SOA
   final Map<String, String> _faqResponses = {
     'Bagaimana cara membuat pengaduan?':
         'Untuk membuat pengaduan, Anda bisa masuk ke menu "Layanan" di navigasi bawah, pilih kategori layanan yang sesuai, lalu isi formulir pengaduan dengan lengkap dan unggah foto pendukung jika diperlukan.',
@@ -30,12 +30,31 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     'Berapa lama pengaduan diproses?':
         'Proses pengaduan biasanya memakan waktu 1-3 hari kerja tergantung pada tingkat kompleksitas masalah dan instansi yang berwenang menanganinya.',
     'Apa saja layanan yang tersedia?':
-        'Saat ini tersedia layanan Pengaduan Infrastruktur, Layanan Dukcapil Digital, Informasi Cuaca, dan Berita Kota Sukabumi.',
+        'Saat ini tersedia layanan Pengaduan Infrastruktur, Layanan Dukcapil Digital, Informasi Cuaca, Berita Kota Sukabumi, dan Integrasi SSO IKD.',
     'Di mana lokasi kantor pelayanan?':
         'Kantor Pusat Layanan terpadu berada di Balai Kota Sukabumi, Jl. R. Syamsudin, S.H. No.25.',
     'Mengapa pengaduan saya belum ditindaklanjuti?':
         'Mohon pastikan data yang diinput sudah lengkap. Jika sudah lebih dari 3 hari kerja, Anda bisa menggunakan fitur "Hubungi Admin" di detail pengaduan tersebut.',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _initInitialGreeting();
+  }
+
+  void _initInitialGreeting() {
+    Future.delayed(const Duration(milliseconds: 300), () async {
+      final String userName = _userService.currentUser.name;
+      await _chatService.sendMessage(
+        threadId: _threadId,
+        text: 'Halo $userName! 👋 Selamat datang di Pusat Layanan Publik Sukabumi One Access. Saya AI Bot SOA, asisten digital 24 jam Kota Sukabumi. Silakan pilih pertanyaan FAQ di atas atau ketik pesan Anda!',
+        sender: MessageSender.bot,
+        userName: userName,
+        topic: 'Umum / Pusat Bantuan',
+      );
+    });
+  }
 
   void _handleSendMessage(String text) async {
     final trimmed = text.trim();
@@ -44,8 +63,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     final String userName = _userService.currentUser.name;
 
     _messageController.clear();
+    FocusScope.of(context).unfocus();
 
-    // Kirim ke Firebase Online
+    // Kirim ke ChatService (Local & Cloud Firestore)
     await _chatService.sendMessage(
       threadId: _threadId,
       text: trimmed,
@@ -57,11 +77,11 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     _scrollToBottom();
     if (mounted) setState(() => _isTyping = true);
 
-    // AI Bot SOA Response Logic
-    Timer(const Duration(milliseconds: 900), () async {
+    // AI Bot SOA Auto-Reply Logic
+    Timer(const Duration(milliseconds: 600), () async {
       if (!mounted) return;
 
-      String reply = 'Terima kasih atas pesan Anda. Petugas Admin SOA telah menerima pesan Anda dan akan segera merespon secara langsung.';
+      String reply = 'Terima kasih atas pertanyaan Anda. Petugas Admin SOA telah menerima pesan Anda dan akan segera merespon secara langsung jika diperlukan.';
 
       final qLower = trimmed.toLowerCase();
       if (_faqResponses.containsKey(trimmed)) {
@@ -73,7 +93,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       } else if (qLower.contains('izin') || qLower.contains('pbg') || qLower.contains('usaha')) {
         reply = 'Layanan Perizinan PBG & Usaha dikelola oleh DPMPTSP Kota Sukabumi. Anda dapat mengecek alur perizinan di menu Instansi DPMPTSP.';
       } else if (qLower.contains('halo') || qLower.contains('hai') || qLower.contains('pagi') || qLower.contains('siang')) {
-        reply = 'Halo! Selamat datang di Pusat Layanan Publik Sukabumi One Access. Ada yang bisa AI Bot SOA bantu hari ini?';
+        reply = 'Halo $userName! Ada yang bisa AI Bot SOA bantu hari ini mengenai layanan publik Kota Sukabumi?';
       }
 
       await _chatService.sendMessage(
@@ -142,14 +162,10 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
                         const SizedBox(height: 30),
 
-                        // Dynamic Message List (DARI FIREBASE ONLINE)
+                        // Dynamic Message List (REAL-TIME STREAM)
                         StreamBuilder<List<ChatMessage>>(
                           stream: _chatService.getMessages(_threadId),
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-                              return const Center(child: CircularProgressIndicator());
-                            }
-
                             final messages = snapshot.data ?? [];
 
                             if (messages.isEmpty) {
@@ -162,8 +178,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: const Text(
-                                    'Lanjutkan chat dengan SOA?',
-                                    style: TextStyle(color: Colors.black87, fontSize: 13),
+                                    'Lanjutkan chat dengan AI Bot SOA...',
+                                    style: TextStyle(color: Colors.black87, fontSize: 13, fontFamily: 'Poppins'),
                                   ),
                                 ),
                               );
@@ -185,12 +201,23 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                             alignment: Alignment.centerLeft,
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF0F2F5),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text('SOA sedang mengetik...', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF0A1E33)),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('AI Bot SOA sedang mengetik...', style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins')),
+                                ],
+                              ),
                             ),
                           ),
 
@@ -203,7 +230,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             ),
           ),
 
-          // 6. CHAT INPUT BAR (BEBAS DARI WARNA SAMAR, ICON BUTTON TEGAS & RESPONSIF)
+          // 6. CHAT INPUT BAR
           _buildInputBar(primaryColor),
         ],
       ),
@@ -222,9 +249,9 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_balance, color: Colors.white),
           ),
           const SizedBox(width: 8),
-          const Text('SUKABUMI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+          const Text('SUKABUMI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Poppins')),
           const Spacer(),
-          const Text('KOTA SUKABUMI', style: TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 1)),
+          const Text('KOTA SUKABUMI', style: TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 1, fontFamily: 'Poppins')),
         ],
       ),
     );
@@ -241,16 +268,16 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('28°C', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-              Text('Hujan Ringan', style: TextStyle(color: Colors.white70, fontSize: 10)),
+              Text('28°C', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Poppins')),
+              Text('Hujan Ringan', style: TextStyle(color: Colors.white70, fontSize: 10, fontFamily: 'Poppins')),
             ],
           ),
           const Spacer(),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(_userService.currentUser.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-              Text(_userService.currentUser.status, style: TextStyle(color: accentColor, fontSize: 10, fontWeight: FontWeight.bold)),
+              Text(_userService.currentUser.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins')),
+              Text(_userService.currentUser.status, style: TextStyle(color: accentColor, fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
             ],
           ),
           const SizedBox(width: 10),
@@ -393,7 +420,20 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(padding: const EdgeInsets.symmetric(vertical: 14), child: Text(text, style: const TextStyle(color: Color(0xFF3B5B80), fontSize: 13, fontFamily: 'Poppins'))),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    text,
+                    style: const TextStyle(color: Color(0xFF3B5B80), fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins'),
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded, color: Color(0xFF3B5B80), size: 18),
+              ],
+            ),
+          ),
           const Divider(color: Colors.white, height: 1, thickness: 1.5),
         ],
       ),
@@ -457,12 +497,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                       controller: _messageController,
                       onSubmitted: _handleSendMessage,
                       style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-                      decoration: const InputDecoration(
-                        hintText: 'Tulis pesan atau pertanyaan Anda...',
-                        hintStyle: TextStyle(color: Colors.grey, fontSize: 12.5, fontFamily: 'Poppins'),
-                        border: InputBorder.none,
-                        isDense: true,
-                      ),
+                      decoration: const InputDecoration(hintText: 'Tulis pesan atau pertanyaan Anda...', hintStyle: TextStyle(color: Colors.grey, fontSize: 12.5, fontFamily: 'Poppins'), border: InputBorder.none, isDense: true),
                     ),
                   ),
                 ],
