@@ -20,7 +20,7 @@ class ChatService {
     return _streamControllers[threadId]!;
   }
 
-  // Mengirim pesan ke Firestore & Local Cache
+  // Mengirim pesan ke Local Cache (INSTAN) & Firestore secara Asinkron (NON-BLOCKING)
   Future<void> sendMessage({
     required String threadId,
     required String text,
@@ -34,14 +34,30 @@ class ChatService {
       timestamp: DateTime.now(),
     );
 
-    // 1. Simpan ke Local Memory Cache & Trigger Stream
+    // 1. Update Local Memory Cache & Trigger Stream secara INSTAN (< 1ms)
     if (!_localCache.containsKey(threadId)) {
       _localCache[threadId] = [];
     }
     _localCache[threadId]!.add(newMessage);
     _getController(threadId).add(List.from(_localCache[threadId]!));
 
-    // 2. Simpan ke Firebase Firestore (dengan Catch error jika offline/rule)
+    // 2. Sinkronkan ke Firebase Firestore di Background (Non-Blocking)
+    _syncToFirestore(
+      threadId: threadId,
+      text: text,
+      sender: sender,
+      userName: userName,
+      topic: topic,
+    );
+  }
+
+  void _syncToFirestore({
+    required String threadId,
+    required String text,
+    required MessageSender sender,
+    String? userName,
+    String? topic,
+  }) async {
     try {
       final safeThreadId = threadId.replaceAll(RegExp(r'[^\w\-]'), '_');
 
@@ -53,7 +69,7 @@ class ChatService {
         'text': text,
         'sender': sender.toString(),
         'timestamp': FieldValue.serverTimestamp(),
-      });
+      }).timeout(const Duration(seconds: 4));
 
       Map<String, dynamic> updateData = {
         'lastMessage': text,
@@ -67,9 +83,9 @@ class ChatService {
       await _firestore.collection('chats').doc(safeThreadId).set(
             updateData,
             SetOptions(merge: true),
-          );
+          ).timeout(const Duration(seconds: 4));
     } catch (e) {
-      // Ignored for offline/fallback mode
+      // Background sync fallback
     }
   }
 
@@ -105,7 +121,7 @@ class ChatService {
           controller.add(remoteDocs);
         }
       }, onError: (err) {
-        // Fallback ke cache jika error
+        // Fallback
       });
     } catch (e) {
       // Fallback

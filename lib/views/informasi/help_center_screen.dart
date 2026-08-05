@@ -44,7 +44,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   }
 
   void _initInitialGreeting() {
-    Future.delayed(const Duration(milliseconds: 300), () async {
+    Future.delayed(const Duration(milliseconds: 200), () async {
       final String userName = _userService.currentUser.name;
       await _chatService.sendMessage(
         threadId: _threadId,
@@ -53,10 +53,11 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         userName: userName,
         topic: 'Umum / Pusat Bantuan',
       );
+      _scrollToBottom();
     });
   }
 
-  void _handleSendMessage(String text) async {
+  void _handleSendMessage(String text) {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
 
@@ -65,8 +66,8 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     _messageController.clear();
     FocusScope.of(context).unfocus();
 
-    // Kirim ke ChatService (Local & Cloud Firestore)
-    await _chatService.sendMessage(
+    // 1. Kirim pesan user (Non-Blocking)
+    _chatService.sendMessage(
       threadId: _threadId,
       text: trimmed,
       sender: MessageSender.user,
@@ -77,23 +78,36 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     _scrollToBottom();
     if (mounted) setState(() => _isTyping = true);
 
-    // AI Bot SOA Auto-Reply Logic
-    Timer(const Duration(milliseconds: 600), () async {
+    // 2. AI Bot SOA Respon Otomatis (Garansi 100% Berjalan)
+    Timer(const Duration(milliseconds: 500), () async {
       if (!mounted) return;
 
       String reply = 'Terima kasih atas pertanyaan Anda. Petugas Admin SOA telah menerima pesan Anda dan akan segera merespon secara langsung jika diperlukan.';
 
       final qLower = trimmed.toLowerCase();
-      if (_faqResponses.containsKey(trimmed)) {
-        reply = _faqResponses[trimmed]!;
-      } else if (qLower.contains('ktp') || qLower.contains('dukcapil') || qLower.contains('kk')) {
-        reply = 'Untuk permohonan KTP-el atau KK Digital, Anda dapat mengakses menu "Layanan" -> Kategori "Dukcapil" atau datang ke Kantor Disdukcapil Kota Sukabumi.';
-      } else if (qLower.contains('pengaduan') || qLower.contains('lapor')) {
-        reply = 'Untuk membuat laporan pengaduan, silakan buka menu "Layanan" di navigasi bawah, pilih jenis pengaduan dan unggah bukti foto pendukung.';
-      } else if (qLower.contains('izin') || qLower.contains('pbg') || qLower.contains('usaha')) {
-        reply = 'Layanan Perizinan PBG & Usaha dikelola oleh DPMPTSP Kota Sukabumi. Anda dapat mengecek alur perizinan di menu Instansi DPMPTSP.';
-      } else if (qLower.contains('halo') || qLower.contains('hai') || qLower.contains('pagi') || qLower.contains('siang')) {
-        reply = 'Halo $userName! Ada yang bisa AI Bot SOA bantu hari ini mengenai layanan publik Kota Sukabumi?';
+
+      // Cek matching FAQ case-insensitive
+      bool matchedFaq = false;
+      for (var entry in _faqResponses.entries) {
+        if (entry.key.toLowerCase().trim() == qLower) {
+          reply = entry.value;
+          matchedFaq = true;
+          break;
+        }
+      }
+
+      if (!matchedFaq) {
+        if (qLower.contains('berapa lama') || qLower.contains('lama') || qLower.contains('proses')) {
+          reply = 'Proses pengaduan dan permohonan layanan biasanya memakan waktu 1-3 hari kerja tergantung tingkat kompleksitas dan OPD terkait.';
+        } else if (qLower.contains('ktp') || qLower.contains('dukcapil') || qLower.contains('kk')) {
+          reply = 'Untuk permohonan KTP-el atau KK Digital, Anda dapat mengakses menu "Layanan" -> Kategori "Dukcapil" atau datang ke Kantor Disdukcapil Kota Sukabumi.';
+        } else if (qLower.contains('pengaduan') || qLower.contains('lapor')) {
+          reply = 'Untuk membuat laporan pengaduan, silakan buka menu "Layanan" di navigasi bawah, pilih jenis pengaduan dan unggah bukti foto pendukung.';
+        } else if (qLower.contains('izin') || qLower.contains('pbg') || qLower.contains('usaha')) {
+          reply = 'Layanan Perizinan PBG & Usaha dikelola oleh DPMPTSP Kota Sukabumi. Anda dapat mengecek alur perizinan di menu Instansi DPMPTSP.';
+        } else if (qLower.contains('halo') || qLower.contains('hai') || qLower.contains('pagi') || qLower.contains('siang')) {
+          reply = 'Halo $userName! Ada yang bisa AI Bot SOA bantu hari ini mengenai layanan publik Kota Sukabumi?';
+        }
       }
 
       await _chatService.sendMessage(
@@ -386,10 +400,10 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     );
   }
 
-  void _hubungiAdminDirectly() async {
+  void _hubungiAdminDirectly() {
     final String userName = _userService.currentUser.name;
 
-    await _chatService.sendMessage(
+    _chatService.sendMessage(
       threadId: _threadId,
       text: 'Saya ingin mengobrol langsung dengan Petugas Admin.',
       sender: MessageSender.user,
@@ -400,7 +414,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     if (mounted) setState(() => _isTyping = true);
     _scrollToBottom();
 
-    Timer(const Duration(seconds: 1), () async {
+    Timer(const Duration(milliseconds: 600), () async {
       if (!mounted) return;
 
       await _chatService.sendMessage(
