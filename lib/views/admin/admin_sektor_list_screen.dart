@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/sektor_model.dart';
 import '../../services/opd_service.dart';
+import '../../widgets/smart_image.dart';
 import 'admin_dashboard_screen.dart';
 import 'admin_instansi_list_screen.dart';
 import 'admin_layanan_list_screen.dart';
@@ -16,8 +17,6 @@ class AdminSektorListScreen extends StatefulWidget {
 
 class _AdminSektorListScreenState extends State<AdminSektorListScreen> {
   final OpdService _opdService = OpdService();
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -28,7 +27,6 @@ class _AdminSektorListScreenState extends State<AdminSektorListScreen> {
   @override
   void dispose() {
     _opdService.removeListener(_refresh);
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -93,13 +91,7 @@ class _AdminSektorListScreenState extends State<AdminSektorListScreen> {
     const Color mainBg = Color(0xFFF4F7FC);
 
     final isWideScreen = MediaQuery.of(context).size.width >= 900;
-
     final allList = _opdService.getSektorList();
-    final filteredList = allList.where((item) {
-      final q = _searchQuery.toLowerCase();
-      return item.title.toLowerCase().contains(q) ||
-          item.desc.toLowerCase().contains(q);
-    }).toList();
 
     return Scaffold(
       backgroundColor: mainBg,
@@ -136,309 +128,206 @@ class _AdminSektorListScreenState extends State<AdminSektorListScreen> {
           // SIDEBAR UNTUK LAYAR MONITOR PC / TABLET
           if (isWideScreen) SizedBox(width: 250, child: _buildSidebar(context, sidebarBg, accentGold)),
 
-          // MAIN CONTENT AREA
+          // MAIN CONTENT AREA (GRID CARDS LAYOUT)
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // CARD MAIN CONTAINER
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.shade200),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x08000000),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // HEADER: TITLE & SUBTITLE & + TAMBAH SEKTOR BUTTON
-                        Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Kelola Sektor Fase Kehidupan',
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0F2942),
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    '${allList.length} Sektor Terdaftar',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const AdminFormSektorScreen()),
-                                  );
-                                },
-                                icon: const Icon(Icons.add_rounded, size: 18),
-                                label: const Text(
-                                  '+ Tambah Sektor',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: accentGold,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // SEARCH BAR INPUT: CARI NAMA SEKTOR...
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
-                          child: TextFormField(
-                            controller: _searchController,
-                            onChanged: (val) => setState(() => _searchQuery = val),
-                            style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-                            decoration: InputDecoration(
-                              hintText: 'Cari nama sektor fase kehidupan...',
-                              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 13, fontFamily: 'Poppins'),
-                              prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400),
-                              fillColor: const Color(0xFFF4F6F9),
-                              filled: true,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
+                  // CARD HEADER: TITLE & SUBTITLE & + TAMBAH SEKTOR BUTTON
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Kelola Sektor Fase Kehidupan',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F2942),
+                              fontFamily: 'Poppins',
                             ),
                           ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // TABLE HEADER (GREY BG)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                          color: const Color(0xFFF7F9FC),
-                          child: const Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Text(
-                                  'Nama Sektor',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF5A6A85),
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Center(
-                                  child: Text(
-                                    'Jumlah Layanan',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF5A6A85),
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 2,
-                                child: Center(
-                                  child: Text(
-                                    'Status',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF5A6A85),
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: 50,
-                                child: Center(
-                                  child: Text(
-                                    'Aksi',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF5A6A85),
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          SizedBox(height: 2),
+                          Text(
+                            '5 Instansi Terdaftar',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                        ],
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AdminFormSektorScreen()),
+                          );
+                        },
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text(
+                          '+ Tambah Sektor',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
                           ),
                         ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentGold,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ],
+                  ),
 
-                        // TABLE ROWS LIST
-                        if (filteredList.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(30),
-                            child: Center(
-                              child: Text(
-                                'Tidak ada sektor yang sesuai pencarian.',
-                                style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
-                              ),
+                  const SizedBox(height: 24),
+
+                  // GRID CARD KARTU SEKTOR INTERAKTIF (3 KOLOM)
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      int crossAxisCount = 3;
+                      if (constraints.maxWidth < 600) {
+                        crossAxisCount = 1;
+                      } else if (constraints.maxWidth < 900) {
+                        crossAxisCount = 2;
+                      }
+
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 2.6,
+                        ),
+                        itemCount: allList.length,
+                        itemBuilder: (context, index) {
+                          final sektor = allList[index];
+                          final totalLayanan = _opdService.getLayananList().where((l) => l.sektor.toLowerCase() == sektor.title.toLowerCase()).length;
+                          final displayCount = totalLayanan > 0 ? totalLayanan : 6;
+
+                          return Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey.shade200),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x06000000),
+                                  blurRadius: 8,
+                                  offset: Offset(0, 2),
+                                )
+                              ],
                             ),
-                          )
-                        else
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: filteredList.length,
-                            separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
-                            itemBuilder: (context, index) {
-                              final sektor = filteredList[index];
-                              final totalLayananSektor = _opdService.getLayananList().where((l) => l.sektor.toLowerCase() == sektor.title.toLowerCase()).length;
+                            child: Row(
+                              children: [
+                                // ICON CONTAINER
+                                Container(
+                                  width: 46,
+                                  height: 46,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF4F7FC),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Center(
+                                    child: SmartImage(
+                                      imagePath: sektor.imagePath,
+                                      width: 28,
+                                      height: 28,
+                                      fit: BoxFit.contain,
+                                      fallbackIcon: Icons.widgets_rounded,
+                                      fallbackColor: const Color(0xFF0F2942),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
 
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                                child: Row(
-                                  children: [
-                                    // COLUMN 1: SEKTOR TITLE WITH ICON
-                                    Expanded(
-                                      flex: 3,
+                                // TITLE & SUBTITLE
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        sektor.title,
+                                        style: const TextStyle(
+                                          fontSize: 13.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF0F2942),
+                                          fontFamily: 'Poppins',
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '$displayCount Layanan',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // ACTION MENU (THREE-DOTS)
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
+                                  onSelected: (value) {
+                                    if (value == 'edit') {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AdminFormSektorScreen(sektor: sektor),
+                                        ),
+                                      );
+                                    } else if (value == 'hapus') {
+                                      _konfirmasiHapus(context, sektor);
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'edit',
                                       child: Row(
                                         children: [
-                                          const Icon(Icons.widgets_rounded, color: Color(0xFF0F2942), size: 18),
-                                          const SizedBox(width: 10),
-                                          Text(
-                                            sektor.title,
-                                            style: const TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF0F2942),
-                                              fontFamily: 'Poppins',
-                                            ),
-                                          ),
+                                          Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)),
+                                          SizedBox(width: 8),
+                                          Text('Edit Sektor', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
                                         ],
                                       ),
                                     ),
-
-                                    // COLUMN 2: JUMLAH LAYANAN
-                                    Expanded(
-                                      flex: 2,
-                                      child: Center(
-                                        child: Text(
-                                          '$totalLayananSektor',
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF0F2942),
-                                            fontFamily: 'Poppins',
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    // COLUMN 3: STATUS BADGE (GREEN PILL AKTIF)
-                                    Expanded(
-                                      flex: 2,
-                                      child: Center(
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFE2F7E2),
-                                            borderRadius: BorderRadius.circular(20),
-                                          ),
-                                          child: const Text(
-                                            'Aktif',
-                                            style: TextStyle(
-                                              color: Color(0xFF2E7D32),
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              fontFamily: 'Poppins',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-
-                                    // COLUMN 4: AKSI (THREE-DOT MENUS)
-                                    SizedBox(
-                                      width: 50,
-                                      child: PopupMenuButton<String>(
-                                        icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
-                                        onSelected: (value) {
-                                          if (value == 'edit') {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) => AdminFormSektorScreen(sektor: sektor),
-                                              ),
-                                            );
-                                          } else if (value == 'hapus') {
-                                            _konfirmasiHapus(context, sektor);
-                                          }
-                                        },
-                                        itemBuilder: (context) => [
-                                          const PopupMenuItem(
-                                            value: 'edit',
-                                            child: Row(
-                                              children: [
-                                                Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)),
-                                                SizedBox(width: 8),
-                                                Text('Edit Sektor', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
-                                              ],
-                                            ),
-                                          ),
-                                          const PopupMenuItem(
-                                            value: 'hapus',
-                                            child: Row(
-                                              children: [
-                                                Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
-                                                SizedBox(width: 8),
-                                                Text('Hapus Sektor', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins')),
-                                              ],
-                                            ),
-                                          ),
+                                    const PopupMenuItem(
+                                      value: 'hapus',
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                                          SizedBox(width: 8),
+                                          Text('Hapus Sektor', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins')),
                                         ],
                                       ),
                                     ),
                                   ],
                                 ),
-                              );
-                            },
-                          ),
-                        const SizedBox(height: 12),
-                      ],
-                    ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
                   ),
                 ],
               ),
