@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../layanan/detail_layanan_keluarga.dart';
-import '../../services/opd_service.dart';
+import 'package:mobile/views/layanan/detail_layanan_keluarga.dart';
+import 'package:mobile/services/opd_service.dart';
 
 class InfoDisdukcapil extends StatefulWidget {
   const InfoDisdukcapil({super.key});

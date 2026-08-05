@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../widgets/smart_image.dart';
+import 'package:mobile/widgets/smart_image.dart';
 
 class TermsAndPolicyScreen extends StatefulWidget {
   const TermsAndPolicyScreen({super.key});

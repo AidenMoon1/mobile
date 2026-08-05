@@ -1,27 +1,35 @@
-# Walkthrough - Data Isolation and Web-Mobile Sync
+# Walkthrough - Application Connected to Ngrok
 
-I have implemented data isolation to ensure users only see their own reports and synchronized the interactive features between the mobile app and the web portal.
+I have successfully updated the application settings to use your public Ngrok tunnel. This allows the mobile app to communicate with your laptop's server over the internet.
 
 ## Changes Made
 
-### 1. User Data Isolation (Privacy Fix)
-- **Problem**: Previously, any user could see all reports in the database.
-- **Solution**:
-    - **Backend**: Updated `GET /api/aduan` and `GET /api/feedback` to filter results based on a `user_id` parameter.
-    - **Database**: Added a `user_id` column to the `feedback` and `permohonans` tables.
-    - **Frontend**: Updated the mobile app to send the user's ID (`ID-1003`) with every request. Now, your history is yours only.
+### 1. **Flutter API Redirection**
+- **[api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**:
+    - Replaced the local IP address with your public Ngrok URL: **`https://nectar-refinish-console.ngrok-free.dev`**.
+    - Maintained a smart logic: The app will use `localhost` when running in a web browser and the Ngrok URL when running on a physical phone.
+    - Added the `ngrok-skip-browser-warning` header to ensure seamless data exchange.
 
-### 2. Web & Mobile Feature Sync
-- **[feedback.blade.php](file:///C:/src/mobile/backend/resources/views/pages/feedback.blade.php)**: Created a new web-based feedback form that mirrors the mobile design, including the **interactive 5-star gold rating system**.
-- **[notifications.blade.php](file:///C:/src/mobile/backend/resources/views/pages/notifications.blade.php)**: Updated the web notification page to fetch real data from the MySQL database and group it by date, just like the HP version.
-- **Navigation**: Added "SARAN" to the web navbar and updated the mobile-web bottom bar for consistency.
+### 2. **Backend Configuration**
+- **[.env](file:///C:/src/mobile/backend/.env)**: Updated `APP_URL` to match the Ngrok address. This ensures Laravel generates correct internal links and supports CORS requests from the tunnel.
 
-## Verification
+## How to Verify Success
 
-### Manual Verification
-1.  **Mobile Submission**: Submit a report or feedback from your phone.
-2.  **Web Verification**: Open `http://localhost:8001/notifikasi` on your laptop. You will see the same notification appear there instantly because they share the same database.
-3.  **Data Check**: Check phpMyAdmin `db_diskominfo`. You will see that new rows now have a `user_id` assigned, ensuring they stay private to that user.
+> [!IMPORTANT]
+> To use the app via Ngrok, follow these steps:
 
-> [!TIP]
-> The web version now acts as a full "Web App". You can try opening the website on your phone's browser to see how the bottom navbar makes it feel exactly like the native Flutter app.
+1.  **Keep Ngrok Running**: Do not close the ngrok terminal window.
+2.  **Keep Laravel Running**: Run `php artisan serve --port=8001`.
+3.  **Test on Phone**:
+    - Open the app on your phone.
+    - Try to fetch news or submit a "Pengaduan".
+    - You can even turn off your phone's Wi-Fi and use **Mobile Data**; it will still work!
+
+## Verification Results
+
+### Automated Checks
+- **URL Mapping**: Confirmed `ApiService` points to the new domain.
+- **Header Injection**: Verified the browser-warning bypass is active.
+
+> [!WARNING]
+> If you close Ngrok and restart it, you will likely get a **New URL**. You will need to update the `_ngrokUrl` in `api_service.dart` with the new address and build the app again.

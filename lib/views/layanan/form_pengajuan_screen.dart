@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../berita_dan_fitur/activity_log_screen.dart';
-import '../../services/api_service.dart';
-import '../../services/user_service.dart';
+import 'package:mobile/views/berita_dan_fitur/activity_log_screen.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/services/user_service.dart';
 
 class FormPengajuanScreen extends StatefulWidget {
   final String judulLayanan;

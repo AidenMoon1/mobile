@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'form_pengajuan_screen.dart';
+import 'package:mobile/views/layanan/form_pengajuan_screen.dart';
 
 class DetailLayananUsahaScreen extends StatelessWidget {
   final String judulLayanan;

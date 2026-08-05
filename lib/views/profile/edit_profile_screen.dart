@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../services/user_service.dart';
-import '../../models/user_model.dart';
-import '../../widgets/smart_image.dart';
-import '../../widgets/admin_image_picker.dart';
+import 'package:mobile/services/user_service.dart';
+import 'package:mobile/models/user_model.dart';
+import 'package:mobile/widgets/smart_image.dart';
+import 'package:mobile/widgets/admin_image_picker.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});

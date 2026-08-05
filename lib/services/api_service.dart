@@ -3,16 +3,16 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Alamat IP Laptop Anda
-  static const String _laptopIp = '13.13.13.216';
+  // Alamat Ngrok (Publik) - Ganti jika ngrok direstart
+  static const String _ngrokUrl = 'https://nectar-refinish-console.ngrok-free.dev';
   static const String _port = '8001';
 
-  // Otomatis memilih localhost jika di browser, atau IP laptop jika di HP
+  // Otomatis memilih localhost jika di browser, atau Ngrok jika di HP
   static String get baseUrl {
     if (kIsWeb) {
       return 'http://localhost:$_port/api';
     }
-    return 'http://$_laptopIp:$_port/api';
+    return '$_ngrokUrl/api';
   }
 
   // SET KE 'true' JIKA SERVER MATI AGAR APLIKASI TETAP BISA DIJALANKAN DENGAN DATA PALSU

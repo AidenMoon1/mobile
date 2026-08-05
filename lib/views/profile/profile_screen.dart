@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'edit_profile_screen.dart';
-import 'login_screen.dart';
-import '../informasi/terms_and_policy_screen.dart';
-import '../informasi/about_screen.dart';
-import '../informasi/feedback_screen.dart';
-import '../informasi/help_center_screen.dart';
-import '../../services/user_service.dart';
-import '../../models/user_model.dart';
-import '../../services/notification_service.dart';
-import '../../models/notification_model.dart';
-import '../../widgets/smart_image.dart';
-import '../../widgets/admin_image_picker.dart';
+import 'package:mobile/views/profile/edit_profile_screen.dart';
+import 'package:mobile/views/profile/login_screen.dart';
+import 'package:mobile/views/informasi/terms_and_policy_screen.dart';
+import 'package:mobile/views/informasi/about_screen.dart';
+import 'package:mobile/views/informasi/feedback_screen.dart';
+import 'package:mobile/views/informasi/help_center_screen.dart';
+import 'package:mobile/services/user_service.dart';
+import 'package:mobile/models/user_model.dart';
+import 'package:mobile/services/notification_service.dart';
+import 'package:mobile/models/notification_model.dart';
+import 'package:mobile/widgets/smart_image.dart';
+import 'package:mobile/widgets/admin_image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

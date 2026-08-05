@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../services/opd_service.dart';
-import '../../widgets/smart_image.dart';
-import 'info_disdukcapil.dart';
-import 'info_diskominfo.dart';
-import 'info_dpmpstp.dart';
-import 'info_dkp3.dart';
-import 'info_bpkpd.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/widgets/smart_image.dart';
+import 'package:mobile/views/instansi/info_disdukcapil.dart';
+import 'package:mobile/views/instansi/info_diskominfo.dart';
+import 'package:mobile/views/instansi/info_dpmpstp.dart';
+import 'package:mobile/views/instansi/info_dkp3.dart';
+import 'package:mobile/views/instansi/info_bpkpd.dart';
 
 class InstansiScreen extends StatefulWidget {
   const InstansiScreen({super.key});

@@ -1,10 +1,6 @@
-- [x] User Data Isolation Implementation
-    - [x] Backend: Update `api.php` and Controllers to filter by `user_id`
-    - [x] Frontend: Update API calls in `ReportScreen`, `FeedbackService`, and `FormPengajuanScreen` to include `user_id`
-- [x] Sync Web Features with Mobile
-    - [x] Create Web Feedback form with 5-star rating (`feedback.blade.php`)
-    - [x] Update Web Notifications to fetch real database data (`notifications.blade.php`)
-    - [x] Update Web Navbar to include Feedback/Saran link
-- [x] Verification
-    - [x] Test data isolation by checking phpMyAdmin user_id values
-    - [x] Open `localhost:8001/feedback` to verify web form
+- [x] Integrate IKD SSO & WhatsApp OTP (Simulation)
+- [x] Connect Application to Ngrok
+    - [x] Update `api_service.dart` with Ngrok URL
+    - [x] Update `backend/.env` with Ngrok URL
+- [ ] Verification
+    - [ ] Test mobile app connection via ngrok
