@@ -46,6 +46,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
+        manifestPlaceholders = [
+            appAuthRedirectScheme: 'com.diskominfo.mobile',
+            applicationName: 'android.app.Application'
+        ]
     }
 
     buildTypes {

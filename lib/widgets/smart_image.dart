@@ -1,5 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Conditional import to prevent crash on Web
+import 'dart:io' as io;
 
 class SmartImage extends StatelessWidget {
   final String imagePath;
@@ -61,17 +63,26 @@ class SmartImage extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) => _buildFallback(),
       );
     } else {
-      // Local File Path
-      final file = File(path);
-      if (file.existsSync()) {
-        imageWidget = Image.file(
-          file,
-          width: width,
-          height: height,
-          fit: fit,
-          errorBuilder: (context, error, stackTrace) => _buildFallback(),
-        );
+      // Local File Path - Hanya dieksekusi di HP (Android/iOS)
+      if (!kIsWeb) {
+        try {
+          final file = io.File(path);
+          if (file.existsSync()) {
+            imageWidget = Image.file(
+              file,
+              width: width,
+              height: height,
+              fit: fit,
+              errorBuilder: (context, error, stackTrace) => _buildFallback(),
+            );
+          } else {
+            imageWidget = _buildFallback();
+          }
+        } catch (e) {
+          imageWidget = _buildFallback();
+        }
       } else {
+        // Jika di Web mencoba memanggil path lokal, tampilkan fallback saja agar tidak crash
         imageWidget = _buildFallback();
       }
     }

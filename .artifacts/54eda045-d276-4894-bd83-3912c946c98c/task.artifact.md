@@ -1,6 +1,7 @@
-- [x] Integrate IKD SSO & WhatsApp OTP (Simulation)
-- [x] Connect Application to Ngrok
-    - [x] Update `api_service.dart` with Ngrok URL
-    - [x] Update `backend/.env` with Ngrok URL
+- [x] Implement Automatic Unique User ID
+    - [x] Update `user_service.dart` to include random ID generator
+    - [x] Update `init()` logic to check for existing profile and generate if missing
+    - [x] Ensure `ID-1003` is no longer used as a hardcoded default
 - [ ] Verification
-    - [ ] Test mobile app connection via ngrok
+    - [ ] Test fresh installation simulation by clearing preferences
+    - [ ] Verify different IDs are generated on different platforms (Web vs Mobile)

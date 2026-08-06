@@ -1,77 +1,31 @@
-# Rencana Implementasi Keamanan (Security Hardening Roadmap)
+# Rencana Implementasi: Identitas Unik Per Perangkat
 
-Dokumen ini merinci langkah-langkah teknis untuk mengubah sistem "Simulasi" saat ini menjadi sistem "Produksi" yang aman dan siap pakai untuk warga Sukabumi.
+Tujuan dari rencana ini adalah untuk memastikan bahwa setiap HP yang menginstal aplikasi mendapatkan identitas (User ID) yang berbeda-beda secara otomatis. Dengan begitu, riwayat data tidak akan tertukar antar pengguna, meskipun semuanya tersimpan di satu database MySQL yang sama di laptop Bapak.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> - **Transisi ke JWT/Sanctum**: Kita akan mengganti sistem `user_id` manual dengan Token Keamanan Digital.
-> - **Integrasi Gateway**: Memerlukan akun layanan pihak ketiga (seperti Fonnte atau Twilio) untuk WhatsApp OTP nyata.
-> - **Sertifikat SSL**: Wajib dipasang saat project dipindahkan ke server pemerintah.
+> - Saya akan menghapus ID statis `ID-1003` yang ada sekarang.
+> - Sebagai gantinya, aplikasi akan **membuat ID acak unik** (contoh: `SOA-882134`) saat pertama kali dibuka di HP baru.
+> - ID ini akan disimpan permanen di memori HP tersebut, sehingga pengguna tersebut akan selalu menggunakan ID yang sama.
 
----
+## Proposed Changes
 
-## 1. Tahap 1: Autentikasi API yang Aman (Mencegah Pencurian Data)
+### [Frontend/Flutter Layer]
 
-### Masalah Saat Ini:
-Identitas pengguna (`ID-1003`) dikirim dalam teks biasa. Siapapun bisa mengubah ID tersebut untuk melihat data orang lain.
+#### [MODIFY] [user_service.dart](file:///C:/src/mobile/lib/services/user_service.dart)
+- Mengubah logika inisialisasi profil.
+- Jika data profil kosong (instalasi baru), aplikasi akan menjalankan fungsi `_generateUniqueId()`.
+- Menghasilkan ID dengan format `SOA-` + 6 angka acak.
 
-### Solusi: Laravel Sanctum (Token-Based Auth)
-1.  **Backend (Laravel)**:
-    - Install Laravel Sanctum: `composer require laravel/sanctum`.
-    - Buat sistem "Login" yang memberikan **Access Token**.
-    - Pasang Middleware `auth:sanctum` pada seluruh route API (Aduan, Feedback, Profil).
-2.  **Frontend (Flutter)**:
-    - Simpan Token di memori aman (`flutter_secure_storage`).
-    - Kirim Token dalam Header: `Authorization: Bearer <token_rahasia>`.
-
----
-
-## 2. Tahap 2: WhatsApp OTP Nyata (Mengamankan Gerbang Masuk)
-
-### Masalah Saat Ini:
-User bisa login hanya dengan mengetik 6 angka sembarang.
-
-### Solusi: Integrasi WhatsApp Gateway
-1.  **Backend (Laravel)**:
-    - Hubungkan Laravel ke API Gateway (misal: Fonnte).
-    - Simpan kode OTP di **Redis/Cache** dengan waktu kedaluwarsa 5 menit.
-    - Hanya berikan Token Akses jika user memasukkan kode yang benar-benar dikirim ke nomor WA-nya.
-2.  **Frontend (Flutter)**:
-    - Tambahkan fitur "Kirim Ulang OTP" jika pesan tidak kunjung sampai.
-    - Implementasikan **Auto-Fill OTP** agar user tidak perlu mengetik manual.
-
----
-
-## 3. Tahap 3: Enkripsi Jalur Data (Mencegah Penyadapan)
-
-### Masalah Saat Ini:
-Aplikasi masih mengizinkan koneksi `http://` yang tidak aman.
-
-### Solusi: HTTPS & Security Manifest
-1.  **Server**:
-    - Pasang Sertifikat SSL (Let's Encrypt).
-2.  **Android Config**:
-    - Ubah `android:usesCleartextTraffic` menjadi **`false`**.
-    - Gunakan **Network Security Configuration** untuk membatasi koneksi hanya ke domain resmi Sukabumi (`*.sukabumikota.go.id`).
-
----
-
-## Ringkasan Perubahan Teknis
-
-### [MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)
-- Penambahan penanganan token otomatis pada setiap permintaan API.
-
-### [MODIFY] [OtpApiController.php](file:///C:/src/mobile/backend/app/Http/Controllers/Api/OtpApiController.php)
-- Penggantian logika simulasi dengan pemanggilan API Gateway nyata.
-
----
+### [Backend/Laravel Layer]
+- *Tidak ada perubahan kodingan*, karena API kita sudah pintar menyaring data berdasarkan `user_id` yang dikirim dari HP.
 
 ## Verification Plan
 
-### Automated Tests
-- Tes penetrasi sederhana: Mencoba mengakses data ID orang lain tanpa token yang sah (harus ditolak server dengan error 401).
-
 ### Manual Verification
-- Verifikasi bahwa pesan WhatsApp benar-benar masuk ke HP saat mencoba login.
-- Verifikasi aplikasi menolak koneksi jika server tidak menggunakan `https`.
+1.  **Hapus Data Aplikasi**: Coba hapus data aplikasi (Clear Storage) di HP Bapak untuk mensimulasikan instalasi baru.
+2.  **Cek Profil**: Buka aplikasi, masuk ke menu Profil, dan pastikan ID yang muncul bukan lagi `ID-1003`, melainkan ID baru (misal `SOA-xxxxxx`).
+3.  **Tes 2 Perangkat**: Kirim data dari HP Bapak, lalu kirim data dari Browser laptop.
+4.  **Cek Database**: Buka phpMyAdmin, pastikan ada dua baris data dengan `user_id` yang berbeda.
+5.  **Cek Riwayat**: Pastikan di HP Bapak hanya muncul data milik HP Bapak saja.
