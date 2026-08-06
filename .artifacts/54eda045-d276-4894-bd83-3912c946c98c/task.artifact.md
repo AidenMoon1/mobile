@@ -1,7 +1,7 @@
-- [x] Implement Automatic Unique User ID
-    - [x] Update `user_service.dart` to include random ID generator
-    - [x] Update `init()` logic to check for existing profile and generate if missing
-    - [x] Ensure `ID-1003` is no longer used as a hardcoded default
+- [/] Fix White Screen (Web Compatibility)
+    - [ ] Remove `dart:io` dependency from `smart_image.dart`
+    - [ ] Add `kIsWeb` conditional checks for file operations
+    - [ ] Double-check `index.html` structure
 - [ ] Verification
-    - [ ] Test fresh installation simulation by clearing preferences
-    - [ ] Verify different IDs are generated on different platforms (Web vs Mobile)
+    - [ ] Run `flutter run -d chrome`
+    - [ ] Verify Dashboard loads in browser

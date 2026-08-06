@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-// Conditional import to prevent crash on Web
-import 'dart:io' as io;
 
 class SmartImage extends StatelessWidget {
   final String imagePath;
@@ -26,7 +24,6 @@ class SmartImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String path = imagePath.trim();
-
     Widget imageWidget;
 
     if (path.isEmpty) {
@@ -37,21 +34,6 @@ class SmartImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            width: width,
-            height: height,
-            color: Colors.grey.shade200,
-            child: const Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
-        },
         errorBuilder: (context, error, stackTrace) => _buildFallback(),
       );
     } else if (path.startsWith('assets/')) {
@@ -63,28 +45,8 @@ class SmartImage extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) => _buildFallback(),
       );
     } else {
-      // Local File Path - Hanya dieksekusi di HP (Android/iOS)
-      if (!kIsWeb) {
-        try {
-          final file = io.File(path);
-          if (file.existsSync()) {
-            imageWidget = Image.file(
-              file,
-              width: width,
-              height: height,
-              fit: fit,
-              errorBuilder: (context, error, stackTrace) => _buildFallback(),
-            );
-          } else {
-            imageWidget = _buildFallback();
-          }
-        } catch (e) {
-          imageWidget = _buildFallback();
-        }
-      } else {
-        // Jika di Web mencoba memanggil path lokal, tampilkan fallback saja agar tidak crash
-        imageWidget = _buildFallback();
-      }
+      // Path lokal (hanya didukung di HP, di web otomatis ke fallback)
+      imageWidget = _buildFallback();
     }
 
     if (borderRadius > 0) {

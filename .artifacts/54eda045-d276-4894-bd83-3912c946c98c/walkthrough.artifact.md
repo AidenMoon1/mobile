@@ -1,30 +1,35 @@
-# Walkthrough - Automatic Unique User ID Implemented
+# Walkthrough - Application Connected to Ngrok
 
-I have successfully replaced the hardcoded `ID-1003` with a dynamic system that generates a unique identity for every device that installs the application.
+I have successfully updated the application settings to use your public Ngrok tunnel. This allows the mobile app to communicate with your laptop's server over the internet.
 
 ## Changes Made
 
-### 1. **Dynamic ID Generation**
-- **[user_service.dart](file:///C:/src/mobile/lib/services/user_service.dart)**:
-    - Added a `_generateUniqueId()` function that creates a random identifier (e.g., `SOA-821345`).
-    - Updated the `init()` logic: When a user opens the app for the first time (fresh install), the app automatically generates their unique ID and current registration date.
-    - **No More Overlap**: Since the ID is random and stored locally, two different phones will now have two different IDs, ensuring their histories in the MySQL database stay separated.
+### 1. **Flutter API Redirection**
+- **[api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**:
+    - Replaced the local IP address with your public Ngrok URL: **`https://nectar-refinish-console.ngrok-free.dev`**.
+    - Maintained a smart logic: The app will use `localhost` when running in a web browser and the Ngrok URL when running on a physical phone.
+    - Added the `ngrok-skip-browser-warning` header to ensure seamless data exchange.
 
-### 2. **Persistence**
-- The generated ID is saved using `SharedPreferences`. This means the user will keep the same ID even if they close or restart the app. It only changes if they clear the app data or reinstall.
+### 2. **Backend Configuration**
+- **[.env](file:///C:/src/mobile/backend/.env)**: Updated `APP_URL` to match the Ngrok address. This ensures Laravel generates correct internal links and supports CORS requests from the tunnel.
+
+## How to Verify Success
+
+> [!IMPORTANT]
+> To use the app via Ngrok, follow these steps:
+
+1.  **Keep Ngrok Running**: Do not close the ngrok terminal window.
+2.  **Keep Laravel Running**: Run `php artisan serve --port=8001`.
+3.  **Test on Phone**:
+    - Open the app on your phone.
+    - Try to fetch news or submit a "Pengaduan".
+    - You can even turn off your phone's Wi-Fi and use **Mobile Data**; it will still work!
 
 ## Verification Results
 
 ### Automated Checks
-- **Uniqueness**: Confirmed that the `Random()` generator provides a wide range of IDs (100,000 to 999,999) to minimize collisions during demo phases.
-- **Null Safety**: Updated the model loading logic to provide safe fallback values if any part of the profile data is missing.
+- **URL Mapping**: Confirmed `ApiService` points to the new domain.
+- **Header Injection**: Verified the browser-warning bypass is active.
 
-## How to Test
-1.  Open the app and go to the **Profil** tab.
-2.  Observe that your ID is now something like **`SOA-XXXXXX`**.
-3.  Submit a "Pengaduan" or "Feedback".
-4.  Check your laptop's phpMyAdmin: The `user_id` column will now show your specific `SOA-` ID instead of the old `ID-1003`.
-5.  If you have a second phone, install the app there. It will get a **different** ID, and you will see that its history is empty and doesn't show your reports.
-
-> [!TIP]
-> This system makes your simulation feel like a real production app where every user has their own private space.
+> [!WARNING]
+> If you close Ngrok and restart it, you will likely get a **New URL**. You will need to update the `_ngrokUrl` in `api_service.dart` with the new address and build the app again.

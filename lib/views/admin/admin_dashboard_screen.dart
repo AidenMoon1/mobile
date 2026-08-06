@@ -5,16 +5,17 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
-import '../../models/instansi_model.dart';
-import '../../models/layanan_model.dart';
-import '../../models/sektor_model.dart';
-import '../../services/opd_service.dart';
-import '../../widgets/smart_image.dart';
-import '../profile/login_screen.dart';
-import 'admin_form_instansi_screen.dart';
-import 'admin_form_layanan_screen.dart';
-import 'admin_form_sektor_screen.dart';
-import 'admin_chat_inbox_screen.dart';
+import 'package:mobile/models/instansi_model.dart';
+import 'package:mobile/models/layanan_model.dart';
+import 'package:mobile/models/sektor_model.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/widgets/smart_image.dart';
+import 'package:mobile/views/profile/login_screen.dart';
+import 'package:mobile/views/admin/admin_form_instansi_screen.dart';
+import 'package:mobile/views/admin/admin_form_layanan_screen.dart';
+import 'package:mobile/views/admin/admin_form_sektor_screen.dart';
+import 'package:mobile/views/admin/admin_chat_inbox_screen.dart';
+import 'package:mobile/views/admin/admin_feedback_list_screen.dart';
 
 /// ----------------------------------------------------------------------------
 /// WIDGET DASHBOARD ADMIN (Single-Page Switcher untuk Perangkat PC & Mobile)
@@ -388,6 +389,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return 'Live Chat Warga';
       case 5:
         return 'Profil Saya';
+      case 6:
+        return 'Kelola Feedback';
       default:
         return 'Dashboard Admin';
     }
@@ -408,6 +411,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return _buildLiveChatInboxView(context, sidebarBg, accentGold);
       case 5:
         return _buildProfilSayaView(context, sidebarBg, accentGold);
+      case 6:
+        return _buildKelolaFeedbackView(context, sidebarBg, accentGold);
       default:
         return _buildDashboardOverviewView(context, sidebarBg, accentGold);
     }
@@ -534,6 +539,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             index: 4,
             icon: Icons.mark_chat_unread_rounded,
             label: 'Live Chat Warga',
+            accentGold: accentGold,
+          ),
+
+          // NAV ITEM 6: KELOLA FEEDBACK
+          _buildSidebarNavItem(
+            index: 6,
+            icon: Icons.rate_review_rounded,
+            label: 'Kelola Feedback',
             accentGold: accentGold,
           ),
 
@@ -1795,6 +1808,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   // ===========================================================================
   Widget _buildLiveChatInboxView(BuildContext context, Color sidebarBg, Color accentGold) {
     return const AdminChatInboxScreen(isEmbedded: true);
+  }
+
+  // ===========================================================================
+  // VIEW 6: KELOLA FEEDBACK VIEW
+  // ===========================================================================
+  Widget _buildKelolaFeedbackView(BuildContext context, Color sidebarBg, Color accentGold) {
+    return const AdminFeedbackListScreen(isEmbedded: true);
   }
 
   // ---------------------------------------------------------------------------

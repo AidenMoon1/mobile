@@ -7,15 +7,30 @@
 
 /// Kelas Model Representasi 1 Butir Ulasan / Feedback Kepuasan Warga
 class FeedbackModel {
-  final int rating;    // Skor Penilaian Bintang (1 - 5)
-  final String factor; // Faktor Utama (Kecepatan, Kemudahan, Keramahan, dll)
-  final String reason; // Ulasan / Alasan Masukan Warga
-  final DateTime date; // Tanggal Ulasan Dikirim
+  final String? id;      // ID dari server
+  final String? userId;  // ID Pengguna (SOA-XXXXXX)
+  final int rating;      // Skor Penilaian Bintang (1 - 5)
+  final String factor;   // Faktor Utama (Kecepatan, Kemudahan, Keramahan, dll)
+  final String reason;   // Ulasan / Alasan Masukan Warga
+  final DateTime date;   // Tanggal Ulasan Dikirim
 
   FeedbackModel({
+    this.id,
+    this.userId,
     required this.rating,
     required this.factor,
     required this.reason,
     required this.date,
   });
+
+  factory FeedbackModel.fromJson(Map<String, dynamic> json) {
+    return FeedbackModel(
+      id: json['id']?.toString(),
+      userId: json['user_id'],
+      rating: json['rating'] ?? 0,
+      factor: json['factor'] ?? '',
+      reason: json['reason'] ?? '',
+      date: DateTime.parse(json['created_at'] ?? json['date'] ?? DateTime.now().toString()),
+    );
+  }
 }

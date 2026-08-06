@@ -4,6 +4,7 @@
 // PATTERN: Singleton Pattern dengan Triple Persistence (Local, SQLite, REST API)
 // =============================================================================
 
+import 'dart:convert';
 import '../models/feedback_model.dart';
 import 'api_service.dart';
 import 'user_service.dart';
@@ -23,8 +24,22 @@ class FeedbackService {
   final List<FeedbackModel> _history = [];
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
-  // Getter Riwayat Ulasan
+  // Getter Riwayat Ulasan (Lokal)
   List<FeedbackModel> get history => List.unmodifiable(_history.reversed);
+
+  // FUNGSI UNTUK ADMIN: Mengambil seluruh feedback dari server
+  Future<List<FeedbackModel>> getAllFeedbackFromServer() async {
+    try {
+      final response = await ApiService.get('feedback');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => FeedbackModel.fromJson(json)).toList();
+      }
+    } catch (e) {
+      // Error handling
+    }
+    return [];
+  }
 
   // FUNGSI 2: Memuat Ulasan Tersimpan dari SQLite
   Future<void> _loadFromDatabase() async {
