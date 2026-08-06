@@ -547,20 +547,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // 6. HALAMAN LOGIN AKUN
-                  _buildMenuItem(
-                    icon: Icons.vpn_key_outlined,
-                    title: 'Halaman Login (Warga & Admin)',
-                    subtitle: 'Masuk sebagai Warga Kota atau Admin OPD',
-                    iconColor: accentColor,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LoginScreen()),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
+
 
                   // TOMBOL KELUAR AKUN
                   SizedBox(

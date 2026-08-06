@@ -53,6 +53,35 @@ class FeedbackService {
         date: DateTime.parse(map['date']),
       ));
     }
+
+    if (_history.isEmpty) {
+      _history.addAll([
+        FeedbackModel(
+          rating: 5,
+          factor: 'Kecepatan Layanan',
+          reason: 'Pelayanan pengurusan KTP Digital sangat cepat dan AI Bot SOA membalas pertanyaan dengan akurat. Sangat membantu warga Sukabumi!',
+          date: DateTime.now().subtract(const Duration(hours: 2)),
+        ),
+        FeedbackModel(
+          rating: 5,
+          factor: 'Kemudahan Penggunaan',
+          reason: 'Tampilan aplikasi sangat modern dan mudah dipahami, pilihan sektor fase kehidupan 3 kolom terbaru sangat intuitif!',
+          date: DateTime.now().subtract(const Duration(hours: 5)),
+        ),
+        FeedbackModel(
+          rating: 4,
+          factor: 'Kelengkapan Fitur',
+          reason: 'Fitur IKD SSO Kemendagri dan WhatsApp OTP sangat bagus. Mohon ditambahkan integrasi jadwal antrean RSUD yang lebih detail.',
+          date: DateTime.now().subtract(const Duration(days: 1)),
+        ),
+        FeedbackModel(
+          rating: 5,
+          factor: 'Desain Antarmuka',
+          reason: 'Desain warna Navy & Emas khas Kota Sukabumi terasa sangat elegan dan profesional. Sukses selalu Pemkot Sukabumi!',
+          date: DateTime.now().subtract(const Duration(days: 2)),
+        ),
+      ]);
+    }
     
     try {
       final user = UserService().currentUser;

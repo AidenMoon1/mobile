@@ -1,7 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:mobile/services/api_service.dart';
-import 'package:mobile/services/user_service.dart';
+import 'package:mobile/views/layanan/layanan_keluarga.dart';
+import 'package:mobile/views/layanan/layanan_usaha.dart';
+import 'package:mobile/views/layanan/layanan_lingkungan.dart';
+import 'package:mobile/views/layanan/form_pengajuan_screen.dart';
+import 'package:mobile/widgets/smart_image.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -10,418 +12,214 @@ class ReportScreen extends StatefulWidget {
   State<ReportScreen> createState() => _ReportScreenState();
 }
 
-class _ReportScreenState extends State<ReportScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  final _formKey = GlobalKey<FormState>();
-
-  // Form Fields
-  final _titleController = TextEditingController();
-  final _descController = TextEditingController();
-  String _selectedCategory = 'Infrastruktur';
-  bool _hasPhoto = false;
-
-  // List of reports
-  List<dynamic> _reports = [];
-  bool _isLoadingHistory = true;
-  bool _isSubmitting = false;
-
-  final List<String> _categories = [
-    'Infrastruktur',
-    'Kebersihan',
-    'Ketertiban Umum',
-    'Kesehatan',
-    'Lainnya'
+class _ReportScreenState extends State<ReportScreen> {
+  final List<Map<String, dynamic>> _faseKehidupan = const [
+    {
+      'title': 'Keluarga',
+      'imagePath': 'assets/icon/keluarga.png',
+      'fallbackIcon': Icons.family_restroom_rounded,
+      'desc': 'Administrasi Kependudukan, Pernikahan, KK & Akta',
+    },
+    {
+      'title': 'Pendidikan',
+      'imagePath': 'assets/icon/pendidikan.png',
+      'fallbackIcon': Icons.school_rounded,
+      'desc': 'Beasiswa, PPDB, Pendaftaran Sekolah',
+    },
+    {
+      'title': 'Usaha',
+      'imagePath': 'assets/icon/usaha.png',
+      'fallbackIcon': Icons.store_rounded,
+      'desc': 'Izin Usaha, NIB, UMKM Kota Sukabumi',
+    },
+    {
+      'title': 'Lingkungan &\nTempat Tinggal',
+      'imagePath': 'assets/icon/lingkungan.png',
+      'fallbackIcon': Icons.home_work_rounded,
+      'desc': 'PBB, Kebersihan, Izin Bangunan (PBG)',
+    },
+    {
+      'title': 'Kendaraan',
+      'imagePath': 'assets/icon/kendaraan.png',
+      'fallbackIcon': Icons.directions_car_rounded,
+      'desc': 'Pajak Kendaraan, SIM, Uji KIR',
+    },
+    {
+      'title': 'Tanggap\nDarurat',
+      'imagePath': 'assets/icon/tanggapdarurat.png',
+      'fallbackIcon': Icons.warning_amber_rounded,
+      'desc': 'BPBD, Pemadam Kebakaran, Ambulans 112',
+    },
+    {
+      'title': 'Karier',
+      'imagePath': 'assets/icon/karier.png',
+      'fallbackIcon': Icons.work_rounded,
+      'desc': 'Lowongan Kerja, Pelatihan Disnaker',
+    },
+    {
+      'title': 'Kesehatan',
+      'imagePath': 'assets/icon/kesehatan.png',
+      'fallbackIcon': Icons.local_hospital_rounded,
+      'desc': 'BPJS, Puskesmas, Antrean RSUD',
+    },
+    {
+      'title': 'Sosial &\nHukum',
+      'imagePath': 'assets/icon/sosialhukum.png',
+      'fallbackIcon': Icons.gavel_rounded,
+      'desc': 'Bantuan Sosial, Konsultasi Hukum Warga',
+    },
+    {
+      'title': 'Rekreasi',
+      'imagePath': 'assets/icon/rekreasi.png',
+      'fallbackIcon': Icons.camera_alt_rounded,
+      'desc': 'Wisata Kota, Fasilitas Olahraga & Taman',
+    },
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _fetchHistory();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _titleController.dispose();
-    _descController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchHistory() async {
-    setState(() {
-      _isLoadingHistory = true;
-    });
-
-    try {
-      final user = UserService().currentUser;
-      final response = await ApiService.get('aduan?user_id=${user.id}');
-      if (response.statusCode == 200) {
-        setState(() {
-          _reports = jsonDecode(response.body);
-          _isLoadingHistory = false;
-        });
-      }
-    } catch (_) {
-      setState(() {
-        _isLoadingHistory = false;
-      });
-    }
-  }
-
-  Future<void> _submitReport() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isSubmitting = true;
-    });
-
-    final user = UserService().currentUser;
-    final payload = {
-      'title': _titleController.text,
-      'category': _selectedCategory,
-      'description': _descController.text,
-      'user_id': user.id,
-    };
-
-    try {
-      final response = await ApiService.post('aduan', payload);
-      
-      if (!mounted) return;
-      setState(() {
-        _isSubmitting = false;
-      });
-
-      if (response.statusCode == 200) {
-        // Hapus input form
-        _titleController.clear();
-        _descController.clear();
-        setState(() {
-          _hasPhoto = false;
-        });
-
-        // Tampilkan notifikasi sukses
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pengaduan berhasil terkirim!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Ambil data riwayat baru dan pindah ke tab riwayat
-        await _fetchHistory();
-        _tabController.animateTo(1);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal mengirim: ${response.reasonPhrase}'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _isSubmitting = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error Koneksi: $e')),
-      );
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Selesai':
-        return Colors.green;
-      case 'Diproses':
-        return Colors.blue;
-      default:
-        return Colors.orange;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text(
-          'Layanan Pengaduan Warga',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: const Color(0xFF0A1E33),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.blue,
-          labelColor: Colors.blue,
-          unselectedLabelColor: Colors.grey,
-          tabs: const [
-            Tab(icon: Icon(Icons.edit_note), text: 'Aduan Baru'),
-            Tab(icon: Icon(Icons.history), text: 'Riwayat Aduan'),
-          ],
+        centerTitle: false,
+        title: const Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: 'Fase',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 19,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              TextSpan(
+                text: ' Kehidupan',
+                style: TextStyle(
+                  color: Color(0xFFE8A33D),
+                  fontSize: 19,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // TAB 1: FORM PENGADUAN BARU
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(20.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Tulis Keluhan Anda',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    'Laporan Anda akan kami simulasikan masuk ke dashboard Diskominfo Sukabumi.',
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Input Judul
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: InputDecoration(
-                      labelText: 'Judul Laporan',
-                      hintText: 'Misal: Jalan Berlubang di Sukaraja',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      prefixIcon: const Icon(Icons.title),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Judul laporan tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Dropdown Kategori
-                  DropdownButtonFormField<String>(
-                    value: _selectedCategory,
-                    decoration: InputDecoration(
-                      labelText: 'Kategori Keluhan',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      prefixIcon: const Icon(Icons.category),
-                    ),
-                    items: _categories.map((category) {
-                      return DropdownMenuItem(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          _selectedCategory = value;
-                        });
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Input Deskripsi
-                  TextFormField(
-                    controller: _descController,
-                    maxLines: 5,
-                    decoration: InputDecoration(
-                      labelText: 'Deskripsi Keluhan secara Detail',
-                      hintText: 'Tuliskan kronologi kejadian, lokasi lengkap, dan keluhan Anda...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      alignLabelWithHint: true,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Deskripsi laporan tidak boleh kosong';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Simulasi Unggah Foto
-                  InkWell(
-                    onTap: () {
-                      setState(() {
-                        _hasPhoto = !_hasPhoto;
-                      });
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400, style: BorderStyle.values[1]), // Dashed effect
-                        borderRadius: BorderRadius.circular(10),
-                        color: _hasPhoto ? Colors.green.shade50 : Colors.grey.shade50,
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            _hasPhoto ? Icons.check_circle : Icons.camera_alt,
-                            color: _hasPhoto ? Colors.green : Colors.grey,
-                            size: 40,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _hasPhoto ? 'Foto Dipilih (Simulasi)' : 'Ambil Foto Keluhan (Opsional)',
-                            style: TextStyle(
-                              color: _hasPhoto ? Colors.green.shade700 : Colors.grey.shade700,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (_hasPhoto)
-                            const Text(
-                              'Klik lagi untuk menghapus foto',
-                              style: TextStyle(color: Colors.grey, fontSize: 11),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Tombol Kirim
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _submitReport,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: _isSubmitting
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                        'Kirim Pengaduan',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _faseKehidupan.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 14,
+            childAspectRatio: 0.80,
           ),
+          itemBuilder: (context, index) {
+            final item = _faseKehidupan[index];
+            final titleStr = (item['title'] as String).replaceAll('\n', ' ');
 
-          // TAB 2: RIWAYAT PENGADUAN
-          _isLoadingHistory
-              ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-            onRefresh: _fetchHistory,
-            child: _reports.isEmpty
-                ? ListView(
-              children: const [
-                SizedBox(height: 100),
-                Center(child: Text('Belum ada riwayat pengaduan.')),
-              ],
-            )
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _reports.length,
-              itemBuilder: (context, index) {
-                final report = _reports[index];
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Kategori Badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                report['category'],
-                                style: const TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            // Status Badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(report['status']).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                report['status'],
-                                style: TextStyle(
-                                  color: _getStatusColor(report['status']),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        // Judul
-                        Text(
-                          report['title'],
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        // Deskripsi
-                        Text(
-                          report['description'],
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Divider(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'ID Aduan: #${report['id']}',
-                              style: const TextStyle(color: Colors.grey, fontSize: 11),
-                            ),
-                            Text(
-                              report['created_at'].toString().substring(0, 10),
-                              style: const TextStyle(color: Colors.grey, fontSize: 11),
-                            ),
-                          ],
-                        ),
-                      ],
+            return GestureDetector(
+              onTap: () {
+                if (titleStr.contains('Keluarga')) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LayananKeluargaScreen()),
+                  );
+                } else if (titleStr.contains('Usaha')) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LayananUsahaScreen()),
+                  );
+                } else if (titleStr.contains('Lingkungan')) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LayananLingkunganScreen()),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FormPengajuanScreen(
+                        judulLayanan: 'Layanan $titleStr',
+                        deskripsi: item['desc'] as String,
+                        icon: (item['fallbackIcon'] ?? Icons.article_rounded) as IconData,
+                      ),
                     ),
-                  ),
-                );
+                  );
+                }
               },
-            ),
-          ),
-        ],
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0A1E33),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x30000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
+                    )
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // KOTAK IKON PUTIH DENGAN OUTLINE EMAS (GOLD BORDER)
+                    Container(
+                      height: 68,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE8A33D), width: 2),
+                      ),
+                      child: Center(
+                        child: SmartImage(
+                          imagePath: (item['imagePath'] as String?) ?? '',
+                          width: 42,
+                          height: 42,
+                          fit: BoxFit.contain,
+                          fallbackIcon: (item['fallbackIcon'] as IconData?) ?? Icons.category_rounded,
+                          fallbackColor: const Color(0xFF0A1E33),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // JUDUL FASE KEHIDUPAN (TEKS PUTIH PRESISI)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          item['title'] as String,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                            height: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
