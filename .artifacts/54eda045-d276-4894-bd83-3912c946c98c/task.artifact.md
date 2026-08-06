@@ -1,7 +1,9 @@
-- [/] Fix White Screen (Web Compatibility)
-    - [ ] Remove `dart:io` dependency from `smart_image.dart`
-    - [ ] Add `kIsWeb` conditional checks for file operations
-    - [ ] Double-check `index.html` structure
+- [x] Fix White Screen (Web Compatibility)
+    - [x] Remove `dart:io` dependency from `smart_image.dart`
+    - [x] Disable `sqflite` imports on Web in `database_helper.dart`
+- [/] Enhance IKD SSO Simulation (Auto-Population)
+    - [ ] Remove manual NIK input field in `login_screen.dart`
+    - [ ] Update modal UI to show "Secure Handshake" animation
+    - [ ] Update profile state with "Received" NIK and Name automatically
 - [ ] Verification
-    - [ ] Run `flutter run -d chrome`
-    - [ ] Verify Dashboard loads in browser
+    - [ ] Test the one-click login experience in the app

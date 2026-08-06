@@ -1,29 +1,36 @@
-# Rencana Perbaikan Menyeluruh: Layar Putih & Error Kompilasi Admin
+# Rencana Implementasi: Autopopulasi Data IKD SSO
 
-Rencana ini menangani dua masalah utama: kegagalan kompilasi pada Dashboard Admin dan masalah layar putih pada Flutter Web.
+Rencana ini menjelaskan bagaimana aplikasi "Sukabumi One Access" secara otomatis mengambil data NIK dan profil warga dari server Dukcapil saat login IKD, sehingga pengguna tidak perlu mengisi data secara manual.
 
-## Masalah Utama
+## Konsep Teknis
 
-> [!CRITICAL]
-> 1. **Error Kompilasi**: `AdminDashboardScreen` mencoba memanggil `AdminFeedbackListScreen` sebagai `const`, padahal kelas tersebut tidak ada atau tidak valid sebagai konstanta.
-> 2. **Layar Putih (Web)**: Impor `dart:io` dan `sqflite` menyebabkan crash instan di browser karena pustaka tersebut hanya untuk HP.
+> [!TIP]
+> **Manfaat Utama SSO**: Pengguna mendapatkan kenyamanan "Satu Klik" dan pemerintah mendapatkan jaminan "Data Valid".
 
-## Langkah Perbaikan
+### 1. Mekanisme Pengambilan Data (OIDC Scopes)
+Saat proses login IKD berlangsung, aplikasi kita akan meminta izin (*Scopes*) untuk mengakses data tertentu:
+- `openid`: Untuk identitas akun.
+- `profile`: Untuk mengambil nama lengkap.
+- `nik`: Khusus IKD, untuk mengambil Nomor Induk Kependudukan resmi.
 
-### 1. Perbaikan Error Kompilasi (Admin Dashboard)
-- **[MODIFY] [admin_dashboard_screen.dart](file:///C:/src/mobile/lib/views/admin/admin_dashboard_screen.dart)**:
-    - Menghapus keyword `const` pada pemanggilan `AdminFeedbackListScreen`.
-    - Memperbaiki impor yang hilang.
-- **[NEW] [admin_feedback_list_screen.dart](file:///C:/src/mobile/lib/views/admin/admin_feedback_list_screen.dart)**: Membuat ulang file yang hilang agar sistem bisa berjalan.
-- **[MODIFY] [feedback_model.dart](file:///C:/src/mobile/lib/models/feedback_model.dart)** & **[feedback_service.dart](file:///C:/src/mobile/lib/services/feedback_service.dart)**: Menambahkan dukungan untuk data lintas pengguna.
+### 2. Alur Pengisian Otomatis (Auto-Population)
+1. **Verifikasi Luar**: Pengguna memasukkan PIN/Scan Wajah di portal resmi IKD (bukan di aplikasi kita).
+2. **Penerimaan Token**: IKD mengirimkan token digital ke aplikasi kita.
+3. **Ekstraksi Data**: Kodingan di Laravel/Flutter akan membongkar token tersebut dan mengambil data NIK & Nama.
+4. **Login Instan**: Aplikasi langsung mengisi profil pengguna dengan NIK asli tersebut dan mengarahkan ke Dashboard.
 
-### 2. Perbaikan Layar Putih (Web Compatibility)
-- **[MODIFY] [database_helper.dart](file:///C:/src/mobile/lib/services/database_helper.dart)**: Menghapus impor `sqflite` yang tidak aman untuk web.
-- **[MODIFY] [smart_image.dart](file:///C:/src/mobile/lib/widgets/smart_image.dart)**: Menghapus total impor `dart:io` dan menggantinya dengan pengecekan platform yang aman.
+## Perubahan yang Diusulkan (Simulasi)
+
+### [Frontend/Flutter]
+
+#### [MODIFY] [login_screen.dart](file:///C:/src/mobile/lib/views/profile/login_screen.dart)
+- Mengubah simulasi modal IKD.
+- Menghilangkan input NIK manual (karena data seharusnya datang dari server).
+- Menampilkan indikator "Mengambil Data dari IKD Dukcapil..." sebelum login sukses.
 
 ## Rencana Verifikasi
 
 ### Manual Verification
-1. **Stop & Run**: Hentikan proses lama dan jalankan `flutter run -d chrome`.
-2. **Cek Login**: Pastikan layar login muncul dan tidak putih.
-3. **Cek Admin**: Masuk ke Dashboard Admin -> Kelola Feedback, pastikan tidak ada error.
+- Klik "Masuk dengan IKD".
+- Verifikasi bahwa sistem langsung memproses data tanpa meminta user mengetik nomor NIK lagi.
+- Cek di halaman Profil: Pastikan nomor NIK yang muncul adalah NIK resmi yang dikirim oleh "server IKD".

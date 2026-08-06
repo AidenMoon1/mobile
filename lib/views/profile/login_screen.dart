@@ -92,8 +92,8 @@ class _LoginScreenState extends State<LoginScreen> {
   // 1. MODAL OTENTIKASI IKD SINGLE SIGN-ON (DUKCAPIL KEMENDAGRI)
   // ---------------------------------------------------------------------------
   void _bukaModalIKDSSO() {
-    final TextEditingController nikController = TextEditingController(text: '3272012508980002');
     bool isAuthenticating = false;
+    String statusText = 'Siap melakukan jabat tangan keamanan...';
 
     showModalBottomSheet(
       context: context,
@@ -102,12 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
           return Container(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              top: 24,
-              left: 24,
-              right: 24,
-            ),
+            padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -123,84 +118,111 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEBF3FE),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF123457), size: 28),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'IKD Single Sign-On (SSO)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0A1E33),
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
-                          Text(
-                            'Identitas Kependudukan Digital Ditjen Dukcapil',
-                            style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 24),
+                
+                // IKON IKD RESMI (ORANYE/EMAS)
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF6E5),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFE8A33D), width: 2),
+                  ),
+                  child: const Icon(Icons.verified_user_rounded, color: Color(0xFFE8A33D), size: 40),
                 ),
                 const SizedBox(height: 20),
+
                 const Text(
-                  'Masukkan NIK terdaftar atau gunakan pemindaian QR dari aplikasi IKD HP Anda untuk masuk instan:',
-                  style: TextStyle(fontSize: 12, color: Colors.black87, fontFamily: 'Poppins'),
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: nikController,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                  decoration: InputDecoration(
-                    labelText: 'NIK KTP Digital',
-                    hintText: '16 digit NIK...',
-                    prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFF123457)),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    filled: true,
-                    fillColor: const Color(0xFFF8FAFC),
+                  'IKD Identitas Digital',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0A1E33),
+                    fontFamily: 'Poppins',
                   ),
                 ),
-                const SizedBox(height: 20),
+                const Text(
+                  'Layanan SSO Resmi Ditjen Dukcapil',
+                  style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // STATUS BOX (SIMULASI HANDSHAKE)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Column(
+                    children: [
+                      if (isAuthenticating)
+                        const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0A1E33)),
+                        )
+                      else
+                        const Icon(Icons.security_rounded, color: Color(0xFF123457), size: 24),
+                      const SizedBox(height: 12),
+                      Text(
+                        statusText,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF123457),
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // TOMBOL KONFIRMASI OTENTIKASI
                 SizedBox(
                   width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton.icon(
+                  height: 54,
+                  child: ElevatedButton(
                     onPressed: isAuthenticating
                         ? null
                         : () async {
-                            setModalState(() => isAuthenticating = true);
-                            await Future.delayed(const Duration(milliseconds: 1200));
+                            setModalState(() {
+                              isAuthenticating = true;
+                              statusText = 'Membuka Portal Aman Dukcapil...';
+                            });
+                            
+                            await Future.delayed(const Duration(milliseconds: 1500));
+                            setModalState(() => statusText = 'Menunggu Verifikasi PIN & Biometrik...');
+                            
+                            await Future.delayed(const Duration(milliseconds: 2000));
+                            setModalState(() => statusText = 'Menerima Data Kependudukan (NIK)...');
 
-                            final nik = nikController.text.trim();
+                            await Future.delayed(const Duration(milliseconds: 1000));
+
+                            // DATA OTOMATIS DARI "SERVER IKD"
+                            const String receivedNik = '3272012508980002';
+                            const String receivedName = 'Nabe (Verified IKD)';
+                            
                             final current = UserService().currentUser;
 
                             await UserService().updateProfile(
                               current.copyWith(
-                                username: nik.isNotEmpty ? nik : '3272012508980002',
-                                name: 'Warga Sukabumi (IKD Verified)',
-                                status: 'Terverifikasi (IKD Kemendagri)',
+                                username: receivedNik,
+                                name: receivedName,
+                                status: 'Terverifikasi IKD Kemendagri',
                               ),
                             );
 
                             await NotificationService().addNotification(
-                              title: '🪪 Login IKD SSO Sukses',
-                              description: 'Identitas Kependudukan Digital (NIK $nik) berhasil diverifikasi.',
+                              title: '🪪 Login IKD Berhasil',
+                              description: 'Data NIK $receivedNik telah diverifikasi dan disinkronkan otomatis.',
                               category: NotificationCategory.general,
                             );
 
@@ -209,8 +231,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Login IKD SSO Berhasil! NIK Terverifikasi Dukcapil.'),
-                                backgroundColor: Color(0xFF123457),
+                                content: Text('Login Sukses! NIK & Nama Terisi Otomatis.'),
+                                backgroundColor: Color(0xFF2E7D32),
                               ),
                             );
 
@@ -219,18 +241,25 @@ class _LoginScreenState extends State<LoginScreen> {
                               MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
                             );
                           },
-                    icon: isAuthenticating
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Icon(Icons.verified_user_rounded, size: 20),
-                    label: Text(
-                      isAuthenticating ? 'Menverifikasi IKD...' : 'Otentikasi & Masuk IKD',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0A1E33),
                       foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 0,
                     ),
+                    child: Text(
+                      isAuthenticating ? 'SEDANG MEMPROSES...' : 'MULAI OTENTIKASI IKD',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Poppins', letterSpacing: 1),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: isAuthenticating ? null : () => Navigator.pop(context),
+                  child: const Text(
+                    'Batalkan',
+                    style: TextStyle(color: Colors.grey, fontFamily: 'Poppins', fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
