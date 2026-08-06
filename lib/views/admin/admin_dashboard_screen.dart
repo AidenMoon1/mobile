@@ -1,3 +1,9 @@
+// =============================================================================
+// FILE: lib/views/admin/admin_dashboard_screen.dart
+// FUNGSI: Panel Dashboard Terpadu Administrator (Single Page Shell Architecture)
+// LEVEL KODE: Level 2-3 (Modular, Clean, dan Mudah Dipahami Mahasiswa)
+// =============================================================================
+
 import 'package:flutter/material.dart';
 import '../../models/instansi_model.dart';
 import '../../models/layanan_model.dart';
@@ -10,6 +16,9 @@ import 'admin_form_layanan_screen.dart';
 import 'admin_form_sektor_screen.dart';
 import 'admin_chat_inbox_screen.dart';
 
+/// ----------------------------------------------------------------------------
+/// WIDGET DASHBOARD ADMIN (Single-Page Switcher untuk Perangkat PC & Mobile)
+/// ----------------------------------------------------------------------------
 class AdminDashboardScreen extends StatefulWidget {
   final int initialNavIndex;
 
@@ -24,7 +33,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   late int _selectedNavIndex;
   bool _isProfileMenuVisible = false;
 
-  // CONTROLLERS FOR SEARCHING IN SUB-VIEWS
+  // CONTROLLERS PENCARIAN PADA SUB-VIEW KELOLA
   final TextEditingController _instansiSearchController = TextEditingController();
   final TextEditingController _layananSearchController = TextEditingController();
   final TextEditingController _sektorSearchController = TextEditingController();
@@ -53,6 +62,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     if (mounted) setState(() {});
   }
 
+  // ---------------------------------------------------------------------------
+  // DIALOG KONFIRMASI KELUAR AKUN ADMIN (LOGOUT)
+  // ---------------------------------------------------------------------------
   void _showKeluarDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -748,13 +760,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   // ===========================================================================
-  // VIEW 5: PROFIL SAYA VIEW (DISAMAKAN 100% DENGAN SCREENSHOT 1)
+  // VIEW 5: PROFIL SAYA VIEW
   // ===========================================================================
   Widget _buildProfilSayaView(BuildContext context, Color sidebarBg, Color accentGold) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // BREADCRUMB & HEADER TITLE
         Row(
           children: [
             IconButton(
@@ -789,7 +800,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
         const SizedBox(height: 24),
 
-        // ROW DUA KARTU: KARTU KIRI (AVATAR) + KARTU KANAN (INFORMASI AKUN)
         LayoutBuilder(
           builder: (context, constraints) {
             final bool isMobile = constraints.maxWidth < 800;
@@ -830,7 +840,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Column(
         children: [
           const SizedBox(height: 10),
-          // AVATAR WITH CAMERA EDIT BADGE
           Stack(
             children: [
               Container(
@@ -859,7 +868,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 14),
 
-          // NAME & ROLE BADGE
           const Text(
             'SOA',
             style: TextStyle(
@@ -888,7 +896,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 20),
 
-          // TIMELINE INFO BOX
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -960,7 +967,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // HEADER: INFORMASI AKUN & EDIT PROFIL BUTTON
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -995,7 +1001,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const Divider(height: 1),
           const SizedBox(height: 12),
 
-          // KEY VALUE LIST PRESISI DENGAN SCREENSHOT
           _buildInfoRow(Icons.person_outline_rounded, 'Nama Lengkap', 'SOA'),
           const Divider(height: 24, color: Colors.black12),
           _buildInfoRow(Icons.person_pin_rounded, 'Username', 'superadmin'),
@@ -1052,13 +1057,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   // ===========================================================================
-  // VIEW 0: DASHBOARD OVERVIEW VIEW (RINGKASAN EKSEKUTIF LENGKAP)
+  // VIEW 0: DASHBOARD OVERVIEW VIEW
   // ===========================================================================
   Widget _buildDashboardOverviewView(BuildContext context, Color sidebarBg, Color accentGold) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // TOP HEADER BAR WITH BACK BUTTON
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -1104,27 +1108,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         const SizedBox(height: 24),
 
-        // 1. METRIC CARDS ROW (4 KARTU RINGKASAN DATUM)
         _buildMetricCardsRow(accentGold),
-
         const SizedBox(height: 24),
-
-        // 2. KARTU ANTREAN LIVE CHAT WARGA
         _buildLiveChatQueueCard(context, sidebarBg, accentGold),
-
         const SizedBox(height: 24),
-
-        // 3. TABEL DAFTAR INSTANSI
         _buildInstansiTableCard(context, sidebarBg, accentGold),
-
         const SizedBox(height: 24),
-
-        // 4. TABEL LAYANAN PUBLIK TERPOPULER
         _buildPopularLayananTableCard(context, sidebarBg, accentGold),
-
         const SizedBox(height: 24),
-
-        // 5. GRID KATEGORI SEKTOR FASE KEHIDUPAN (DISAMAKAN 100% DENGAN SEKTOR LIST SCREEN)
         _buildSektorGridCard(context, sidebarBg, accentGold),
       ],
     );
@@ -1577,7 +1568,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   // ===========================================================================
-  // VIEW 3: KELOLA SEKTOR VIEW (GRID CARDS 3-KOLOM EXACT DASHBOARD DESIGN)
+  // VIEW 3: KELOLA SEKTOR VIEW
   // ===========================================================================
   Widget _buildKelolaSektorView(BuildContext context, Color sidebarBg, Color accentGold) {
     final allList = _opdService.getSektorList();
