@@ -28,7 +28,7 @@ class LayananScreen extends StatelessWidget {
       'desc': 'Izin Usaha, NIB, UMKM Kota Sukabumi',
     },
     {
-      'title': 'Lingkungan & Tempat Tinggal',
+      'title': 'Lingkungan &\nTempat Tinggal',
       'imagePath': 'assets/icon/lingkungan.png',
       'fallbackIcon': Icons.home_work_rounded,
       'desc': 'PBB, Kebersihan, Izin Bangunan (PBG)',
@@ -40,13 +40,7 @@ class LayananScreen extends StatelessWidget {
       'desc': 'Pajak Kendaraan, SIM, Uji KIR',
     },
     {
-      'title': 'Kesehatan',
-      'imagePath': 'assets/icon/kesehatan.png',
-      'fallbackIcon': Icons.local_hospital_rounded,
-      'desc': 'BPJS, Puskesmas, Antrean RSUD',
-    },
-    {
-      'title': 'Tanggap Darurat',
+      'title': 'Tanggap\nDarurat',
       'imagePath': 'assets/icon/tanggapdarurat.png',
       'fallbackIcon': Icons.warning_amber_rounded,
       'desc': 'BPBD, Pemadam Kebakaran, Ambulans 112',
@@ -58,28 +52,34 @@ class LayananScreen extends StatelessWidget {
       'desc': 'Lowongan Kerja, Pelatihan Disnaker',
     },
     {
-      'title': 'Rekreasi',
-      'imagePath': 'assets/icon/rekreasi.png',
-      'fallbackIcon': Icons.sports_soccer_rounded,
-      'desc': 'Wisata Kota, Fasilitas Olahraga & Taman',
+      'title': 'Kesehatan',
+      'imagePath': 'assets/icon/kesehatan.png',
+      'fallbackIcon': Icons.local_hospital_rounded,
+      'desc': 'BPJS, Puskesmas, Antrean RSUD',
     },
     {
-      'title': 'Sosial & Hukum',
+      'title': 'Sosial &\nHukum',
       'imagePath': 'assets/icon/sosialhukum.png',
       'fallbackIcon': Icons.gavel_rounded,
       'desc': 'Bantuan Sosial, Konsultasi Hukum Warga',
+    },
+    {
+      'title': 'Rekreasi',
+      'imagePath': 'assets/icon/rekreasi.png',
+      'fallbackIcon': Icons.camera_alt_rounded,
+      'desc': 'Wisata Kota, Fasilitas Olahraga & Taman',
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF123457),
+        backgroundColor: const Color(0xFF0A1E33),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: false,
@@ -90,7 +90,7 @@ class LayananScreen extends StatelessWidget {
                 text: 'Fase',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 19,
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
                 ),
@@ -99,7 +99,7 @@ class LayananScreen extends StatelessWidget {
                 text: ' Kehidupan',
                 style: TextStyle(
                   color: Color(0xFFE8A33D),
-                  fontSize: 20,
+                  fontSize: 19,
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
                 ),
@@ -109,168 +109,111 @@ class LayananScreen extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // # JUDUL KATALOG FASE KEHIDUPAN
-            const Text(
-              'Kategori Layanan Sektor',
-              style: TextStyle(
-                color: Color(0xFF123457),
-                fontSize: 17.5,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Pilih sektor layanan yang Anda butuhkan sesuai kebutuhan kehidupan warga.',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 13,
-                fontFamily: 'Poppins',
-              ),
-            ),
-            const SizedBox(height: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _faseKehidupan.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 14,
+            childAspectRatio: 0.80,
+          ),
+          itemBuilder: (context, index) {
+            final item = _faseKehidupan[index];
+            final titleStr = (item['title'] as String).replaceAll('\n', ' ');
 
-            // # GRID KATALOG 10 KARTU SEKTOR FASE KEHIDUPAN
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _faseKehidupan.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.88,
-              ),
-              itemBuilder: (context, index) {
-                final item = _faseKehidupan[index];
-                return GestureDetector(
-                  onTap: () {
-                    if (item['title'] == 'Keluarga') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LayananKeluargaScreen()),
-                      );
-                    } else if (item['title'] == 'Usaha') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LayananUsahaScreen()),
-                      );
-                    } else if (item['title'] == 'Lingkungan & Tempat Tinggal') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const LayananLingkunganScreen()),
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => FormPengajuanScreen(
-                            judulLayanan: 'Layanan ${item['title']}',
-                            deskripsi: item['desc'] as String,
-                            icon: (item['fallbackIcon'] ?? Icons.article_rounded) as IconData,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFF123457), width: 1.5),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x20000000),
-                          blurRadius: 5,
-                          offset: Offset(0, 3),
-                        )
-                      ],
+            return GestureDetector(
+              onTap: () {
+                if (titleStr.contains('Keluarga')) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LayananKeluargaScreen()),
+                  );
+                } else if (titleStr.contains('Usaha')) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LayananUsahaScreen()),
+                  );
+                } else if (titleStr.contains('Lingkungan')) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LayananLingkunganScreen()),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => FormPengajuanScreen(
+                        judulLayanan: 'Layanan $titleStr',
+                        deskripsi: item['desc'] as String,
+                        icon: (item['fallbackIcon'] ?? Icons.article_rounded) as IconData,
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        // # BAGIAN ATAS (BAGIAN BIRU NAVY DENGAN IKON DI TENGAH)
-                        Expanded(
-                          child: Container(
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF123457),
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                topRight: Radius.circular(10),
-                              ),
-                            ),
-                            child: Center(
-                              child: SmartImage(
-                                imagePath: (item['imagePath'] as String?) ?? '',
-                                width: 46,
-                                height: 46,
-                                fit: BoxFit.contain,
-                                fallbackIcon: (item['fallbackIcon'] as IconData?) ?? Icons.category_rounded,
-                                fallbackColor: const Color(0xFFE8A33D),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // # BAGIAN BAWAH (BAGIAN ABU-ABU DENGAN TINGGI PRESISI 64PX AGAR SEJAJAR 100%)
-                        Container(
-                          width: double.infinity,
-                          height: 64,
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFD9D9D9),
-                            borderRadius: BorderRadius.only(
-                              bottomLeft: Radius.circular(10),
-                              bottomRight: Radius.circular(10),
-                            ),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Judul & Deskripsi Sektor dari layanan_screen.dart
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      item['title'] as String,
-                                      style: const TextStyle(
-                                        color: Color(0xFF123457),
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      item['desc'] as String,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 10.5,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                  );
+                }
               },
-            ),
-          ],
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0A1E33),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x30000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 3),
+                    )
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // KOTAK IKON PUTIH DENGAN OUTLINE EMAS (GOLD BORDER)
+                    Container(
+                      height: 68,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE8A33D), width: 2),
+                      ),
+                      child: Center(
+                        child: SmartImage(
+                          imagePath: (item['imagePath'] as String?) ?? '',
+                          width: 42,
+                          height: 42,
+                          fit: BoxFit.contain,
+                          fallbackIcon: (item['fallbackIcon'] as IconData?) ?? Icons.category_rounded,
+                          fallbackColor: const Color(0xFF0A1E33),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // JUDUL FASE KEHIDUPAN (TEKS PUTIH PRESISI)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          item['title'] as String,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Poppins',
+                            height: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
