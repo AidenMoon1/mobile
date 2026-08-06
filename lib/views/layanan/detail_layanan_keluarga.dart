@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/models/layanan_model.dart';
-import 'package:mobile/views/layanan/form_pengajuan_screen.dart';
+import 'package:mobile/views/instansi/mocilegit_webview_screen.dart';
 
 class DetailLayananKeluargaScreen extends StatelessWidget {
   final String judulLayanan;
@@ -8,6 +8,7 @@ class DetailLayananKeluargaScreen extends StatelessWidget {
   final String deskripsiTentang;
   final List<String> persyaratan;
   final LayananModel? layananModel;
+  final String? urlPortal;
 
   const DetailLayananKeluargaScreen({
     super.key,
@@ -16,6 +17,7 @@ class DetailLayananKeluargaScreen extends StatelessWidget {
     required this.deskripsiTentang,
     required this.persyaratan,
     this.layananModel,
+    this.urlPortal,
   });
 
   void _tampilkanDialogRedireksi(BuildContext context) {
@@ -74,14 +76,13 @@ class DetailLayananKeluargaScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pop(context); // Tutup Dialog
 
-                    // NAVIGASI KE FORMULIR DIGITAL NATIVE INTEGRATED
+                    // NAVIGASI KE FORMULIR DIGITAL IN-APP WEBVIEW MOCILEGIT
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FormPengajuanScreen(
-                          judulLayanan: 'Pengajuan $judulLayanan',
-                          deskripsi: 'Formulir Permohonan Digital Resmi Kota Sukabumi',
-                          icon: Icons.badge_rounded,
+                        builder: (context) => MocilegitWebviewScreen(
+                          title: 'Pengajuan $judulLayanan',
+                          url: urlPortal ?? 'https://mocilegit.sukabumikota.go.id/pengajuan',
                         ),
                       ),
                     );

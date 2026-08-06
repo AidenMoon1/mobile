@@ -29,6 +29,7 @@ class NotificationService extends ChangeNotifier {
 
   // FUNGSI 2: Memuat Notifikasi Tersimpan dari Database SQLite
   Future<void> _loadFromDatabase() async {
+    if (kIsWeb) return;
     final List<Map<String, dynamic>> maps = await _dbHelper.queryAll('notifications');
     _notifications.clear();
     for (var map in maps) {

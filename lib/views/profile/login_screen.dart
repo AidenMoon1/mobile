@@ -3,8 +3,8 @@ import 'package:mobile/services/user_service.dart';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/models/notification_model.dart';
 import 'package:mobile/main.dart';
-import 'package:mobile/views/admin/admin_dashboard_screen.dart';
-import 'package:mobile/views/profile/otp_login_screen.dart';
+import 'package:mobile/views/profile/register_screen.dart';
+import 'package:mobile/views/admin/admin_login_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,8 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
-  bool _isAdminMode = false;
+
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -36,63 +35,205 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 700));
 
     if (!mounted) return;
 
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
-    final username = _usernameController.text.trim();
+    final usernameOrEmail = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    // MEMERIKSA APAKAH AKUN SUDAH TERDAFTAR DI DATABASE USER
+    final bool isSuccess = await UserService().authenticateAccount(usernameOrEmail, password);
 
     setState(() {
       _isLoading = false;
     });
 
-    if (_isAdminMode) {
-      // PROSES LOGIN ADMIN INSTANSI
-      await NotificationService().addNotification(
-        title: '🔐 Login Admin Berhasil',
-        description: 'Selamat datang kembali Administrator $username pada Portal Sukabumi One Access.',
-        category: NotificationCategory.general,
-      );
-
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
-      );
-    } else {
-      // PROSES LOGIN WARGA KOTA
+    if (isSuccess) {
       final current = UserService().currentUser;
-      await UserService().updateProfile(
-        current.copyWith(
-          name: username.isNotEmpty ? username : current.name,
-          username: username.isNotEmpty ? username : current.username,
-        ),
-      );
-
       await NotificationService().addNotification(
         title: '👋 Selamat Datang Kembali',
-        description: 'Anda berhasil masuk ke akun Warga Sukabumi One Access.',
+        description: 'Anda berhasil masuk sebagai ${current.name}.',
         category: NotificationCategory.general,
       );
 
-      messenger.showSnackBar(
-        const SnackBar(
-          content: Text('Berhasil masuk ke Beranda Warga!'),
-          backgroundColor: Color(0xFF0A1E33),
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Berhasil masuk! Selamat datang ${current.name}'),
+          backgroundColor: const Color(0xFF0A1E33),
         ),
       );
 
-      navigator.pushReplacement(
+      Navigator.pushReplacement(
+        context,
         MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+      );
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Username/Email atau Kata Sandi tidak terdaftar/salah!\nSilakan lakukan Registrasi Akun Baru terlebih dahulu.'),
+          backgroundColor: Colors.redAccent,
+          duration: Duration(seconds: 4),
+        ),
       );
     }
   }
 
   // ---------------------------------------------------------------------------
-  // 1. MODAL OTENTIKASI IKD SINGLE SIGN-ON (DUKCAPIL KEMENDAGRI)
+  // 1. MODAL PICKER AKUN GOOGLE (SIMULASI GOOGLE OAUTH API DEVICE)
   // ---------------------------------------------------------------------------
-  void _bukaModalIKDSSO() {
-    final TextEditingController nikController = TextEditingController(text: '3272012508980002');
+  void _bukaGoogleAccountPicker() {
+    final currentUserEmail = UserService().currentUser.email != 'guest@sukabumi.go.id' && UserService().currentUser.email != '-'
+        ? UserService().currentUser.email
+        : 'dzakwanmuh304@gmail.com';
+    final currentUserName = UserService().currentUser.name != 'Tamu Sukabumi' && UserService().currentUser.name != 'Warga Sukabumi'
+        ? UserService().currentUser.name
+        : 'Muhammad Dzakwan';
+
+    final List<Map<String, String>> googleAccounts = [
+      {
+        'name': currentUserName,
+        'email': currentUserEmail,
+      },
+      {
+        'name': 'Ahmad Subagja',
+        'email': 'ahmad.subagja@gmail.com',
+      },
+      {
+        'name': 'Warga Sukabumi',
+        'email': 'warga.sukabumi@gmail.com',
+      },
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(22),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Row(
+              children: [
+                Icon(Icons.g_mobiledata_rounded, color: Color(0xFF4285F4), size: 36),
+                SizedBox(width: 8),
+                Text(
+                  'Pilih Akun Google',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0A1E33),
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Pilih akun Google terdaftar di HP Anda untuk melanjutkan ke Sukabumi One Access:',
+              style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
+            ),
+            const SizedBox(height: 16),
+
+            // LIST AKUN GOOGLE DISIMPULASIKAN DARI DEVICE
+            ...googleAccounts.map((account) {
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                leading: CircleAvatar(
+                  backgroundColor: const Color(0xFF4285F4).withOpacity(0.12),
+                  child: Text(
+                    account['name']![0],
+                    style: const TextStyle(color: Color(0xFF4285F4), fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(
+                  account['name']!,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, fontFamily: 'Poppins'),
+                ),
+                subtitle: Text(
+                  account['email']!,
+                  style: const TextStyle(fontSize: 11.5, fontFamily: 'Poppins'),
+                ),
+                onTap: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  final navigator = Navigator.of(context);
+                  Navigator.pop(context); // Tutup Picker Sheet
+
+                  setState(() => _isLoading = true);
+                  await Future.delayed(const Duration(milliseconds: 900));
+
+                  await UserService().loginWithGoogleAccount(account['name']!, account['email']!);
+
+                  await NotificationService().addNotification(
+                    title: '🌐 Login Google OAuth Berhasil',
+                    description: 'Terhubung dengan akun Google ${account['email']}.',
+                    category: NotificationCategory.general,
+                  );
+
+                  if (!mounted) return;
+                  setState(() => _isLoading = false);
+
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Login berhasil dengan Google (${account['email']})!'),
+                      backgroundColor: const Color(0xFF4285F4),
+                    ),
+                  );
+
+                  navigator.pushReplacement(
+                    MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                  );
+                },
+              );
+            }),
+
+            const Divider(),
+
+            ListTile(
+              leading: const Icon(Icons.person_add_alt_outlined, color: Color(0xFF0A1E33)),
+              title: const Text(
+                'Tambah Akun Google Lainnya...',
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 2. MODAL OTENTIKASI SINGLE SIGN-ON (SSO TERPADU KOTA SUKABUMI)
+  // ---------------------------------------------------------------------------
+  void _bukaModalSSO() {
+    final TextEditingController ssoUsernameController = TextEditingController();
+    final TextEditingController ssoPasswordController = TextEditingController();
     bool isAuthenticating = false;
 
     showModalBottomSheet(
@@ -132,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: const Color(0xFFEBF3FE),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF123457), size: 28),
+                      child: const Icon(Icons.vpn_key_rounded, color: Color(0xFF0A1E33), size: 28),
                     ),
                     const SizedBox(width: 14),
                     const Expanded(
@@ -140,7 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'IKD Single Sign-On (SSO)',
+                            'Single Sign-On (SSO Sukabumi)',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -149,7 +290,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           Text(
-                            'Identitas Kependudukan Digital Ditjen Dukcapil',
+                            '1 Akun untuk Seluruh Aplikasi OPD Terpadu',
                             style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
                           ),
                         ],
@@ -157,20 +298,49 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Masukkan NIK terdaftar atau gunakan pemindaian QR dari aplikasi IKD HP Anda untuk masuk instan:',
-                  style: TextStyle(fontSize: 12, color: Colors.black87, fontFamily: 'Poppins'),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, color: Color(0xFF0A1E33), size: 20),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Sistem SSO memverifikasi akun Anda pada 1 Penyedia Identitas Utama & memberikan token khusus agar Anda dapat menggunakan semua layanan OPD tanpa login ulang.',
+                          style: TextStyle(fontSize: 11, color: Colors.black87, height: 1.4, fontFamily: 'Poppins'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 16),
                 TextFormField(
-                  controller: nikController,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                  controller: ssoUsernameController,
+                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
                   decoration: InputDecoration(
-                    labelText: 'NIK KTP Digital',
-                    hintText: '16 digit NIK...',
-                    prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFF123457)),
+                    labelText: 'Username / NIK SSO',
+                    hintText: 'Masukkan username SSO...',
+                    prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFF0A1E33)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: ssoPasswordController,
+                  obscureText: true,
+                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                  decoration: InputDecoration(
+                    labelText: 'Password SSO',
+                    hintText: 'Masukkan kata sandi SSO...',
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF0A1E33)),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     filled: true,
                     fillColor: const Color(0xFFF8FAFC),
@@ -187,20 +357,20 @@ class _LoginScreenState extends State<LoginScreen> {
                             setModalState(() => isAuthenticating = true);
                             await Future.delayed(const Duration(milliseconds: 1200));
 
-                            final nik = nikController.text.trim();
+                            final username = ssoUsernameController.text.trim();
                             final current = UserService().currentUser;
 
                             await UserService().updateProfile(
                               current.copyWith(
-                                username: nik.isNotEmpty ? nik : '3272012508980002',
-                                name: 'Warga Sukabumi (IKD Verified)',
-                                status: 'Terverifikasi (IKD Kemendagri)',
+                                username: username.isNotEmpty ? username : 'warga.sso.sukabumi',
+                                name: username.isNotEmpty ? username : 'Warga Sukabumi (SSO Verified)',
+                                status: 'Terverifikasi (SSO Identity Token)',
                               ),
                             );
 
                             await NotificationService().addNotification(
-                              title: '🪪 Login IKD SSO Sukses',
-                              description: 'Identitas Kependudukan Digital (NIK $nik) berhasil diverifikasi.',
+                              title: '🔑 Autentikasi SSO Berhasil',
+                              description: 'Token akses SSO Sukabumi diterbitkan. Anda terhubung ke seluruh portal OPD.',
                               category: NotificationCategory.general,
                             );
 
@@ -209,8 +379,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Login IKD SSO Berhasil! NIK Terverifikasi Dukcapil.'),
-                                backgroundColor: Color(0xFF123457),
+                                content: Text('Login SSO Berhasil! Token terverifikasi oleh Penyedia Identitas.'),
+                                backgroundColor: Color(0xFF0A1E33),
                               ),
                             );
 
@@ -223,7 +393,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                         : const Icon(Icons.verified_user_rounded, size: 20),
                     label: Text(
-                      isAuthenticating ? 'Menverifikasi IKD...' : 'Otentikasi & Masuk IKD',
+                      isAuthenticating ? 'Memeriksa Token SSO...' : 'Verifikasi & Masuk SSO',
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
                     ),
                     style: ElevatedButton.styleFrom(
@@ -240,8 +410,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -309,7 +477,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Portal Terpadu Layanan Publik Kota Sukabumi',
+                    'Portal Terpadu Layanan Masyarakat Kota Sukabumi',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.white70,
@@ -343,73 +511,31 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // TOGGLE WARGA / ADMIN MODE
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF4F6F9),
-                          borderRadius: BorderRadius.circular(12),
+                      const Text(
+                        'Masuk Akun Pengguna',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                          fontFamily: 'Poppins',
                         ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: InkWell(
-                                onTap: () => setState(() => _isAdminMode = false),
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: !_isAdminMode ? primaryColor : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'Warga Kota',
-                                      style: TextStyle(
-                                        color: !_isAdminMode ? Colors.white : Colors.grey.shade700,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: InkWell(
-                                onTap: () => setState(() => _isAdminMode = true),
-                                borderRadius: BorderRadius.circular(10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: _isAdminMode ? primaryColor : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'Admin Portal',
-                                      style: TextStyle(
-                                        color: _isAdminMode ? Colors.white : Colors.grey.shade700,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Silakan masuk untuk mengakses seluruh layanan publik terpadu',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.grey,
+                          fontFamily: 'Poppins',
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
-                      // INPUT USERNAME
-                      Text(
-                        _isAdminMode ? 'Username Administrator' : 'Nama Lengkap / NIK Warga',
-                        style: const TextStyle(
+                      // INPUT USERNAME / EMAIL / NIK
+                      const Text(
+                        'Nama Lengkap / Email / NIK',
+                        style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.bold,
                           color: primaryColor,
@@ -421,7 +547,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _usernameController,
                         style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
                         decoration: InputDecoration(
-                          hintText: _isAdminMode ? 'Masukkan username admin...' : 'Masukkan nama/NIK Anda...',
+                          hintText: 'Masukkan Nama, Email, atau NIK...',
                           hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5, fontFamily: 'Poppins'),
                           prefixIcon: const Icon(Icons.person_outline_rounded, color: primaryColor),
                           fillColor: const Color(0xFFF8FAFC),
@@ -434,7 +560,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         validator: (val) {
                           if (val == null || val.trim().isEmpty) {
-                            return _isAdminMode ? 'Username admin wajib diisi' : 'Nama/NIK Warga wajib diisi';
+                            return 'Nama / Email / NIK wajib diisi';
                           }
                           return null;
                         },
@@ -504,14 +630,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   height: 22,
                                   child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                                 )
-                              : Row(
+                              : const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(_isAdminMode ? Icons.admin_panel_settings_rounded : Icons.login_rounded, size: 20, color: accentColor),
-                                    const SizedBox(width: 8),
+                                    Icon(Icons.login_rounded, size: 20, color: accentColor),
+                                    SizedBox(width: 8),
                                     Text(
-                                      _isAdminMode ? 'Masuk Portal Admin' : 'Masuk Akun Warga',
-                                      style: const TextStyle(
+                                      'Masuk Akun',
+                                      style: TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'Poppins',
@@ -522,96 +648,180 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      if (!_isAdminMode) ...[
-                        const SizedBox(height: 24),
+                      const SizedBox(height: 20),
 
-                        // DIVIDER SOCIAL LOGIN
-                        const Row(
-                          children: [
-                            Expanded(child: Divider()),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 10),
-                              child: Text('ATAU MASUK DENGAN', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
-                            ),
-                            Expanded(child: Divider()),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // 1. TOMBOL LOGIN IKD (IDENTITAS KEPENDUDUKAN DIGITAL - SINGLE SIGN-ON)
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: OutlinedButton.icon(
-                            onPressed: _bukaModalIKDSSO,
-                            icon: const Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
-                            label: const Text(
-                              'Masuk dengan IKD Single Sign-On',
-                              style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: primaryColor, width: 1.5),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
+                      // MENU DAFTAR AKUN BARU
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Belum memiliki akun? ',
+                            style: TextStyle(fontSize: 12.5, color: Colors.grey, fontFamily: 'Poppins'),
                           ),
-                        ),
-
-                        const SizedBox(height: 12),
-
-
-
-                        // 3. TOMBOL LOGIN WHATSAPP OTP
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
+                          GestureDetector(
+                            onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (context) => const OtpLoginScreen()),
+                                MaterialPageRoute(builder: (context) => const RegisterScreen()),
                               );
                             },
-                            icon: const Icon(Icons.chat_rounded, size: 20),
-                            label: const Text(
-                              'Masuk dengan WhatsApp',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF25D366),
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // TOMBOL JELAJAH TAMU / TANPA LOGIN
-                        Center(
-                          child: TextButton.icon(
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-                              );
-                            },
-                            icon: const Icon(Icons.arrow_forward_rounded, size: 16, color: primaryColor),
-                            label: const Text(
-                              'Jelajah Layanan Tanpa Login (Tamu)',
-                              style: TextStyle(color: primaryColor, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                            child: const Text(
+                              'Daftar Sekarang',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                                fontFamily: 'Poppins',
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
                           ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // DIVIDER SOCIAL LOGIN
+                      const Row(
+                        children: [
+                          Expanded(child: Divider()),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            child: Text('ATAU MASUK DENGAN', style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                          ),
+                          Expanded(child: Divider()),
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // 1. TOMBOL LOGIN GOOGLE
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton(
+                          onPressed: _bukaGoogleAccountPicker,
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey.shade300, width: 1.2),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            backgroundColor: Colors.white,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 22,
+                                height: 22,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF4285F4),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'G',
+                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'Masuk dengan Google',
+                                style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      // 2. TOMBOL LOGIN SINGLE SIGN-ON (SSO SUKABUMI)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton.icon(
+                          onPressed: _bukaModalSSO,
+                          icon: const Icon(Icons.vpn_key_rounded, size: 20, color: Colors.white),
+                          label: const Text(
+                            'Masuk dengan Single Sign-On (SSO)',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // TOMBOL JELAJAH TAMU / TANPA LOGIN
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () async {
+                            await UserService().loginAsGuest();
+                            if (!context.mounted) return;
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                            );
+                          },
+                          icon: const Icon(Icons.arrow_forward_rounded, size: 16, color: primaryColor),
+                          label: const Text(
+                            'Jelajah Layanan Tanpa Login (Tamu)',
+                            style: TextStyle(color: primaryColor, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+
+            // LINK INFORMASI PORTAL ADMIN (WEBSITE & OTP GMAIL 2FA)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.admin_panel_settings_outlined, color: Color(0xFF0A1E33), size: 18),
+                      SizedBox(width: 8),
+                      Text(
+                        'Login Admin Instansi (Gmail & OTP 2FA)',
+                        style: TextStyle(
+                          color: Color(0xFF0A1E33),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Poppins',
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 28),
           ],
         ),
       ),

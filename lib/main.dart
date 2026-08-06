@@ -7,12 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-// --- LAYAR / VIEWS ---
+// --- LAYAR / VIEWS WARGA ---
 import 'package:mobile/views/berita_dan_fitur/dashboard_screen.dart';
 import 'package:mobile/views/berita_dan_fitur/report_screen.dart';
 import 'package:mobile/views/berita_dan_fitur/notification_screen.dart';
 import 'package:mobile/views/profile/profile_screen.dart';
 import 'package:mobile/widgets/custom_navbar.dart';
+
+// --- LAYAR / VIEWS ADMIN PORTAL ---
+import 'package:mobile/views/admin/admin_login_screen.dart';
+import 'package:mobile/views/admin/admin_dashboard_screen.dart';
 
 // --- SERVICES / KONTROLER DATA ---
 import 'package:mobile/services/notification_service.dart';
@@ -23,25 +27,30 @@ import 'package:mobile/services/user_service.dart';
 /// FUNGSI MAIN (Pertama Kali Dijalankan Saat Aplikasi Ditingkatkan/Dimulai)
 /// ----------------------------------------------------------------------------
 void main() async {
-  // 1. Memastikan Engine Widget Flutter Siap Sebelum Asinkronisasi Dijalankan
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 2. Inisialisasi Firebase Online (Cloud Firestore & Auth System)
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  // Try-catch safe initializations agar Web tidak blank jika ada plugin gagal
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // Graceful fallback jika Firebase Web mengalami kendala opsi
+  }
   
-  // 3. Inisialisasi Service Lokal (SQLite & Profil Pengguna awal)
-  await UserService().init();
-  await NotificationService().init();
-  await FeedbackService().init();
+  try {
+    await UserService().init();
+    await NotificationService().init();
+    await FeedbackService().init();
+  } catch (e) {
+    // Graceful fallback jika SQLite lokal tidak didukung di browser
+  }
   
-  // 4. Jalankan Aplikasi Utama
   runApp(const MyApp());
 }
 
 /// ----------------------------------------------------------------------------
-/// WIDGET KELAS UTAMA (Konfigurasi Tema, Warna & Halaman Pertama)
+/// WIDGET KELAS UTAMA (Konfigurasi Tema, Warna & Routing Web Terpisah)
 /// ----------------------------------------------------------------------------
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -50,7 +59,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sukabumi One Access',
-      debugShowCheckedModeBanner: false, // Menghilangkan Pita Banner Debug
+      debugShowCheckedModeBanner: false,
       
       // Tema Visual Terpadu (Navy #0A1E33 & Akses Emas #E8A33D)
       theme: ThemeData(
@@ -66,8 +75,13 @@ class MyApp extends StatelessWidget {
         ),
       ),
       
-      // Layar Awal Saat Aplikasi Dibuka: Halaman Utama Beranda (Home)
-      home: const MainNavigationScreen(),
+      // ROUTING WEB TERPISAH (SEPARATED WEB ROUTES)
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const MainNavigationScreen(),
+        '/admin': (context) => const AdminLoginScreen(),
+        '/admin/dashboard': (context) => const AdminDashboardScreen(),
+      },
     );
   }
 }
@@ -83,10 +97,8 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  // CATATAN MAHASISWA: Indeks menu aktif (0 = Beranda, 1 = Layanan, 2 = Notifikasi, 3 = Akun)
   int _selectedIndex = 0;
 
-  // CATATAN MAHASISWA: Daftar 4 Halaman yang terhubung ke 4 Tombol Navbar
   final List<Widget> _screens = [
     const DashboardScreen(),    // Halaman 0: Beranda Utama Warga
     const ReportScreen(),       // Halaman 1: Layanan & Pengaduan
@@ -94,7 +106,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const ProfileScreen(),      // Halaman 3: Profil & Pengaturan Akun
   ];
 
-  // FUNGSI: Mengubah Halaman Aktif Saat Menu Di-Klik
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -104,13 +115,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // IndexedStack Menjaga State Layar Agar Tidak Di-Reload Ulang Saat Perpindahan Tab
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
       ),
-      
-      // Custom Navigation Bar Komponen Teman Anda
       bottomNavigationBar: CustomBottomNavBar(
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
