@@ -5,10 +5,12 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../models/instansi_model.dart';
 import '../../models/layanan_model.dart';
 import '../../models/sektor_model.dart';
 import '../../services/opd_service.dart';
+import '../../services/feedback_service.dart';
 import '../../widgets/smart_image.dart';
 import '../profile/login_screen.dart';
 import 'admin_form_instansi_screen.dart';
@@ -387,6 +389,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case 4:
         return 'Live Chat Warga';
       case 5:
+        return 'Kritik & Saran Warga';
+      case 6:
         return 'Profil Saya';
       default:
         return 'Dashboard Admin';
@@ -407,6 +411,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case 4:
         return _buildLiveChatInboxView(context, sidebarBg, accentGold);
       case 5:
+        return _buildLaporanKritikSaranView(context, sidebarBg, accentGold);
+      case 6:
         return _buildProfilSayaView(context, sidebarBg, accentGold);
       default:
         return _buildDashboardOverviewView(context, sidebarBg, accentGold);
@@ -534,6 +540,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             index: 4,
             icon: Icons.mark_chat_unread_rounded,
             label: 'Live Chat Warga',
+            accentGold: accentGold,
+          ),
+
+          // NAV ITEM 5: KRITIK & SARAN WARGA
+          _buildSidebarNavItem(
+            index: 5,
+            icon: Icons.rate_review_rounded,
+            label: 'Kritik & Saran Warga',
             accentGold: accentGold,
           ),
 
@@ -760,7 +774,307 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   // ===========================================================================
-  // VIEW 5: PROFIL SAYA VIEW
+  // VIEW 5: LAPORAN KRITIK & SARAN WARGA (FEEDBACK MONITORING)
+  // ===========================================================================
+  Widget _buildLaporanKritikSaranView(BuildContext context, Color sidebarBg, Color accentGold) {
+    final feedbackList = FeedbackService().history;
+    final double avgRating = feedbackList.isEmpty
+        ? 5.0
+        : feedbackList.map((e) => e.rating).reduce((a, b) => a + b) / feedbackList.length;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // BREADCRUMB & HEADER
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF0F2942)),
+              onPressed: () => setState(() => _selectedNavIndex = 0),
+              tooltip: 'Kembali ke Dashboard',
+            ),
+            const SizedBox(width: 4),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text('Dashboard', style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontFamily: 'Poppins')),
+                    const Icon(Icons.chevron_right_rounded, size: 14, color: Colors.grey),
+                    const Text('Laporan Kritik & Saran', style: TextStyle(color: Color(0xFF0F2942), fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                  ],
+                ),
+                const Text(
+                  'Kritik & Saran Warga',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F2942),
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        // STATS CARDS (SUMMARY METRICS)
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.grey.shade200),
+                  boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 2))],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F2942).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.rate_review_rounded, color: Color(0xFF0F2942), size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Total Masukan', style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontFamily: 'Poppins')),
+                        Text('${feedbackList.length} Laporan', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.grey.shade200),
+                  boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 2))],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF6E5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.star_rounded, color: Color(0xFFE8A33D), size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Rata-Rata Kepuasan', style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontFamily: 'Poppins')),
+                        Text('${avgRating.toStringAsFixed(1)} / 5.0 ⭐', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 24),
+
+        // DAFTAR ULASAN & MASUKAN WARGA
+        if (feedbackList.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              children: [
+                Icon(Icons.inbox_rounded, size: 48, color: Colors.grey.shade400),
+                const SizedBox(height: 12),
+                const Text('Belum ada laporan kritik dan saran baru', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Poppins')),
+                Text('Ulasan warga yang dikirimkan via halaman Kritik & Saran akan tampil di sini.', style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontFamily: 'Poppins')),
+              ],
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: feedbackList.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 14),
+            itemBuilder: (context, index) {
+              final fb = feedbackList[index];
+              final dateStr = DateFormat('dd MMM yyyy, HH:mm').format(fb.date);
+
+              return Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                  boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 8, offset: Offset(0, 2))],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const CircleAvatar(
+                              radius: 18,
+                              backgroundColor: Color(0xFF0F2942),
+                              child: Icon(Icons.person, color: Colors.white, size: 20),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Warga Kota Sukabumi',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0F2942),
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                                Text(
+                                  dateStr,
+                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontFamily: 'Poppins'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        // BADGE RATING STAR
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF6E5),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFE8A33D)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.star_rounded, color: Color(0xFFE8A33D), size: 16),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${fb.rating}.0 / 5',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                  color: Color(0xFF0F2942),
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // FAKTOR PENILAIAN BADGE
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F2942).withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'Kategori: ${fb.factor}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F2942),
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // ISI PESAN KRITIK & SARAN
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Text(
+                        fb.reason.isNotEmpty ? '"${fb.reason}"' : '"(Tidak ada pesan tambahan)"',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.black87,
+                          fontFamily: 'Poppins',
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // ACTION BUTTONS ADMIN
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Tanggapan resmi berhasil dikirim ke warga!'),
+                                backgroundColor: Color(0xFF0F2942),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.reply_rounded, size: 16, color: Color(0xFF0F2942)),
+                          label: const Text(
+                            'Tanggapi Laporan',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F2942),
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF0F2942)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // VIEW 6: PROFIL SAYA VIEW
   // ===========================================================================
   Widget _buildProfilSayaView(BuildContext context, Color sidebarBg, Color accentGold) {
     return Column(
