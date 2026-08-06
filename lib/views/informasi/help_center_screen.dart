@@ -1,7 +1,19 @@
-import 'package:flutter/material.dart';
-import 'dart:async';
-import 'package:mobile/models/chat_message_model.dart';
+// =============================================================================
+// FILE: lib/views/informasi/help_center_screen.dart
+// FUNGSI: Layanan Pusat Bantuan, Live Chatbot AI SOA, & Handoff Live Agent Admin
+// PATTERN: Reactive Real-Time StreamBuilder & Asynchronous Message Processing
+// LEVEL KODE: Level 2-3 (Sangat Rapi & Terstruktur Untuk Mahasiswa)
+// =============================================================================
 
+import 'dart:async';
+import 'package:flutter/material.dart';
+import '../../models/chat_message_model.dart';
+import '../../services/chat_service.dart';
+import '../../services/user_service.dart';
+
+/// ----------------------------------------------------------------------------
+/// LAYAR PUSAT BANTUAN & LIVE CHAT WARGA (HELP CENTER SCREEN)
+/// ----------------------------------------------------------------------------
 class HelpCenterScreen extends StatefulWidget {
   const HelpCenterScreen({super.key});
 
@@ -12,63 +24,156 @@ class HelpCenterScreen extends StatefulWidget {
 class _HelpCenterScreenState extends State<HelpCenterScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<ChatMessage> _messages = [];
-  bool _isTyping = false;
+  final ChatService _chatService = ChatService();
+  final UserService _userService = UserService();
 
-  // Data Jawaban FAQ untuk Bot
+  // Thread ID Unik Berdasarkan Nama & Nomor Telepon Warga Terlogin
+  String get _threadId => 'CHAT-${_userService.currentUser.name}-${_userService.currentUser.phoneNumber}';
+
+  bool _isTyping = false;
+  bool _isLiveAgentMode = false; // Mode Handoff Langsung ke Petugas Admin Manusia
+
+  // Data Jawaban FAQ Otomatis untuk AI Bot SOA
   final Map<String, String> _faqResponses = {
-    'Bagaimana cara membuat pengaduan?': 
+    'Bagaimana cara membuat pengaduan?':
         'Untuk membuat pengaduan, Anda bisa masuk ke menu "Layanan" di navigasi bawah, pilih kategori layanan yang sesuai, lalu isi formulir pengaduan dengan lengkap dan unggah foto pendukung jika diperlukan.',
-    'Bagaimana cara melihat status pengaduan saya?': 
+    'Bagaimana cara melihat status pengaduan saya?':
         'Status pengaduan dapat dipantau melalui menu "Log Aktivitas" di halaman profil Anda. Anda akan mendapatkan notifikasi real-time setiap kali ada perubahan status.',
-    'Berapa lama pengaduan diproses?': 
-        'Proses pengaduan biasanya memakan waktu 1-3 hari kerja tergantung pada tingkat kompleksitas masalah dan instansi yang berwenang menanganinya.',
-    'Apa saja layanan yang tersedia?': 
-        'Saat ini tersedia layanan Pengaduan Infrastruktur, Layanan Dukcapil Digital, Informasi Cuaca, dan Berita Kota Sukabumi.',
-    'Di mana lokasi kantor pelayanan?': 
+    'Berapa lama pengaduan diproses?':
+        'Proses pengaduan dan permohonan layanan biasanya memakan waktu 1-3 hari kerja tergantung pada tingkat kompleksitas masalah dan instansi yang berwenang menanganinya.',
+    'Apa saja layanan yang tersedia?':
+        'Saat ini tersedia layanan Pengaduan Infrastruktur, Layanan Dukcapil Digital, Informasi Cuaca, Berita Kota Sukabumi, dan Integrasi SSO IKD.',
+    'Di mana lokasi kantor pelayanan?':
         'Kantor Pusat Layanan terpadu berada di Balai Kota Sukabumi, Jl. R. Syamsudin, S.H. No.25.',
-    'Mengapa pengaduan saya belum ditindaklanjuti?': 
+    'Mengapa pengaduan saya belum ditindaklanjuti?':
         'Mohon pastikan data yang diinput sudah lengkap. Jika sudah lebih dari 3 hari kerja, Anda bisa menggunakan fitur "Hubungi Admin" di detail pengaduan tersebut.',
   };
 
-  void _handleSendMessage(String text) {
-    if (text.trim().isEmpty) return;
+  @override
+  void initState() {
+    super.initState();
+    _initInitialGreeting();
+  }
 
-    setState(() {
-      _messages.add(ChatMessage(
-        text: text,
-        sender: MessageSender.user,
-        timestamp: DateTime.now(),
-      ));
-      _isTyping = true;
-    });
+  // FUNGSI HELPER: Mendapatkan Nama Sapaan Sopan Pengguna
+  String _getFriendlyName() {
+    final name = _userService.currentUser.name.trim();
+    if (name.isEmpty || name.toLowerCase() == 'wa' || name.toLowerCase() == 'warga' || name.length <= 2) {
+      return 'Warga Sukabumi';
+    }
+    return name;
+  }
 
-    _messageController.clear();
-    _scrollToBottom();
-
-    // Simulasi Balasan Bot setelah 1 detik
-    Timer(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      
-      String reply = 'Terima kasih atas pesan Anda. Mohon tunggu sebentar, agen SOA akan segera merespon Anda.';
-      
-      // Cek apakah pesan user cocok dengan FAQ
-      if (_faqResponses.containsKey(text)) {
-        reply = _faqResponses[text]!;
-      }
-
-      setState(() {
-        _messages.add(ChatMessage(
-          text: reply,
-          sender: MessageSender.bot,
-          timestamp: DateTime.now(),
-        ));
-        _isTyping = false;
-      });
+  // FUNGSI 1: Salam Pembuka Otomatis AI Bot SOA Saat Pertama Dibuka
+  void _initInitialGreeting() {
+    Future.delayed(const Duration(milliseconds: 200), () async {
+      final String displayName = _getFriendlyName();
+      await _chatService.sendMessage(
+        threadId: _threadId,
+        text: 'Halo Kak $displayName! 👋 Selamat datang di Pusat Layanan Publik Sukabumi One Access. Saya AI Bot SOA, asisten digital 24 jam Kota Sukabumi. Silakan pilih pertanyaan FAQ di atas atau ketik pesan Anda!',
+        sender: MessageSender.bot,
+        userName: displayName,
+        topic: 'Umum / Pusat Bantuan',
+      );
       _scrollToBottom();
     });
   }
 
+  // FUNGSI 2: Penanganan Pengiriman Pesan (User Message & Auto Response Engine)
+  void _handleSendMessage(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+
+    final String displayName = _getFriendlyName();
+
+    _messageController.clear();
+    FocusScope.of(context).unfocus();
+
+    // Step A: Kirim Pesan Pengguna ke Service (Instan < 1ms)
+    _chatService.sendMessage(
+      threadId: _threadId,
+      text: trimmed,
+      sender: MessageSender.user,
+      userName: displayName,
+      topic: 'Umum / Pusat Bantuan',
+    );
+
+    _scrollToBottom();
+
+    final qLower = trimmed.toLowerCase();
+
+    // Step B: Cek Jika Pengguna Meminta Berbicara Dengan Admin Manusia (Handoff Mode)
+    if (_isLiveAgentMode || qLower.contains('petugas admin') || qLower.contains('hubungi admin') || qLower.contains('live agent') || qLower.contains('mengobrol langsung')) {
+      if (!_isLiveAgentMode) {
+        setState(() {
+          _isLiveAgentMode = true;
+          _isTyping = true;
+        });
+
+        Timer(const Duration(milliseconds: 600), () async {
+          if (!mounted) return;
+          await _chatService.sendMessage(
+            threadId: _threadId,
+            text: 'Pesan Anda telah dialihkan ke Inbox Live Agent Admin Sukabumi One Access. Petugas admin sedang memproses antrean Anda. Mohon tunggu balasan langsung dari Admin...',
+            sender: MessageSender.bot,
+          );
+          if (mounted) setState(() => _isTyping = false);
+          _scrollToBottom();
+        });
+      }
+      // CATATAN MAHASISWA: Jika sudah dalam Mode Live Agent, AI Bot STOP AUTO-REPLY!
+      return;
+    }
+
+    // Step C: Respon Otomatis AI Bot SOA (Jika Masih Mode Bot)
+    if (mounted) setState(() => _isTyping = true);
+
+    Timer(const Duration(milliseconds: 500), () async {
+      if (!mounted) return;
+
+      String reply = 'Terima kasih atas pertanyaan Anda. Petugas Admin SOA telah menerima pesan Anda dan akan segera merespon secara langsung jika diperlukan.';
+
+      // Prioritas 1: Salam & Sapaan Ramah
+      if (qLower.contains('halo') || qLower.contains('hai') || qLower.contains('pagi') || qLower.contains('siang') || qLower.contains('sore') || qLower.contains('malam') || qLower.contains('assalamu')) {
+        reply = 'Halo Kak $displayName! 👋 Ada yang bisa AI Bot SOA bantu hari ini mengenai layanan publik Kota Sukabumi?';
+      }
+      // Prioritas 2: Pencocokan FAQ Tepat
+      else {
+        bool matchedFaq = false;
+        for (var entry in _faqResponses.entries) {
+          if (entry.key.toLowerCase().trim() == qLower) {
+            reply = entry.value;
+            matchedFaq = true;
+            break;
+          }
+        }
+
+        // Prioritas 3: Kata Kunci Intent Layanan Publik
+        if (!matchedFaq) {
+          if (qLower.contains('berapa lama') || qLower.contains('lama diproses') || qLower.contains('durasi')) {
+            reply = 'Proses pengaduan dan permohonan layanan biasanya memakan waktu 1-3 hari kerja tergantung tingkat kompleksitas dan OPD terkait.';
+          } else if (qLower.contains('ktp') || qLower.contains('dukcapil') || qLower.contains('kk')) {
+            reply = 'Untuk permohonan KTP-el atau KK Digital, Anda dapat mengakses menu "Layanan" -> Kategori "Dukcapil" atau datang ke Kantor Disdukcapil Kota Sukabumi.';
+          } else if (qLower.contains('pengaduan') || qLower.contains('lapor')) {
+            reply = 'Untuk membuat laporan pengaduan, silakan buka menu "Layanan" di navigasi bawah, pilih jenis pengaduan dan unggah bukti foto pendukung.';
+          } else if (qLower.contains('izin') || qLower.contains('pbg') || qLower.contains('usaha')) {
+            reply = 'Layanan Perizinan PBG & Usaha dikelola oleh DPMPTSP Kota Sukabumi. Anda dapat mengecek alur perizinan di menu Instansi DPMPTSP.';
+          }
+        }
+      }
+
+      await _chatService.sendMessage(
+        threadId: _threadId,
+        text: reply,
+        sender: MessageSender.bot,
+      );
+
+      if (mounted) setState(() => _isTyping = false);
+      _scrollToBottom();
+    });
+  }
+
+  // FUNGSI HELPER: Memutar Gulungan Layar Chat ke Pesan Terbawah
   void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
@@ -97,76 +202,120 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // 1. TOPMOST LOGO BAR
+          // 1. BAR LOGO ATAS
           _buildLogoBar(primaryColor),
 
-          // 2. MAIN HEADER (Weather & Profile)
+          // 2. HEADER CUACA & PROFIL WARGA
           _buildMainHeader(primaryColor, accentColor),
+
+          // 3. BADGE STATUS LIVE AGENT ADMIN (JIKA TERHUBUNG)
+          if (_isLiveAgentMode)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: const Color(0xFFE2F7E2),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.circle, color: Color(0xFF2E7D32), size: 10),
+                  SizedBox(width: 8),
+                  Text(
+                    '🟢 Terhubung dengan Live Agent Admin Sukabumi',
+                    style: TextStyle(
+                      color: Color(0xFF2E7D32),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
               child: Column(
                 children: [
-                  // 3. HERO SECTION
+                  // 4. BANNER HERO PUSAT BANTUAN
                   _buildHeroSection(accentColor),
 
-                  // 4. CHAT NAV BAR
+                  // 5. NAVBAR JUDUL CHAT
                   _buildChatNavBar(context, primaryColor, accentColor),
 
-                  // 5. FAQ & CHAT AREA
+                  // 6. AREA FAQ & KONTEN OBROLAN
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
-                        // FAQ Card (Interactive)
+                        // Kartu Pertanyaan FAQ Interaktif
                         _buildFAQCard(primaryColor),
-                        
+
                         const SizedBox(height: 30),
-                        
-                        // Dynamic Message List
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _messages.length,
-                          itemBuilder: (context, index) {
-                            return _buildChatBubble(_messages[index], accentColor);
+
+                        // ALIRAN STREAM REAL-TIME GELEMBUNG PESAN
+                        StreamBuilder<List<ChatMessage>>(
+                          stream: _chatService.getMessages(_threadId),
+                          builder: (context, snapshot) {
+                            final messages = snapshot.data ?? [];
+
+                            if (messages.isEmpty) {
+                              return Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF0F2F5),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Text(
+                                    'Lanjutkan chat dengan AI Bot SOA...',
+                                    style: TextStyle(color: Colors.black87, fontSize: 13, fontFamily: 'Poppins'),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: messages.length,
+                              itemBuilder: (context, index) {
+                                return _buildChatBubble(messages[index], accentColor);
+                              },
+                            );
                           },
                         ),
-                        
+
+                        // Indikator Mengetik
                         if (_isTyping)
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFF0F2F5),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text('SOA sedang mengetik...', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(strokeWidth: 1.5, color: Color(0xFF0A1E33)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    _isLiveAgentMode ? 'Petugas Admin sedang memproses...' : 'AI Bot SOA sedang mengetik...',
+                                    style: const TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
 
-                        const SizedBox(height: 20),
-                        
-                        // Default Prompt
-                        if (_messages.isEmpty)
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF0F2F5),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Lanjutkan chat dengan SOA?',
-                                style: TextStyle(color: Colors.black87, fontSize: 13),
-                              ),
-                            ),
-                          ),
-                        
                         const SizedBox(height: 40),
                       ],
                     ),
@@ -176,7 +325,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             ),
           ),
 
-          // 6. CHAT INPUT BAR
+          // 7. INPUT BAR PENGIRIMAN PESAN
           _buildInputBar(primaryColor),
         ],
       ),
@@ -185,78 +334,54 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
   Widget _buildLogoBar(Color primaryColor) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 45, 16, 8),
-      color: Colors.white,
+      color: primaryColor,
+      padding: const EdgeInsets.fromLTRB(16, 40, 16, 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Image.network(
-                'https://via.placeholder.com/30x30',
-                width: 24,
-                height: 24,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.business, size: 24, color: Colors.blueGrey),
-              ),
-              const SizedBox(width: 8),
-              Text('SukabumiCity', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 14, fontStyle: FontStyle.italic)),
-            ],
+          Image.asset(
+            'assets/images/logo.png',
+            height: 28,
+            errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_balance, color: Colors.white),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(color: primaryColor.withOpacity(0.8), borderRadius: BorderRadius.circular(8)),
-            child: const Row(
-              children: [
-                Text('Sukabumi, ', style: TextStyle(color: Colors.white, fontSize: 8)),
-                Text('28°C', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                SizedBox(width: 4),
-                Icon(Icons.wb_cloudy, color: Colors.blueAccent, size: 14),
-              ],
-            ),
-          ),
+          const SizedBox(width: 8),
+          const Text('SUKABUMI', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Poppins')),
+          const Spacer(),
+          const Text('KOTA SUKABUMI', style: TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 1, fontFamily: 'Poppins')),
         ],
       ),
     );
   }
 
   Widget _buildMainHeader(Color primaryColor, Color accentColor) {
+    final displayName = _getFriendlyName();
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       color: primaryColor,
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-            child: const Row(
-              children: [
-                Icon(Icons.notifications_active, color: Colors.red, size: 18),
-                SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Potensi Cuaca', style: TextStyle(color: Colors.black, fontSize: 8, fontWeight: FontWeight.bold)),
-                    Text('Ekstrem', style: TextStyle(color: Colors.black, fontSize: 8)),
-                  ],
-                ),
-                SizedBox(width: 8),
-                Icon(Icons.info_outline, color: Colors.green, size: 12),
-              ],
-            ),
-          ),
-          Row(
+          const Icon(Icons.wb_cloudy_outlined, color: Colors.white70, size: 28),
+          const SizedBox(width: 8),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text('Sampurasun, mrn', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                  Text('Jum\'at, 17 Juli 2026', style: TextStyle(color: accentColor, fontSize: 9)),
-                ],
-              ),
-              const SizedBox(width: 10),
-              const CircleAvatar(radius: 18, backgroundImage: NetworkImage('https://via.placeholder.com/150')),
+              Text('28°C', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Poppins')),
+              Text('Hujan Ringan', style: TextStyle(color: Colors.white70, fontSize: 10, fontFamily: 'Poppins')),
             ],
+          ),
+          const Spacer(),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(displayName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins')),
+              Text(_userService.currentUser.status, style: TextStyle(color: accentColor, fontSize: 10, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+            ],
+          ),
+          const SizedBox(width: 10),
+          const CircleAvatar(
+            radius: 16,
+            backgroundColor: Color(0xFFE8A33D),
+            child: Icon(Icons.person, color: Colors.white, size: 20),
           ),
         ],
       ),
@@ -266,38 +391,19 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   Widget _buildHeroSection(Color accentColor) {
     return Container(
       width: double.infinity,
-      height: 220,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const NetworkImage('https://via.placeholder.com/600x400'),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.5), BlendMode.darken),
-          onError: (exception, stackTrace) {
-            // Log or handle the error
-          },
-        ),
-      ),
+      color: const Color(0xFF0F2942),
+      padding: const EdgeInsets.all(24),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.eco_outlined, color: accentColor, size: 20),
-              const SizedBox(width: 8),
-              Text('SUKABUMI ONE ACCESS', style: TextStyle(color: accentColor, fontSize: 9, letterSpacing: 2, fontWeight: FontWeight.bold)),
-              const SizedBox(width: 8),
-              Icon(Icons.eco_outlined, color: accentColor, size: 20),
-            ],
-          ),
+          const Icon(Icons.headset_mic_rounded, color: Colors.white, size: 48),
           const SizedBox(height: 12),
           RichText(
             textAlign: TextAlign.center,
             text: TextSpan(
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
               children: [
-                const TextSpan(text: 'Pusat Layanan ', style: TextStyle(color: Colors.white)),
-                TextSpan(text: 'Kota Sukabumi.', style: TextStyle(color: accentColor)),
+                const TextSpan(text: 'Pusat ', style: TextStyle(color: Colors.white)),
+                TextSpan(text: 'Bantuan & Live Agent', style: TextStyle(color: accentColor)),
               ],
             ),
           ),
@@ -307,7 +413,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             child: Text(
               'Temukan kemudahan mengakses berbagai layanan informasi dari seluruh Instansi Pemerintah Kota Sukabumi dalam satu pintu.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white70, fontSize: 11, height: 1.4),
+              style: TextStyle(color: Colors.white70, fontSize: 11, height: 1.4, fontFamily: 'Poppins'),
             ),
           ),
         ],
@@ -328,7 +434,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               const SizedBox(width: 8),
               RichText(
                 text: TextSpan(
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
                   children: [
                     const TextSpan(text: 'Pusat ', style: TextStyle(color: Colors.white)),
                     TextSpan(text: 'Bantuan', style: TextStyle(color: accentColor)),
@@ -351,7 +457,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Ada yang bisa kami bantu?', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 15)),
+          Text('Ada yang bisa kami bantu?', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 15, fontFamily: 'Poppins')),
           const SizedBox(height: 12),
           ..._faqResponses.keys.map((question) => _buildFAQItem(question)),
           const SizedBox(height: 12),
@@ -360,12 +466,12 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             child: ElevatedButton.icon(
               onPressed: _hubungiAdminDirectly,
               icon: const Icon(Icons.headset_mic_rounded, color: Color(0xFFE8A33D), size: 18),
-              label: const Text(
-                '💬 Hubungi Petugas Admin (Live Agent)',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+              label: Text(
+                _isLiveAgentMode ? '🟢 Terhubung Dengan Live Agent Admin' : '💬 Hubungi Petugas Admin (Live Agent)',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0A1E33),
+                backgroundColor: _isLiveAgentMode ? const Color(0xFF2E7D32) : const Color(0xFF0A1E33),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 10),
@@ -378,28 +484,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   }
 
   void _hubungiAdminDirectly() {
-    setState(() {
-      _messages.add(ChatMessage(
-        text: 'Saya ingin mengobrol langsung dengan Petugas Admin.',
-        sender: MessageSender.user,
-        timestamp: DateTime.now(),
-      ));
-      _isTyping = true;
-    });
-    _scrollToBottom();
-
-    Timer(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() {
-        _messages.add(ChatMessage(
-          text: 'Pesan Anda telah dialihkan ke Inbox Live Agent Admin Sukabumi One Access. Petugas admin sedang memproses antrean Anda...',
-          sender: MessageSender.bot,
-          timestamp: DateTime.now(),
-        ));
-        _isTyping = false;
-      });
-      _scrollToBottom();
-    });
+    _handleSendMessage('Saya ingin mengobrol langsung dengan Petugas Admin.');
   }
 
   Widget _buildFAQItem(String text) {
@@ -408,7 +493,20 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(padding: const EdgeInsets.symmetric(vertical: 14), child: Text(text, style: const TextStyle(color: Color(0xFF3B5B80), fontSize: 13))),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    text,
+                    style: const TextStyle(color: Color(0xFF3B5B80), fontSize: 13, fontWeight: FontWeight.w600, fontFamily: 'Poppins'),
+                  ),
+                ),
+                const Icon(Icons.chevron_right_rounded, color: Color(0xFF3B5B80), size: 18),
+              ],
+            ),
+          ),
           const Divider(color: Colors.white, height: 1, thickness: 1.5),
         ],
       ),
@@ -422,7 +520,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.7),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
         decoration: BoxDecoration(
           color: isUser ? accentColor : const Color(0xFFF0F2F5),
           borderRadius: BorderRadius.circular(16).copyWith(
@@ -432,7 +530,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
         ),
         child: Text(
           message.text,
-          style: TextStyle(color: isUser ? Colors.white : Colors.black87, fontSize: 13),
+          style: TextStyle(color: isUser ? Colors.white : Colors.black87, fontSize: 13, fontFamily: 'Poppins'),
         ),
       ),
     );
@@ -440,35 +538,66 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
   Widget _buildInputBar(Color primaryColor) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: const BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.black12))),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.black12)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 8,
+            offset: Offset(0, -2),
+          )
+        ],
+      ),
       child: Row(
         children: [
           Expanded(
             child: Container(
-              height: 45,
+              height: 46,
               padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(border: Border.all(color: Colors.black26, width: 0.8), borderRadius: BorderRadius.circular(25)),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                border: Border.all(color: Colors.grey.shade300, width: 1),
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: Row(
                 children: [
-                  const Icon(Icons.sentiment_satisfied_alt_outlined, color: Colors.grey, size: 24),
+                  Icon(
+                    _isLiveAgentMode ? Icons.headset_mic_rounded : Icons.chat_bubble_outline_rounded,
+                    color: _isLiveAgentMode ? const Color(0xFF2E7D32) : const Color(0xFF0A1E33),
+                    size: 20,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: TextField(
                       controller: _messageController,
                       onSubmitted: _handleSendMessage,
-                      decoration: const InputDecoration(hintText: 'Kami siap membantu', hintStyle: TextStyle(color: Colors.grey, fontSize: 13), border: InputBorder.none, isDense: true),
+                      style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                      decoration: InputDecoration(
+                        hintText: _isLiveAgentMode ? 'Kirim pesan langsung ke Petugas Admin...' : 'Tulis pesan atau pertanyaan Anda...',
+                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 12.5, fontFamily: 'Poppins'),
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
                     ),
                   ),
-                  const Icon(Icons.attach_file, color: Colors.grey, size: 22),
-                  const SizedBox(width: 12),
-                  const Icon(Icons.camera_alt_outlined, color: Colors.grey, size: 22),
                 ],
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          GestureDetector(onTap: () => _handleSendMessage(_messageController.text), child: const Icon(Icons.send, color: Colors.grey, size: 28)),
+          const SizedBox(width: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: _isLiveAgentMode ? const Color(0xFF2E7D32) : const Color(0xFF0A1E33),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+              onPressed: () => _handleSendMessage(_messageController.text),
+              tooltip: 'Kirim Pesan',
+            ),
+          ),
         ],
       ),
     );

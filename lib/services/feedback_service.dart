@@ -1,13 +1,21 @@
+// =============================================================================
+// FILE: lib/services/feedback_service.dart
+// FUNGSI: Service Pengelola Ulasan & Survei Kepuasan Masyarakat (SKM)
+// PATTERN: Singleton Pattern dengan Triple Persistence (Local, SQLite, REST API)
+// =============================================================================
+
 import '../models/feedback_model.dart';
 import 'api_service.dart';
 import 'user_service.dart';
 import 'database_helper.dart';
 
+/// Kelas Service Pengelola Ulasan Feedback Masyarakat
 class FeedbackService {
   static final FeedbackService _instance = FeedbackService._internal();
   factory FeedbackService() => _instance;
   FeedbackService._internal();
 
+  // FUNGSI 1: Inisialisasi Service & Memuat Riwayat dari SQLite
   Future<void> init() async {
     await _loadFromDatabase();
   }
@@ -15,8 +23,10 @@ class FeedbackService {
   final List<FeedbackModel> _history = [];
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
+  // Getter Riwayat Ulasan
   List<FeedbackModel> get history => List.unmodifiable(_history.reversed);
 
+  // FUNGSI 2: Memuat Ulasan Tersimpan dari SQLite
   Future<void> _loadFromDatabase() async {
     final List<Map<String, dynamic>> maps = await _dbHelper.queryAllFeedback();
     _history.clear();
@@ -29,21 +39,21 @@ class FeedbackService {
       ));
     }
     
-    // Opsional: Tarik juga riwayat dari server untuk user ini saja
     try {
       final user = UserService().currentUser;
       final response = await ApiService.get('feedback?user_id=${user.id}');
       if (response.statusCode == 200) {
-        // Gabungkan atau update riwayat lokal jika diperlukan
+        // Sinkronisasi data server jika diperlukan
       }
     } catch (_) {}
   }
 
+  // FUNGSI 3: Menambahkan Ulasan Baru (Tersimpan ke Memori, SQLite, dan REST API)
   Future<bool> addFeedback(FeedbackModel feedback) async {
-    // 1. Simpan ke Local Memory
+    // Step A: Simpan ke Memori Lokal
     _history.add(feedback);
 
-    // 2. Simpan ke Database Lokal (SQLite)
+    // Step B: Simpan ke Database Lokal (SQLite)
     await _dbHelper.insert('feedback', {
       'rating': feedback.rating,
       'factor': feedback.factor,
@@ -51,7 +61,7 @@ class FeedbackService {
       'date': feedback.date.toIso8601String(),
     });
 
-    // 3. Kirim ke Server
+    // Step C: Kirim ke Backend REST API Server
     final user = UserService().currentUser;
     final payload = {
       'user_id': user.id,

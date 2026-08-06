@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/user_service.dart';
 import 'package:mobile/main.dart';
 
@@ -87,6 +86,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
     );
 
     setState(() => _isLoading = false);
+    if (!mounted) return;
 
     Navigator.pushReplacement(
       context,

@@ -4,7 +4,7 @@ import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/models/notification_model.dart';
 import 'package:mobile/main.dart';
 import 'package:mobile/views/admin/admin_dashboard_screen.dart';
-import 'package:mobile/views/profile/otp_login_screen.dart'; // Import layar OTP
+import 'package:mobile/views/profile/otp_login_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -88,6 +88,161 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // 1. MODAL OTENTIKASI IKD SINGLE SIGN-ON (DUKCAPIL KEMENDAGRI)
+  // ---------------------------------------------------------------------------
+  void _bukaModalIKDSSO() {
+    final TextEditingController nikController = TextEditingController(text: '3272012508980002');
+    bool isAuthenticating = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          return Container(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              top: 24,
+              left: 24,
+              right: 24,
+            ),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEBF3FE),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.qr_code_scanner_rounded, color: Color(0xFF123457), size: 28),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'IKD Single Sign-On (SSO)',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0A1E33),
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                          Text(
+                            'Identitas Kependudukan Digital Ditjen Dukcapil',
+                            style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Masukkan NIK terdaftar atau gunakan pemindaian QR dari aplikasi IKD HP Anda untuk masuk instan:',
+                  style: TextStyle(fontSize: 12, color: Colors.black87, fontFamily: 'Poppins'),
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: nikController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                  decoration: InputDecoration(
+                    labelText: 'NIK KTP Digital',
+                    hintText: '16 digit NIK...',
+                    prefixIcon: const Icon(Icons.badge_outlined, color: Color(0xFF123457)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    filled: true,
+                    fillColor: const Color(0xFFF8FAFC),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton.icon(
+                    onPressed: isAuthenticating
+                        ? null
+                        : () async {
+                            setModalState(() => isAuthenticating = true);
+                            await Future.delayed(const Duration(milliseconds: 1200));
+
+                            final nik = nikController.text.trim();
+                            final current = UserService().currentUser;
+
+                            await UserService().updateProfile(
+                              current.copyWith(
+                                username: nik.isNotEmpty ? nik : '3272012508980002',
+                                name: 'Warga Sukabumi (IKD Verified)',
+                                status: 'Terverifikasi (IKD Kemendagri)',
+                              ),
+                            );
+
+                            await NotificationService().addNotification(
+                              title: '🪪 Login IKD SSO Sukses',
+                              description: 'Identitas Kependudukan Digital (NIK $nik) berhasil diverifikasi.',
+                              category: NotificationCategory.general,
+                            );
+
+                            if (!context.mounted) return;
+                            Navigator.pop(context);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Login IKD SSO Berhasil! NIK Terverifikasi Dukcapil.'),
+                                backgroundColor: Color(0xFF123457),
+                              ),
+                            );
+
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                            );
+                          },
+                    icon: isAuthenticating
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.verified_user_rounded, size: 20),
+                    label: Text(
+                      isAuthenticating ? 'Menverifikasi IKD...' : 'Otentikasi & Masuk IKD',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0A1E33),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     const primaryColor = Color(0xFF0A1E33);
@@ -98,327 +253,279 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // HEADER NAVY LOGO & HERO SECTION
+            // HEADER HERO CONTAINER WITH BRANDING
             Container(
               width: double.infinity,
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).padding.top + 20,
-                bottom: 36,
-                left: 24,
-                right: 24,
-              ),
+              padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
               decoration: const BoxDecoration(
                 color: primaryColor,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x29000000),
+                    blurRadius: 16,
+                    offset: Offset(0, 8),
+                  )
+                ],
               ),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: accentColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: accentColor.withOpacity(0.5)),
-                        ),
-                        child: const Text(
-                          'Sukabumi One Access',
-                          style: TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-                          );
-                        },
-                        child: const Text(
-                          'Lewati',
-                          style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x1A000000),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 46,
+                        height: 46,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.account_balance_rounded,
+                          color: primaryColor,
+                          size: 40,
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Image.asset(
-                    'assets/images/logo.png',
-                    height: 70,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.account_balance_rounded,
-                      size: 64,
-                      color: accentColor,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  Text(
-                    _isAdminMode ? 'Portal Login Administrator' : 'Selamat Datang Warga Sukabumi',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Sukabumi One Access',
+                    style: TextStyle(
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                       fontFamily: 'Poppins',
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    _isAdminMode
-                        ? 'Masuk untuk mengelola sistem, OPD, & membalas live chat warga.'
-                        : 'Masuk dengan NIK / Email untuk mengakses seluruh layanan publik.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Poppins'),
+                  const Text(
+                    'Portal Terpadu Layanan Publik Kota Sukabumi',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            // FORMULIR LOGIN CONTAINER
+            // FORM CONTAINER CARD
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Card(
-                elevation: 4,
-                shadowColor: Colors.black12,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // TOGGLE SEGMENTED BUTTON (WARGA VS ADMIN)
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF4F6F9),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 12,
+                      offset: Offset(0, 4),
+                    )
+                  ],
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // TOGGLE WARGA / ADMIN MODE
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF4F6F9),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => setState(() => _isAdminMode = false),
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: !_isAdminMode ? primaryColor : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Warga Kota',
+                                      style: TextStyle(
+                                        color: !_isAdminMode ? Colors.white : Colors.grey.shade700,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => setState(() => _isAdminMode = true),
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: _isAdminMode ? primaryColor : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Admin Portal',
+                                      style: TextStyle(
+                                        color: _isAdminMode ? Colors.white : Colors.grey.shade700,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // INPUT USERNAME
+                      Text(
+                        _isAdminMode ? 'Username Administrator' : 'Nama Lengkap / NIK Warga',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _usernameController,
+                        style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                        decoration: InputDecoration(
+                          hintText: _isAdminMode ? 'Masukkan username admin...' : 'Masukkan nama/NIK Anda...',
+                          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5, fontFamily: 'Poppins'),
+                          prefixIcon: const Icon(Icons.person_outline_rounded, color: primaryColor),
+                          fillColor: const Color(0xFFF8FAFC),
+                          filled: true,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
                           ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => setState(() => _isAdminMode = false),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                    decoration: BoxDecoration(
-                                      color: !_isAdminMode ? primaryColor : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Center(
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.person_rounded,
-                                            size: 16,
-                                            color: !_isAdminMode ? accentColor : Colors.grey,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            'Login Warga',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: !_isAdminMode ? Colors.white : Colors.grey.shade700,
-                                              fontFamily: 'Poppins',
-                                            ),
-                                          ),
-                                        ],
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return _isAdminMode ? 'Username admin wajib diisi' : 'Nama/NIK Warga wajib diisi';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // INPUT PASSWORD
+                      const Text(
+                        'Kata Sandi',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                        decoration: InputDecoration(
+                          hintText: 'Masukkan kata sandi...',
+                          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5, fontFamily: 'Poppins'),
+                          prefixIcon: const Icon(Icons.lock_outline_rounded, color: primaryColor),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                          fillColor: const Color(0xFFF8FAFC),
+                          filled: true,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                        validator: (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Kata sandi wajib diisi';
+                          }
+                          return null;
+                        },
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // SUBMIT BUTTON (LOGIN MANUAL)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _prosesLogin,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(_isAdminMode ? Icons.admin_panel_settings_rounded : Icons.login_rounded, size: 20, color: accentColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _isAdminMode ? 'Masuk Portal Admin' : 'Masuk Akun Warga',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ),
-                              ),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () => setState(() => _isAdminMode = true),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 10),
-                                    decoration: BoxDecoration(
-                                      color: _isAdminMode ? primaryColor : Colors.transparent,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Center(
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.admin_panel_settings_rounded,
-                                            size: 16,
-                                            color: _isAdminMode ? accentColor : Colors.grey,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            'Login Admin',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: _isAdminMode ? Colors.white : Colors.grey.shade700,
-                                              fontFamily: 'Poppins',
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
+                      ),
 
-                        const SizedBox(height: 20),
-
-                        // INPUT USERNAME / NIK
-                        Text(
-                          _isAdminMode ? 'Kode ID Admin Instansi' : 'NIK / Nomor HP / Email',
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        TextFormField(
-                          controller: _usernameController,
-                          style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-                          decoration: InputDecoration(
-                            hintText: _isAdminMode ? 'Contoh: admin_diskominfo' : 'Masukkan NIK (16 digit) atau email',
-                            hintStyle: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Poppins'),
-                            prefixIcon: Icon(_isAdminMode ? Icons.shield_rounded : Icons.person_outline_rounded, color: primaryColor),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: primaryColor, width: 1.5),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return _isAdminMode ? 'Kode ID Admin wajib diisi' : 'NIK / Email wajib diisi';
-                            }
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // INPUT PASSWORD
-                        const Text(
-                          'Kata Sandi (Password)',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-                          decoration: InputDecoration(
-                            hintText: 'Masukkan kata sandi akun',
-                            hintStyle: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Poppins'),
-                            prefixIcon: const Icon(Icons.lock_outline_rounded, color: primaryColor),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-                                color: Colors.grey,
-                              ),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: primaryColor, width: 1.5),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Kata sandi tidak boleh kosong';
-                            }
-                            return null;
-                          },
-                        ),
-
-                        const SizedBox(height: 10),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Fitur Lupa Password: Silakan hubungi layanan bantuan Pemkot Sukabumi.'),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              'Lupa Kata Sandi?',
-                              style: TextStyle(color: primaryColor, fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // TOMBOL LOGIN SUBMIT
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _prosesLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              elevation: 2,
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(_isAdminMode ? Icons.admin_panel_settings_rounded : Icons.login_rounded, size: 20, color: accentColor),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        _isAdminMode ? 'Masuk Portal Admin' : 'Masuk Akun Warga',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Poppins',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ),
-
+                      if (!_isAdminMode) ...[
                         const SizedBox(height: 24),
 
-                        // DIVIDER ATAU SOCIAL LOGIN
+                        // DIVIDER SOCIAL LOGIN
                         const Row(
                           children: [
                             Expanded(child: Divider()),
@@ -432,63 +539,49 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         const SizedBox(height: 16),
 
-                        // TOMBOL LOGIN IKD (IDENTITAS KEPENDUDUKAN DIGITAL)
+                        // 1. TOMBOL LOGIN IKD (IDENTITAS KEPENDUDUKAN DIGITAL - SINGLE SIGN-ON)
                         SizedBox(
                           width: double.infinity,
                           height: 48,
-                          child: OutlinedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Mengarahkan ke Portal Resmi IKD Dukcapil...')),
-                              );
-                            },
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFF123457), width: 1.5),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: OutlinedButton.icon(
+                            onPressed: _bukaModalIKDSSO,
+                            icon: const Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
+                            label: const Text(
+                              'Masuk dengan IKD Single Sign-On',
+                              style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.qr_code_scanner_rounded, color: primaryColor, size: 20),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Masuk dengan IKD',
-                                  style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
-                                ),
-                              ],
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: primaryColor, width: 1.5),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                           ),
                         ),
 
                         const SizedBox(height: 12),
 
-                        // TOMBOL LOGIN WHATSAPP OTP
+
+
+                        // 3. TOMBOL LOGIN WHATSAPP OTP
                         SizedBox(
                           width: double.infinity,
                           height: 48,
-                          child: ElevatedButton(
+                          child: ElevatedButton.icon(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(builder: (context) => const OtpLoginScreen()),
                               );
                             },
+                            icon: const Icon(Icons.chat_rounded, size: 20),
+                            label: const Text(
+                              'Masuk dengan WhatsApp',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF25D366), // WhatsApp Green
+                              backgroundColor: const Color(0xFF25D366),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.chat_rounded, size: 20),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'Masuk dengan WhatsApp',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),
-                                ),
-                              ],
                             ),
                           ),
                         ),
@@ -512,7 +605,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),

@@ -19,13 +19,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   void initState() {
     super.initState();
+    _notificationService.addListener(_refresh);
     _searchController.addListener(() {
       setState(() {});
     });
   }
 
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
   @override
   void dispose() {
+    _notificationService.removeListener(_refresh);
     _searchController.dispose();
     super.dispose();
   }

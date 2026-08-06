@@ -1,12 +1,21 @@
+// =============================================================================
+// FILE: lib/services/notification_service.dart
+// FUNGSI: Service Pengelola Notifikasi Real-Time Sistem Sukabumi One Access
+// PATTERN: Singleton Pattern & Reactive ChangeNotifier (State Management)
+// =============================================================================
+
+import 'package:flutter/foundation.dart';
 import '../models/notification_model.dart';
 import 'api_service.dart';
 import 'database_helper.dart';
 
-class NotificationService {
+/// Kelas Service Pengelola Notifikasi Sistem dengan Reaktivitas Real-Time
+class NotificationService extends ChangeNotifier {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
 
+  // FUNGSI 1: Inisialisasi Service & Memuat Notifikasi dari SQLite
   Future<void> init() async {
     await _loadFromDatabase();
     await addMockNotifications();
@@ -15,8 +24,10 @@ class NotificationService {
   final List<NotificationModel> _notifications = [];
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
+  // Getter Notifikasi (Diurutkan dari yang Terbaru)
   List<NotificationModel> get notifications => List.unmodifiable(_notifications.reversed);
 
+  // FUNGSI 2: Memuat Notifikasi Tersimpan dari Database SQLite
   Future<void> _loadFromDatabase() async {
     final List<Map<String, dynamic>> maps = await _dbHelper.queryAll('notifications');
     _notifications.clear();
@@ -33,8 +44,10 @@ class NotificationService {
         isRead: map['isRead'] == 1,
       ));
     }
+    notifyListeners(); // Memberitahu Seluruh UI Widget bahwa Data Notifikasi Siap
   }
 
+  // FUNGSI 3: Menambahkan Notifikasi Baru (Memori, Stream UI Real-Time, dan SQLite)
   Future<void> addNotification({
     required String title,
     required String description,
@@ -48,10 +61,11 @@ class NotificationService {
       category: category,
     );
 
-    // Simpan ke Memori
+    // Step A: Simpan ke Memori & Pemicu Listener Real-Time UI
     _notifications.add(newNotification);
+    notifyListeners();
 
-    // Simpan ke Database Lokal
+    // Step B: Simpan ke Database Lokal (SQLite)
     await _dbHelper.insert('notifications', {
       'id': newNotification.id,
       'title': newNotification.title,
@@ -62,12 +76,12 @@ class NotificationService {
     });
   }
 
-  // MOCK DATA UNTUK TESTING
+  // FUNGSI 4: Menambahkan Notifikasi Awal (Untuk Pengujian)
   Future<void> addMockNotifications() async {
     if (_notifications.isNotEmpty) return;
     
     await addNotification(
-      title: 'Selamat Hari Raya Idu Adha 1447 H! ✨',
+      title: 'Selamat Hari Raya Idul Adha 1447 H! ✨',
       description: 'Mari jadikan momen kurban tahun ini untuk mempererat kebersamaan dan kepedulian terhadap sesama.',
       category: NotificationCategory.news,
     );
@@ -85,28 +99,31 @@ class NotificationService {
     );
   }
 
+  // FUNGSI 5: Menandai Seluruh Notifikasi Sudah Dibaca
   Future<void> markAllAsRead() async {
     for (var notification in _notifications) {
       notification.isRead = true;
       await _dbHelper.update('notifications', {'isRead': 1}, 'id', notification.id);
     }
-    // Update ke Server
+    notifyListeners();
+    
+    // Update ke Server REST API
     await ApiService.post('notifications/read-all', {});
   }
 
+  // FUNGSI 6: Menghapus Seluruh Notifikasi
   Future<void> deleteAllNotifications() async {
-    // 1. Hapus dari Memori
     _notifications.clear();
+    notifyListeners();
     
-    // 2. Hapus dari Database Lokal
     final db = await _dbHelper.database;
     if (db != null) {
       await db.delete('notifications');
     }
 
-    // 3. Hapus dari Server
     await ApiService.delete('notifications');
   }
 
+  // Getter Hitung Jumlah Notifikasi yang Belum Dibaca
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "709678945324",
+    "project_id": "sukabumi-one-access-app-c7f15",
+    "storage_bucket": "sukabumi-one-access-app-c7f15.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709678945324:android:83857869c836e35db7ed89",
+        "android_client_info": {
+          "package_name": "com.diskominfo.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1n-_fvGdfTJYLvCOp438rlEAfCVuloyU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

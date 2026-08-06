@@ -1,9 +1,17 @@
+// =============================================================================
+// FILE: lib/models/sektor_model.dart
+// FUNGSI: Data Model untuk Sektor Fase Kehidupan (Keluarga, Usaha, Pendidikan, dll)
+// PATTERN: Data Model dengan Persistensi Map & SQLite
+// LEVEL KODE: Level 2-3 (Rapi & Mudah Dipahami Mahasiswa)
+// =============================================================================
+
+/// Kelas Model Representasi Butir Sektor Portal Layanan Publik
 class SektorModel {
-  final String id;
-  final String title;
-  final String imagePath;
-  final String desc;
-  final String iconName;
+  final String id;        // ID Unik Sektor
+  final String title;     // Nama Sektor (misal: 'Keluarga', 'Usaha', 'Lingkungan')
+  final String imagePath; // Jalur Gambar Ikon Sektor
+  final String desc;      // Deskripsi Singkat Cakupan Layanan Sektor
+  final String iconName;  // Nama Ikon Pemetakan Visual
 
   SektorModel({
     required this.id,
@@ -13,6 +21,7 @@ class SektorModel {
     required this.iconName,
   });
 
+  // FUNGSI 1: Mengubah Objek SektorModel Menjadi Map (Untuk Disimpan ke SQLite / Local State)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -23,6 +32,7 @@ class SektorModel {
     };
   }
 
+  // FUNGSI 2: Mengubah Map Database Kembali Menjadi Objek SektorModel
   factory SektorModel.fromMap(Map<String, dynamic> map) {
     return SektorModel(
       id: map['id']?.toString() ?? '',
@@ -33,6 +43,7 @@ class SektorModel {
     );
   }
 
+  // FUNGSI 3: Membuat Salinan Objek dengan Beberapa Parameter Diperbarui (Immutable State)
   SektorModel copyWith({
     String? id,
     String? title,

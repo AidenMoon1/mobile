@@ -1,8 +1,16 @@
+// =============================================================================
+// FILE: lib/widgets/custom_navbar.dart
+// FUNGSI: Widget Bottom Navigation Bar Kustom 4 Menu Aplikasi Warga
+// PATTERN: Stateless Reusable Navigation Bar Component
+// LEVEL KODE: Level 2-3 (Sangat Rapi & Terstruktur Untuk Mahasiswa)
+// =============================================================================
+
 import 'package:flutter/material.dart';
 
+/// Widget Custom Bottom Navigation Bar dengan 4 Menu Utama (Beranda, Layanan, Notifikasi, Akun)
 class CustomBottomNavBar extends StatelessWidget {
-  final int selectedIndex;
-  final ValueChanged<int> onItemTapped;
+  final int selectedIndex;          // Indeks menu aktif (0 s/d 3)
+  final ValueChanged<int> onItemTapped; // Callback pemanggil saat menu di-klik
 
   const CustomBottomNavBar({
     super.key,
@@ -12,10 +20,11 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF0A1E33);
-    const activeColor = Color(0xFFE8A33D);
-    const inactiveColor = Colors.white60;
+    const primaryColor = Color(0xFF0A1E33);   // Warna dasar Navy
+    const activeColor = Color(0xFFE8A33D);    // Warna aktif Akses Emas
+    const inactiveColor = Colors.white60;     // Warna tidak aktif putih pudar
 
+    // DAFTAR 4 MENU UTAMA NAVBAR
     const navItems = [
       _NavBarItemData(
         icon: Icons.home_rounded,
@@ -63,6 +72,7 @@ class CustomBottomNavBar extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Indikator Efek Animasi Melayang Pada Ikon Aktif
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -98,6 +108,7 @@ class CustomBottomNavBar extends StatelessWidget {
   }
 }
 
+/// Helper Private Class penampung data Ikon & Label Navbar
 class _NavBarItemData {
   final IconData icon;
   final String label;
