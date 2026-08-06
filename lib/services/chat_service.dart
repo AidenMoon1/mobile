@@ -2,7 +2,6 @@
 // FILE: lib/services/chat_service.dart
 // FUNGSI: Service Pengelola Obrolan Real-Time (Cloud Firestore + Local Stream Fallback)
 // PATTERN: Singleton Pattern & Reactive Stream Architecture
-// LEVEL KODE: Level 2-3 (Sangat Terstruktur, Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 import 'dart:async';

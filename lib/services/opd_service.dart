@@ -1,9 +1,17 @@
+// =============================================================================
+// FILE: lib/services/opd_service.dart
+// FUNGSI: Service Master Pengelola Data OPD (Instansi, Layanan Publik, & Sektor)
+// PATTERN: Singleton Pattern & Reactive State Management (ChangeNotifier)
+// LEVEL KODE: Level 2-3 (Sangat Rapi & Terstruktur Untuk Mahasiswa)
+// =============================================================================
+
 import 'package:flutter/material.dart';
 import '../models/instansi_model.dart';
 import '../models/layanan_model.dart';
 import '../models/custom_field_config.dart';
 import '../models/sektor_model.dart';
 
+/// Kelas Service Master Pengelola Katalog Instansi OPD, Layanan Publik, & Sektor
 class OpdService extends ChangeNotifier {
   static final OpdService _instance = OpdService._internal();
   factory OpdService() => _instance;
@@ -16,14 +24,18 @@ class OpdService extends ChangeNotifier {
   final List<LayananModel> _layananList = [];
   final List<SektorModel> _sektorList = [];
 
+  // Getter Unmodifiable List untuk Mencegah Mutasi Tidak Sengaja dari Luar Service
   List<InstansiModel> get instansiList => List.unmodifiable(_instansiList);
   List<LayananModel> get layananList => List.unmodifiable(_layananList);
   List<SektorModel> get sektorList => List.unmodifiable(_sektorList);
 
+  /// --------------------------------------------------------------------------
+  /// FUNGSI INSIALISASI SEED DATA AWAL (SEKTOR, INSTANSI, & LAYANAN PUBLIK)
+  /// --------------------------------------------------------------------------
   void _initDefaultData() {
     if (_instansiList.isNotEmpty) return;
 
-    // Seed 10 Sektor Kategori Utama (Fase Kehidupan)
+    // 1. Seed 10 Sektor Kategori Utama (Fase Kehidupan)
     _sektorList.addAll([
       SektorModel(
         id: 's1',
@@ -97,7 +109,7 @@ class OpdService extends ChangeNotifier {
       ),
     ]);
 
-    // Seed 5 Instansi Utama Pemkot Sukabumi
+    // 2. Seed 5 Instansi Utama Pemkot Sukabumi
     _instansiList.addAll([
       InstansiModel(
         id: '1',
@@ -196,9 +208,8 @@ class OpdService extends ChangeNotifier {
       ),
     ]);
 
-    // Seed Layanan Publik Utama per OPD & Sektor
+    // 3. Seed Layanan Publik Utama per OPD & Sektor
     _layananList.addAll([
-      // Disdukcapil (Keluarga) - Pelayanan KTP-el
       LayananModel(
         id: '101',
         kodeInstansi: 'disdukcapil',
@@ -226,8 +237,6 @@ class OpdService extends ChangeNotifier {
           CustomFieldConfig(id: 'f7', label: 'Unggah Lampiran Berkas Syarat', type: FieldType.fileUpload),
         ],
       ),
-
-      // Disdukcapil (Keluarga) - Kartu Keluarga (KK)
       LayananModel(
         id: '102',
         kodeInstansi: 'disdukcapil',
@@ -254,8 +263,6 @@ class OpdService extends ChangeNotifier {
           CustomFieldConfig(id: 'f15', label: 'Unggah Berkas Persyaratan (KK/Buku Nikah)', type: FieldType.fileUpload),
         ],
       ),
-
-      // DPMPTSP (Usaha) - OSS NIB
       LayananModel(
         id: '201',
         kodeInstansi: 'dpmpstp',
@@ -287,7 +294,7 @@ class OpdService extends ChangeNotifier {
     ]);
   }
 
-  // --- CRUD SEKTOR ---
+  // --- FUNGSI OPERASI CRUD SEKTOR ---
   List<SektorModel> getSektorList() => _sektorList;
 
   SektorModel? getSektorById(String id) {
@@ -316,7 +323,7 @@ class OpdService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- CRUD INSTANSI ---
+  // --- FUNGSI OPERASI CRUD INSTANSI ---
   List<InstansiModel> getInstansiList() => _instansiList;
 
   InstansiModel? getInstansiByKode(String kode) {
@@ -347,7 +354,7 @@ class OpdService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // --- CRUD LAYANAN ---
+  // --- FUNGSI OPERASI CRUD LAYANAN ---
   List<LayananModel> getLayananList() => _layananList;
 
   List<LayananModel> getLayananByInstansi(String kodeInstansi) {

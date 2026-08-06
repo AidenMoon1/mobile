@@ -1,7 +1,15 @@
+// =============================================================================
+// FILE: lib/services/user_service.dart
+// FUNGSI: Service Pengelola Sesi & Profil Akun Pengguna (SharedPreferences Storage)
+// PATTERN: Singleton Pattern & Key-Value Local Storage
+// LEVEL KODE: Level 2-3 (Sangat Rapi & Mudah Dipahami Mahasiswa)
+// =============================================================================
+
 import '../models/user_model.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Kelas Service Pengelola State Sesi Akun Pengguna Terlogin
 class UserService {
   static final UserService _instance = UserService._internal();
   
@@ -11,10 +19,12 @@ class UserService {
 
   UserService._internal();
 
+  // FUNGSI 1: Inisialisasi Service & Memuat Profil Pengguna dari Storage HP
   Future<void> init() async {
     await _loadFromLocal();
   }
 
+  // State Pengguna Aktif Default (Fallback Memori)
   UserModel _currentUser = UserModel(
     name: 'mrn',
     email: 'mrn@gmail.com',
@@ -26,9 +36,10 @@ class UserService {
     profileImagePath: '',
   );
 
+  // Getter Profil Pengguna Aktif
   UserModel get currentUser => _currentUser;
 
-  // Load data dari Shared Preferences saat aplikasi dibuka
+  // FUNGSI 2: Memuat Profil dari Shared Preferences HP Saat Aplikasi Dibuka
   Future<void> _loadFromLocal() async {
     final prefs = await SharedPreferences.getInstance();
     final String? userJson = prefs.getString('user_profile');
@@ -47,7 +58,7 @@ class UserService {
     }
   }
 
-  // Simpan data ke Shared Preferences
+  // FUNGSI 3: Menyimpan Profil ke Shared Preferences HP
   Future<void> _saveToLocal(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
     final data = {
@@ -63,18 +74,14 @@ class UserService {
     await prefs.setString('user_profile', jsonEncode(data));
   }
 
-  // Fungsi untuk memperbarui profil di memori lokal dan backend API
+  // FUNGSI 4: Memperbarui Profil di Memori Lokal & Persistent Storage HP
   Future<bool> updateProfile(UserModel updatedUser) async {
-    // 1. Update state lokal di memori
     _currentUser = updatedUser;
-    
-    // 2. Simpan ke SharedPreferences HP
     await _saveToLocal(updatedUser);
-
     return true;
   }
 
-  // Fungsi Hapus Foto Profil
+  // FUNGSI 5: Menghapus Foto Profil Pengguna
   Future<void> removeProfileImage() async {
     _currentUser = _currentUser.copyWith(profileImagePath: '');
     await _saveToLocal(_currentUser);

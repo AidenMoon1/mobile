@@ -1,15 +1,23 @@
+// =============================================================================
+// FILE: lib/models/instansi_model.dart
+// FUNGSI: Data Model untuk Instansi OPD (Organisasi Perangkat Daerah) Kota Sukabumi
+// PATTERN: Data Model dengan toMap() & fromMap() untuk Persistensi SQLite
+// LEVEL KODE: Level 2-3 (Bersih, Rapi, dan Mudah Dipahami Mahasiswa)
+// =============================================================================
+
+/// Kelas Model Representasi Data Instansi OPD (Disdukcapil, DPMPTSP, Diskominfo, dll)
 class InstansiModel {
-  final String id;
-  final String kodeInstansi;
-  final String namaSingkat;
-  final String namaLengkap;
-  final String alamat;
-  final String jamOperasional;
-  final String kontak;
-  final String logoPath;
-  final String deskripsi;
-  final String mapsQuery;
-  final List<String> tugasFungsi;
+  final String id;              // ID unik instansi
+  final String kodeInstansi;    // Kode singkatan instansi (misal: 'disdukcapil')
+  final String namaSingkat;     // Nama singkat OPD (misal: 'DISDUKCAPIL')
+  final String namaLengkap;     // Nama resmi lengkap OPD
+  final String alamat;          // Alamat fisik kantor OPD
+  final String jamOperasional;  // Jam & hari layanan operasional
+  final String kontak;          // Nomor telepon / WhatsApp resmi
+  final String logoPath;        // Jalur gambar logo instansi
+  final String deskripsi;       // Deskripsi profil instansi
+  final String mapsQuery;       // Query pencarian lokasi di Google Maps
+  final List<String> tugasFungsi;// Daftar rincian tugas & fungsi OPD
 
   InstansiModel({
     required this.id,
@@ -25,6 +33,7 @@ class InstansiModel {
     required this.tugasFungsi,
   });
 
+  // FUNGSI 1: Mengubah Objek InstansiModel Menjadi Map (Untuk Disimpan ke Database SQLite)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -41,6 +50,7 @@ class InstansiModel {
     };
   }
 
+  // FUNGSI 2: Mengubah Map Database SQLite Kembali Menjadi Objek InstansiModel
   factory InstansiModel.fromMap(Map<String, dynamic> map) {
     List<String> tfList = [];
     if (map['tugasFungsiJson'] != null && map['tugasFungsiJson'].toString().isNotEmpty) {
@@ -61,6 +71,7 @@ class InstansiModel {
     );
   }
 
+  // FUNGSI 3: Membuat Salinan Objek dengan Beberapa Parameter Diperbarui (Immutable State)
   InstansiModel copyWith({
     String? id,
     String? kodeInstansi,

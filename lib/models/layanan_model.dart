@@ -1,18 +1,26 @@
+// =============================================================================
+// FILE: lib/models/layanan_model.dart
+// FUNGSI: Data Model untuk Katalog Layanan Publik & Formulir Pengajuan Digital
+// PATTERN: Data Transfer Object (DTO) dengan Mesin Custom Dynamic Form Fields
+// LEVEL KODE: Level 2-3 (Sangat Rapi & Terstruktur Untuk Mahasiswa)
+// =============================================================================
+
 import 'custom_field_config.dart';
 
+/// Kelas Model Representasi Butir Layanan Publik (KTP, PBB, Perizinan PBG, dll)
 class LayananModel {
-  final String id;
-  final String kodeInstansi; // e.g. 'disdukcapil', 'diskominfo', 'dpmpstp', 'bpkpd', 'dkp3'
-  final String sektor; // e.g. 'Keluarga', 'Usaha', 'Lingkungan', 'Pendidikan', 'Kendaraan', 'Kesehatan', etc.
-  final String judulLayanan;
-  final String rawTitle; // short name e.g. 'KTP Elektronik'
-  final String subjudul;
-  final String deskripsi;
-  final List<String> persyaratan;
-  final String urlPortal;
-  final String iconName;
+  final String id;           // ID Unik Layanan
+  final String kodeInstansi; // Kode OPD Pemilik (misal: 'disdukcapil', 'dpmptsp')
+  final String sektor;       // Kategori Sektor Fase Kehidupan (misal: 'Keluarga', 'Usaha')
+  final String judulLayanan; // Judul lengkap layanan publik
+  final String rawTitle;     // Nama singkat layanan (misal: 'KTP Elektronik')
+  final String subjudul;     // Subjudul ringkas layanan
+  final String deskripsi;    // Deskripsi rincian prosedur layanan
+  final List<String> persyaratan; // Syarat dokumen yang dibutuhkan
+  final String urlPortal;    // Tautan web resmi instansi
+  final String iconName;     // Nama ikon pemetakan visual
 
-  // MESIN FORM BUILDER: DAFTAR ELEMENT FORM DINAMIS YANG DIBUAT ADMIN
+  // MESIN FORM BUILDER: Daftar Element Form Dinamis Yang Dibuat Admin
   final List<CustomFieldConfig> formFields;
 
   LayananModel({
@@ -29,6 +37,7 @@ class LayananModel {
     this.formFields = const [],
   });
 
+  // FUNGSI 1: Mengubah Objek LayananModel Menjadi Map (Untuk Disimpan ke Database SQLite)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -45,6 +54,7 @@ class LayananModel {
     };
   }
 
+  // FUNGSI 2: Mengubah Map Database SQLite Kembali Menjadi Objek LayananModel
   factory LayananModel.fromMap(Map<String, dynamic> map) {
     List<String> reqList = [];
     if (map['persyaratanJson'] != null && map['persyaratanJson'].toString().isNotEmpty) {
@@ -75,6 +85,7 @@ class LayananModel {
     );
   }
 
+  // FUNGSI 3: Membuat Salinan Objek dengan Beberapa Parameter Diperbarui (Immutable State)
   LayananModel copyWith({
     String? id,
     String? kodeInstansi,

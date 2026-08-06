@@ -1,9 +1,19 @@
+// =============================================================================
+// FILE: lib/views/informasi/help_center_screen.dart
+// FUNGSI: Layanan Pusat Bantuan, Live Chatbot AI SOA, & Handoff Live Agent Admin
+// PATTERN: Reactive Real-Time StreamBuilder & Asynchronous Message Processing
+// LEVEL KODE: Level 2-3 (Sangat Rapi & Terstruktur Untuk Mahasiswa)
+// =============================================================================
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../models/chat_message_model.dart';
 import '../../services/chat_service.dart';
 import '../../services/user_service.dart';
 
+/// ----------------------------------------------------------------------------
+/// LAYAR PUSAT BANTUAN & LIVE CHAT WARGA (HELP CENTER SCREEN)
+/// ----------------------------------------------------------------------------
 class HelpCenterScreen extends StatefulWidget {
   const HelpCenterScreen({super.key});
 
@@ -17,12 +27,13 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
   final ChatService _chatService = ChatService();
   final UserService _userService = UserService();
 
+  // Thread ID Unik Berdasarkan Nama & Nomor Telepon Warga Terlogin
   String get _threadId => 'CHAT-${_userService.currentUser.name}-${_userService.currentUser.phoneNumber}';
 
   bool _isTyping = false;
-  bool _isLiveAgentMode = false; // Mode Handoff ke Admin Manusia
+  bool _isLiveAgentMode = false; // Mode Handoff Langsung ke Petugas Admin Manusia
 
-  // Data Jawaban FAQ untuk AI Bot SOA
+  // Data Jawaban FAQ Otomatis untuk AI Bot SOA
   final Map<String, String> _faqResponses = {
     'Bagaimana cara membuat pengaduan?':
         'Untuk membuat pengaduan, Anda bisa masuk ke menu "Layanan" di navigasi bawah, pilih kategori layanan yang sesuai, lalu isi formulir pengaduan dengan lengkap dan unggah foto pendukung jika diperlukan.',
@@ -44,6 +55,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     _initInitialGreeting();
   }
 
+  // FUNGSI HELPER: Mendapatkan Nama Sapaan Sopan Pengguna
   String _getFriendlyName() {
     final name = _userService.currentUser.name.trim();
     if (name.isEmpty || name.toLowerCase() == 'wa' || name.toLowerCase() == 'warga' || name.length <= 2) {
@@ -52,6 +64,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     return name;
   }
 
+  // FUNGSI 1: Salam Pembuka Otomatis AI Bot SOA Saat Pertama Dibuka
   void _initInitialGreeting() {
     Future.delayed(const Duration(milliseconds: 200), () async {
       final String displayName = _getFriendlyName();
@@ -66,6 +79,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     });
   }
 
+  // FUNGSI 2: Penanganan Pengiriman Pesan (User Message & Auto Response Engine)
   void _handleSendMessage(String text) {
     final trimmed = text.trim();
     if (trimmed.isEmpty) return;
@@ -75,7 +89,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     _messageController.clear();
     FocusScope.of(context).unfocus();
 
-    // 1. Kirim pesan user (Non-Blocking)
+    // Step A: Kirim Pesan Pengguna ke Service (Instan < 1ms)
     _chatService.sendMessage(
       threadId: _threadId,
       text: trimmed,
@@ -88,7 +102,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
     final qLower = trimmed.toLowerCase();
 
-    // 2. CEK JIKA USER INGIN MENGOBROL DENGAN ADMIN MANUSIA / MODE LIVE AGENT
+    // Step B: Cek Jika Pengguna Meminta Berbicara Dengan Admin Manusia (Handoff Mode)
     if (_isLiveAgentMode || qLower.contains('petugas admin') || qLower.contains('hubungi admin') || qLower.contains('live agent') || qLower.contains('mengobrol langsung')) {
       if (!_isLiveAgentMode) {
         setState(() {
@@ -107,11 +121,11 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           _scrollToBottom();
         });
       }
-      // JIKA SUDAH MODE LIVE AGENT: BOT STOP AUTO-REPLY LENGKAP!! (Murni menunggu balasan Admin di Admin Panel)
+      // CATATAN MAHASISWA: Jika sudah dalam Mode Live Agent, AI Bot STOP AUTO-REPLY!
       return;
     }
 
-    // 3. JIKA MASIH MODE AI BOT: RESPON CERDAS & PRESISI
+    // Step C: Respon Otomatis AI Bot SOA (Jika Masih Mode Bot)
     if (mounted) setState(() => _isTyping = true);
 
     Timer(const Duration(milliseconds: 500), () async {
@@ -119,11 +133,11 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
 
       String reply = 'Terima kasih atas pertanyaan Anda. Petugas Admin SOA telah menerima pesan Anda dan akan segera merespon secara langsung jika diperlukan.';
 
-      // PRIORTAS 1: SALAM & SAPAAN
+      // Prioritas 1: Salam & Sapaan Ramah
       if (qLower.contains('halo') || qLower.contains('hai') || qLower.contains('pagi') || qLower.contains('siang') || qLower.contains('sore') || qLower.contains('malam') || qLower.contains('assalamu')) {
         reply = 'Halo Kak $displayName! 👋 Ada yang bisa AI Bot SOA bantu hari ini mengenai layanan publik Kota Sukabumi?';
       }
-      // PRIORITAS 2: FAQ EXACT MATCHING
+      // Prioritas 2: Pencocokan FAQ Tepat
       else {
         bool matchedFaq = false;
         for (var entry in _faqResponses.entries) {
@@ -134,7 +148,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
           }
         }
 
-        // PRIORITAS 3: KEYWORD INTENT MATCHING
+        // Prioritas 3: Kata Kunci Intent Layanan Publik
         if (!matchedFaq) {
           if (qLower.contains('berapa lama') || qLower.contains('lama diproses') || qLower.contains('durasi')) {
             reply = 'Proses pengaduan dan permohonan layanan biasanya memakan waktu 1-3 hari kerja tergantung tingkat kompleksitas dan OPD terkait.';
@@ -159,6 +173,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
     });
   }
 
+  // FUNGSI HELPER: Memutar Gulungan Layar Chat ke Pesan Terbawah
   void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
@@ -187,13 +202,13 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // 1. TOPMOST LOGO BAR
+          // 1. BAR LOGO ATAS
           _buildLogoBar(primaryColor),
 
-          // 2. MAIN HEADER (Weather & Profile)
+          // 2. HEADER CUACA & PROFIL WARGA
           _buildMainHeader(primaryColor, accentColor),
 
-          // 3. LIVE AGENT HANDOFF STATUS BADGE (JIKA SUDAH TERHUBUNG ADMIN)
+          // 3. BADGE STATUS LIVE AGENT ADMIN (JIKA TERHUBUNG)
           if (_isLiveAgentMode)
             Container(
               width: double.infinity,
@@ -222,23 +237,23 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
               controller: _scrollController,
               child: Column(
                 children: [
-                  // 4. HERO SECTION
+                  // 4. BANNER HERO PUSAT BANTUAN
                   _buildHeroSection(accentColor),
 
-                  // 5. CHAT NAV BAR
+                  // 5. NAVBAR JUDUL CHAT
                   _buildChatNavBar(context, primaryColor, accentColor),
 
-                  // 6. FAQ & CHAT AREA
+                  // 6. AREA FAQ & KONTEN OBROLAN
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       children: [
-                        // FAQ Card (Interactive)
+                        // Kartu Pertanyaan FAQ Interaktif
                         _buildFAQCard(primaryColor),
 
                         const SizedBox(height: 30),
 
-                        // Dynamic Message List (REAL-TIME STREAM)
+                        // ALIRAN STREAM REAL-TIME GELEMBUNG PESAN
                         StreamBuilder<List<ChatMessage>>(
                           stream: _chatService.getMessages(_threadId),
                           builder: (context, snapshot) {
@@ -272,6 +287,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
                           },
                         ),
 
+                        // Indikator Mengetik
                         if (_isTyping)
                           Align(
                             alignment: Alignment.centerLeft,
@@ -309,7 +325,7 @@ class _HelpCenterScreenState extends State<HelpCenterScreen> {
             ),
           ),
 
-          // 7. CHAT INPUT BAR
+          // 7. INPUT BAR PENGIRIMAN PESAN
           _buildInputBar(primaryColor),
         ],
       ),

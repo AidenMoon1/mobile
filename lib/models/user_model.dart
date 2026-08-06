@@ -1,12 +1,20 @@
+// =============================================================================
+// FILE: lib/models/user_model.dart
+// FUNGSI: Data Model Profil Akun Pengguna Warga / Admin
+// PATTERN: Data Model dengan copyWith() untuk Immutable State Updating
+// LEVEL KODE: Level 2-3 (Sederhana & Mudah Dipahami Mahasiswa)
+// =============================================================================
+
+/// Kelas Model Representasi Profil Pengguna Aplikasi Sukabumi One Access
 class UserModel {
-  String name;
-  String email;
-  String username;
-  String phoneNumber;
-  String status;
-  String joinedDate;
-  String id;
-  String profileImagePath;
+  String id;               // ID Unik Pengguna
+  String name;             // Nama Lengkap Pengguna
+  String email;            // Alamat Email Resmi
+  String username;         // Username / NIK / NIP Pengguna
+  String phoneNumber;      // Nomor Telepon / WhatsApp
+  String status;           // Status Verifikasi (Terverifikasi IKD, SSO, WA)
+  String joinedDate;       // Tanggal Bergabung
+  String profileImagePath; // Jalur Foto Profil Avatar Pengguna
 
   UserModel({
     required this.name,
@@ -19,7 +27,7 @@ class UserModel {
     this.profileImagePath = '',
   });
 
-  // Salinan model untuk menghindari referensi yang sama saat editing
+  // FUNGSI: Salinan Model dengan Parameter Diperbarui (Immutable State Updating)
   UserModel copyWith({
     String? name,
     String? email,

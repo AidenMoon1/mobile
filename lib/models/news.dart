@@ -1,9 +1,17 @@
+// =============================================================================
+// FILE: lib/models/news.dart
+// FUNGSI: Data Model untuk Berita Publik & Pengumuman Kota Sukabumi
+// PATTERN: Data Transfer Object (DTO) dengan JSON Parsing
+// LEVEL KODE: Level 2-3 (Rapi & Mudah Dipahami Mahasiswa)
+// =============================================================================
+
+/// Kelas Model Representasi Butir Berita Publik Sukabumi
 class News {
-  final int id;
-  final String title;
-  final String content;
-  final String? imageUrl;
-  final String createdAt;
+  final int id;             // ID Unik Berita
+  final String title;       // Judul Utama Berita
+  final String content;     // Isi Lengkap Konten Berita
+  final String? imageUrl;   // URL Gambar Ilustrasi Berita (Opsional)
+  final String createdAt;  // Tanggal & Waktu Publikasi Berita
 
   News({
     required this.id,
@@ -13,6 +21,7 @@ class News {
     required this.createdAt,
   });
 
+  // FUNGSI 1: Mengubah Data JSON dari Server REST API Menjadi Objek News
   factory News.fromJson(Map<String, dynamic> json) {
     return News(
       id: json['id'] as int,
@@ -23,6 +32,7 @@ class News {
     );
   }
 
+  // FUNGSI 2: Mengubah Objek News Kembali Menjadi Map / JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,

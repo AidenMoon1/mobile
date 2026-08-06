@@ -1,13 +1,20 @@
+// =============================================================================
+// FILE: lib/services/api_service.dart
+// FUNGSI: Service Pengelola Komunikasi REST API (HTTP Request GET, POST, DELETE, Multipart)
+// PATTERN: Utility Helper Class dengan Dynamic Base URL Resolution
+// =============================================================================
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
+/// Kelas Helper Pengelola HTTP Communication ke Backend Server Laravel / Node.js
 class ApiService {
-  // Alamat Ngrok (Publik) - Ganti jika ngrok direstart
+  // Alamat Server Tunneling Ngrok (Publik)
   static const String _ngrokUrl = 'https://nectar-refinish-console.ngrok-free.dev';
   static const String _port = '8001';
 
-  // Otomatis memilih localhost jika di browser, atau Ngrok jika di HP
+  // FUNGSI 1: Resolver Otomatis Alamat Base URL (Localhost untuk Web Browser, Ngrok untuk HP)
   static String get baseUrl {
     if (kIsWeb) {
       return 'http://localhost:$_port/api';
@@ -15,19 +22,20 @@ class ApiService {
     return '$_ngrokUrl/api';
   }
 
-  // SET KE 'true' JIKA SERVER MATI AGAR APLIKASI TETAP BISA DIJALANKAN DENGAN DATA PALSU
+  // SAKLAR MOCK DATA: Set ke 'true' jika server offline agar aplikasi tetap berjalan dengan data lokal
   static const bool useMockData = false;
 
+  // FUNGSI 2: Header HTTP Standar (JSON & Bearer Token Authentication)
   static Map<String, String> _headers(String? token) {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'ngrok-skip-browser-warning': 'true', // Untuk bypass halaman peringatan ngrok
+      'ngrok-skip-browser-warning': 'true', // Bypass halaman konfirmasi ngrok
       if (token != null) 'Authorization': 'Bearer $token',
     };
   }
 
-  // HTTP GET
+  // FUNGSI 3: Permintaan HTTP GET (Mengambil Data dari Server)
   static Future<http.Response> get(String endpoint, {String? token}) async {
     try {
       final url = Uri.parse('$baseUrl/$endpoint');
@@ -38,7 +46,7 @@ class ApiService {
     }
   }
 
-  // HTTP POST
+  // FUNGSI 4: Permintaan HTTP POST (Mengirim Data / Form ke Server)
   static Future<http.Response> post(String endpoint, Map<String, dynamic> data, {String? token}) async {
     try {
       final url = Uri.parse('$baseUrl/$endpoint');
@@ -53,7 +61,7 @@ class ApiService {
     }
   }
 
-  // HTTP DELETE
+  // FUNGSI 5: Permintaan HTTP DELETE (Menghapus Data di Server)
   static Future<http.Response> delete(String endpoint, {String? token}) async {
     try {
       final url = Uri.parse('$baseUrl/$endpoint');
@@ -67,7 +75,7 @@ class ApiService {
     }
   }
 
-  // MULTIPART POST
+  // FUNGSI 6: Permintaan HTTP MULTIPART POST (Mengunggah Dokumen Foto / File Berkas)
   static Future<http.Response> postMultipart(
     String endpoint,
     Map<String, String> fields,
