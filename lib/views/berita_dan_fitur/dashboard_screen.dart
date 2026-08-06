@@ -1445,7 +1445,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     bool isExpanded = true,
   }) {
     final Widget content = GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        GuestGatekeeper.checkAccess(context, onGranted: onTap);
+      },
       child: Column(
         children: [
           Container(

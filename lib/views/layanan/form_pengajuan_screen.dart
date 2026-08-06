@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/views/berita_dan_fitur/activity_log_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/user_service.dart';
+import 'package:mobile/widgets/guest_gatekeeper.dart';
 
 class FormPengajuanScreen extends StatefulWidget {
   final String judulLayanan;
@@ -229,16 +230,19 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
   }
 
   void _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      if (!_fileTerunggah || _selectedFileName == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Harap unggah dokumen persyaratan (JPG, PNG, atau JPEG) terlebih dahulu!'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-        return;
-      }
+    GuestGatekeeper.checkAccess(
+      context,
+      onGranted: () async {
+        if (_formKey.currentState!.validate()) {
+          if (!_fileTerunggah || _selectedFileName == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Harap unggah dokumen persyaratan (JPG, PNG, atau JPEG) terlebih dahulu!'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+            return;
+          }
 
       setState(() {
         _isSubmitting = true;
@@ -360,7 +364,9 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
         );
       }
     }
-  }
+  },
+);
+}
 
   @override
   Widget build(BuildContext context) {

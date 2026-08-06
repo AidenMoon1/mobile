@@ -6,6 +6,7 @@ import 'package:mobile/views/instansi/info_diskominfo.dart';
 import 'package:mobile/views/instansi/info_dpmpstp.dart';
 import 'package:mobile/views/instansi/info_dkp3.dart';
 import 'package:mobile/views/instansi/info_bpkpd.dart';
+import 'package:mobile/widgets/guest_gatekeeper.dart';
 
 class InstansiScreen extends StatefulWidget {
   const InstansiScreen({super.key});
@@ -175,41 +176,45 @@ class _InstansiScreenState extends State<InstansiScreen> {
                         color: accentColor,
                       ),
                       onTap: () {
-                        final kode = item.kodeInstansi.toLowerCase();
-                        if (kode == 'disdukcapil') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const InfoDisdukcapil()),
-                          );
-                        } else if (kode == 'diskominfo') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const InfoDiskominfo()),
-                          );
-                        } else if (kode == 'dpmpstp') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const InfoDpmpstp()),
-                          );
-                        } else if (kode == 'dkp3') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const InfoDkp3()),
-                          );
-                        } else if (kode == 'bpkpd') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const InfoBpkpd()),
-                          );
-                        } else {
-                          // Generic OPD Info
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Membuka profil instansi ${item.namaLengkap}'),
-                              backgroundColor: primaryColor,
-                            ),
-                          );
-                        }
+                        GuestGatekeeper.checkAccess(
+                          context,
+                          onGranted: () {
+                            final kode = item.kodeInstansi.toLowerCase();
+                            if (kode == 'disdukcapil') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const InfoDisdukcapil()),
+                              );
+                            } else if (kode == 'diskominfo') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const InfoDiskominfo()),
+                              );
+                            } else if (kode == 'dpmpstp') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const InfoDpmpstp()),
+                              );
+                            } else if (kode == 'dkp3') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const InfoDkp3()),
+                              );
+                            } else if (kode == 'bpkpd') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const InfoBpkpd()),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Membuka profil instansi ${item.namaLengkap}'),
+                                  backgroundColor: primaryColor,
+                                ),
+                              );
+                            }
+                          },
+                        );
                       },
                     ),
                   );
