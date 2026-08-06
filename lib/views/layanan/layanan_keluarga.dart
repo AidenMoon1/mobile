@@ -1,92 +1,191 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/views/layanan/detail_layanan_keluarga.dart';
+import 'package:mobile/views/instansi/mocilegit_webview_screen.dart';
+import 'package:mobile/widgets/guest_gatekeeper.dart';
 
 class LayananKeluargaScreen extends StatelessWidget {
   const LayananKeluargaScreen({super.key});
 
+  void _tampilkanDialogRedireksi(BuildContext context, String judulLayanan, String urlPortal) {
+    const Color primaryColor = Color(0xFF123457);
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.verified_user_outlined,
+                  color: primaryColor,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Layanan Digital Resmi',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Anda akan diarahkan ke Formulir Permohonan Digital "$judulLayanan" resmi terpadu.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  color: Colors.black87,
+                  height: 1.45,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // TOMBOL LANJUTKAN NAVY
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Tutup Dialog
+
+                    // NAVIGASI LANGSUNG KE FORMULIR DIGITAL IN-APP WEBVIEW MOCILEGIT
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MocilegitWebviewScreen(
+                          title: 'Pengajuan $judulLayanan',
+                          url: urlPortal,
+                        ),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Lanjutkan',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   final List<Map<String, dynamic>> _subLayanan = const [
     {
-      'title': 'KTP',
-      'desc': 'Kartu Identitas Warga',
+      'title': 'KTP-el',
+      'desc': 'Layanan Kado Terindah',
       'icon': Icons.badge_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'subjudul': 'Layanan Kado Terindah - Disdukcapil',
       'deskripsiTentang':
-          'Layanan pencetakan ulang KTP-el karena rusak/hilang, pembaharuan data elemen KTP, dan registrasi Identitas Kependudukan Digital (IKD).',
+          'Layanan Kado Terindah (Penerbitan KTP-el) untuk pencetakan ulang KTP-el karena rusak/hilang, pembaharuan data elemen KTP, dan registrasi Identitas Kependudukan Digital (IKD).',
       'persyaratan': [
         'Fotokopi Kartu Keluarga (KK) Terbaru',
         'KTP Lama (Jika Rusak / Ganti Elemen)',
         'Surat Keterangan Kehilangan dari Kepolisian (Jika KTP Hilang)',
         'Foto Bukti Fisik KTP Rusak (Jika Rusak)',
       ],
+      'urlPortal': 'https://mocilegit.sukabumikota.go.id/pengajuan/ktp',
     },
     {
-      'title': 'KK',
-      'desc': 'Kartu Keluarga',
+      'title': 'Kartu Keluarga (KK)',
+      'desc': 'Layanan Kami Hebat',
       'icon': Icons.family_restroom_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'subjudul': 'Layanan Kami Hebat - Disdukcapil',
       'deskripsiTentang':
-          'Layanan penerbitan Kartu Keluarga (KK) baru untuk keluarga baru, penambahan anggota keluarga (kelahiran), atau pengurangan anggota keluarga.',
+          'Layanan Kami Hebat (Penerbitan KK) untuk keluarga baru, penambahan anggota keluarga (kelahiran), atau pengurangan anggota keluarga.',
       'persyaratan': [
         'Surat Pengantar RT / RW / Kelurahan',
         'Buku Nikah / Kutipan Akta Perkawinan (Orang Tua)',
         'Surat Keterangan Lahir (Untuk Penambahan Anggota)',
         'KK Lama (Jika ada pembaharuan data)',
       ],
+      'urlPortal': 'https://mocilegit.sukabumikota.go.id/pengajuan/kk',
     },
     {
-      'title': 'KIA',
-      'desc': 'Kartu Identitas Anak',
+      'title': 'Kartu Identitas Anak (KIA)',
+      'desc': 'Layanan Kita Cerdas',
       'icon': Icons.child_care_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'subjudul': 'Layanan Kita Cerdas - Disdukcapil',
       'deskripsiTentang':
-          'Kartu Identitas Anak (KIA) merupakan identitas resmi anak usia 0 hingga kurang dari 17 tahun untuk memenuhi hak kependudukan anak.',
+          'Layanan Kita Cerdas (Penerbitan KIA) merupakan identitas resmi anak usia 0 hingga kurang dari 17 tahun untuk memenuhi hak kependudukan anak.',
       'persyaratan': [
         'Fotokopi Akta Kelahiran Anak',
         'Fotokopi Kartu Keluarga (KK) Orang Tua',
         'Fotokopi KTP Kedua Orang Tua',
         'Pas Foto Anak Ukuran 2x3 (Untuk Anak Usia > 5 Tahun)',
       ],
+      'urlPortal': 'https://mocilegit.sukabumikota.go.id/pengajuan/kia',
+    },
+    {
+      'title': 'Pindah Datang',
+      'desc': 'Patepang Sono',
+      'icon': Icons.move_to_inbox_rounded,
+      'subjudul': 'Patepang Sono - Disdukcapil',
+      'deskripsiTentang':
+          'Layanan Patepang Sono (Pengurusan Surat Keterangan Pindah Datang WNI / SKPWNI) untuk kepindahan domisili antar kelurahan, kecamatan, kota, maupun provinsi.',
+      'persyaratan': [
+        'Kartu Keluarga (KK) Asli & Fotokopi',
+        'KTP-el Asli yang Berpindah',
+        'Alamat Lengkap Tujuan Pindah (RT/RW, Desa, Kec, Kab/Kota)',
+      ],
+      'urlPortal': 'https://mocilegit.sukabumikota.go.id/pengajuan/pindah',
     },
     {
       'title': 'Akta Kelahiran',
-      'desc': 'Akta Lahir Digital',
+      'desc': 'Layanan Ananda Sehat',
       'icon': Icons.child_friendly_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'subjudul': 'Layanan Ananda Sehat - Disdukcapil',
       'deskripsiTentang':
-          'Penerbitan Akta Kelahiran resmi dari Disdukcapil sebagai bukti sah status hukum kependudukan anak di Kota Sukabumi.',
+          'Layanan Ananda Sehat (Penerbitan Akta Kelahiran) resmi dari Disdukcapil sebagai bukti sah status hukum kependudukan anak di Kota Sukabumi.',
       'persyaratan': [
         'Surat Keterangan Lahir dari Bidan / Rumah Sakit',
         'Fotokopi Buku Nikah / Akta Perkawinan Orang Tua',
         'Fotokopi Kartu Keluarga (KK)',
         'Fotokopi KTP Orang Tua & 2 Orang Saksi',
       ],
-    },
-    {
-      'title': 'Surat Pindah',
-      'desc': 'Pindah Domisili',
-      'icon': Icons.move_to_inbox_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
-      'deskripsiTentang':
-          'Layanan pengurusan Surat Keterangan Pindah Datang WNI (SKPWNI) untuk kepindahan antar kelurahan, kecamatan, kota, maupun provinsi.',
-      'persyaratan': [
-        'Kartu Keluarga (KK) Asli & Fotokopi',
-        'KTP-el Asli yang Berpindah',
-        'Alamat Lengkap Tujuan Pindah (RT/RW, Desa, Kec, Kab/Kota)',
-      ],
+      'urlPortal': 'https://mocilegit.sukabumikota.go.id/pengajuan/kelahiran',
     },
     {
       'title': 'Akta Kematian',
-      'desc': 'Bukti Sah Kematian',
+      'desc': 'Layanan Kemboja Sari',
       'icon': Icons.description_rounded,
-      'subjudul': 'Layanan Disdukcapil Kota Sukabumi',
+      'subjudul': 'Layanan Kemboja Sari - Disdukcapil',
       'deskripsiTentang':
-          'Penerbitan Akta Kematian sebagai bukti sah kematian warga untuk kepengurusan ahli waris, perbankan, dan pemutakhiran data KK.',
+          'Layanan Kemboja Sari (Penerbitan Akta Kematian) sebagai bukti sah kematian warga untuk kepengurusan ahli waris, perbankan, dan pemutakhiran data KK.',
       'persyaratan': [
         'Surat Keterangan Kematian dari Dokter / Rumah Sakit / Kelurahan',
         'Kartu Keluarga (KK) Asli Almarhum/Almarhumah',
         'KTP-el Asli Almarhum/Almarhumah',
         'Fotokopi KTP Pelapor & 2 Saksi Kematian',
       ],
+      'urlPortal': 'https://mocilegit.sukabumikota.go.id/dashboard',
     },
   ];
 
@@ -208,16 +307,15 @@ class LayananKeluargaScreen extends StatelessWidget {
 
                       return GestureDetector(
                         onTap: () {
-                          Navigator.push(
+                          GuestGatekeeper.checkAccess(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailLayananKeluargaScreen(
-                                judulLayanan: item['title'] as String,
-                                subjudul: item['subjudul'] as String,
-                                deskripsiTentang: item['deskripsiTentang'] as String,
-                                persyaratan: List<String>.from(item['persyaratan'] as List),
-                              ),
-                            ),
+                            onGranted: () {
+                              _tampilkanDialogRedireksi(
+                                context,
+                                item['title'] as String,
+                                item['urlPortal'] as String,
+                              );
+                            },
                           );
                         },
                         child: Container(
@@ -327,6 +425,48 @@ class LayananKeluargaScreen extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // TOMBOL JELAJAHI SEMUA LAYANAN MOCILEGIT
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        GuestGatekeeper.checkAccess(
+                          context,
+                          onGranted: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MocilegitWebviewScreen(
+                                  title: 'Katalog Layanan Mocilegit',
+                                  url: 'https://mocilegit.sukabumikota.go.id/pengajuan',
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE8A33D),
+                        foregroundColor: const Color(0xFF123457),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 2,
+                      ),
+                      icon: const Icon(Icons.explore_outlined, size: 20),
+                      label: const Text(
+                        'Jelajahi Semua Layanan (Mocilegit)',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

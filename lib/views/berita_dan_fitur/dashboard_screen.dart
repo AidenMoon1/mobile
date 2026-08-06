@@ -13,6 +13,8 @@ import 'package:mobile/views/layanan/layanan_usaha.dart';
 import 'package:mobile/views/layanan/layanan_lingkungan.dart';
 import 'package:mobile/views/berita_dan_fitur/detail_berita_screen.dart';
 import 'package:mobile/views/informasi/help_center_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mobile/widgets/guest_gatekeeper.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -92,6 +94,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Timer? _newsTimer;
   Timer? _clockTimer;
 
+  Map<String, int> _sectorUsageCounts = {
+    'keluarga': 1,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -99,6 +105,97 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _fetchRealtimeWeather();
     _fetchBeritaTerbaru();
     _startNewsAutoSlide();
+    _loadSectorUsage();
+  }
+
+  Future<void> _loadSectorUsage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final Map<String, int> counts = {};
+      final sectors = ['keluarga', 'pendidikan', 'usaha', 'lingkungan', 'kendaraan', 'kesehatan'];
+      for (var s in sectors) {
+        counts[s] = prefs.getInt('usage_sector_$s') ?? (s == 'keluarga' ? 1 : 0);
+      }
+      if (mounted) {
+        setState(() {
+          _sectorUsageCounts = counts;
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _trackSectorUsage(String sectorId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      int current = prefs.getInt('usage_sector_$sectorId') ?? (sectorId == 'keluarga' ? 1 : 0);
+      int updated = current + 1;
+      await prefs.setInt('usage_sector_$sectorId', updated);
+      if (mounted) {
+        setState(() {
+          _sectorUsageCounts[sectorId] = updated;
+        });
+      }
+    } catch (_) {}
+  }
+
+  List<_SectorItem> _getFavoriteSectors() {
+    final allSectors = <_SectorItem>[
+      _SectorItem(
+        id: 'keluarga',
+        title: 'Keluarga',
+        imagePath: 'assets/icon/keluarga.png',
+        icon: Icons.family_restroom_rounded,
+        routeBuilder: () => const LayananKeluargaScreen(),
+      ),
+      _SectorItem(
+        id: 'pendidikan',
+        title: 'Pendidikan',
+        imagePath: 'assets/icon/pendidikan.png',
+        icon: Icons.school_rounded,
+        routeBuilder: () => const LayananScreen(),
+      ),
+      _SectorItem(
+        id: 'usaha',
+        title: 'Usaha',
+        imagePath: 'assets/icon/usaha.png',
+        icon: Icons.storefront_rounded,
+        routeBuilder: () => const LayananUsahaScreen(),
+      ),
+      _SectorItem(
+        id: 'lingkungan',
+        title: 'Lingkungan',
+        imagePath: 'assets/icon/lingkungan.png',
+        icon: Icons.home_work_rounded,
+        routeBuilder: () => const LayananLingkunganScreen(),
+      ),
+      _SectorItem(
+        id: 'kendaraan',
+        title: 'Kendaraan',
+        imagePath: 'assets/icon/kendaraan.png',
+        icon: Icons.directions_car_rounded,
+        routeBuilder: () => const LayananScreen(),
+      ),
+      _SectorItem(
+        id: 'kesehatan',
+        title: 'Kesehatan',
+        imagePath: 'assets/icon/kesehatan.png',
+        icon: Icons.local_hospital_rounded,
+        routeBuilder: () => const LayananScreen(),
+      ),
+    ];
+
+    List<_SectorItem> sorted = List.from(allSectors);
+    sorted.sort((a, b) {
+      int countA = _sectorUsageCounts[a.id] ?? 0;
+      int countB = _sectorUsageCounts[b.id] ?? 0;
+      return countB.compareTo(countA);
+    });
+
+    final activeSectors = sorted.where((s) => (_sectorUsageCounts[s.id] ?? 0) > 0).toList();
+    if (activeSectors.isEmpty) {
+      return [allSectors.first];
+    }
+    return activeSectors.take(4).toList();
   }
 
   @override
@@ -233,31 +330,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               size: 32,
                             ),
                           ),
-                          const SizedBox(width: 8),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Sukabumi',
-                                style: TextStyle(
-                                  color: Color(0xFF0A1E33),
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                              Text(
-                                'ONE ACCESS',
-                                style: TextStyle(
-                                  color: Color(0xFFE8A33D),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.8,
-                                  fontFamily: 'Poppins',
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
 
@@ -316,52 +388,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
 
                 // =========================================================
-                // 2. NAVY BANNER (POTENSI CUACA EKSTREAM & USER GREETING)
+                // 2. NAVY BANNER (USER GREETING)
                 // =========================================================
                 Container(
-                  width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   color: const Color(0xFF0A1E33),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // KARTU POTENSI CUACA EKSTREAM
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
+                      const Text(
+                        'Selamat Datang',
+                        style: TextStyle(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.notifications_active_rounded, color: Colors.redAccent, size: 22),
-                            SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Potensi Cuaca',
-                                  style: TextStyle(
-                                    color: Color(0xFF0A1E33),
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                                Text(
-                                  'Ekstream',
-                                  style: TextStyle(
-                                    color: Colors.black87,
-                                    fontSize: 10,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
                         ),
                       ),
-
                       // GREETING & TANGGAL & FOTO PROFIL
                       Row(
                         children: [
@@ -369,7 +412,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
                               const Text(
-                                'Sampurasun, mrn',
+                                'Profil',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 13.5,
@@ -574,51 +617,69 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // KARTU LAYANAN KELUARGA (BLUE OUTLINE CONTAINER)
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const LayananKeluargaScreen()),
-                          );
-                        },
-                        child: Container(
-                          width: 100,
-                          height: 95,
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: const Color(0xFF00A3FF), width: 2),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x1500A3FF),
-                                blurRadius: 6,
-                                offset: Offset(0, 3),
-                              )
-                            ],
-                          ),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.family_restroom_rounded,
-                                color: Color(0xFF0A1E33),
-                                size: 36,
-                              ),
-                              SizedBox(height: 6),
-                              Text(
-                                'Keluarga',
-                                style: TextStyle(
-                                  color: Color(0xFF0A1E33),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Poppins',
+                      // KARTU LAYANAN FAVORIT DINAMIS (UPDATED BASED ON USER USAGE)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: _getFavoriteSectors().map((sector) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 12),
+                              child: GestureDetector(
+                                onTap: () {
+                                  GuestGatekeeper.checkAccess(
+                                    context,
+                                    onGranted: () {
+                                      _trackSectorUsage(sector.id);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => sector.routeBuilder()),
+                                      );
+                                    },
+                                  );
+                                },
+                                child: Container(
+                                  width: 100,
+                                  height: 95,
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: const Color(0xFF00A3FF), width: 2),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x1500A3FF),
+                                        blurRadius: 6,
+                                        offset: Offset(0, 3),
+                                      )
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        sector.icon,
+                                        color: const Color(0xFF0A1E33),
+                                        size: 36,
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        sector.title,
+                                        style: const TextStyle(
+                                          color: Color(0xFF0A1E33),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
                               ),
-                            ],
-                          ),
+                            );
+                          }).toList(),
                         ),
                       ),
 
@@ -776,7 +837,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 imagePath: 'assets/icon/keluarga.png',
                                 fallbackIcon: Icons.family_restroom_rounded,
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananKeluargaScreen()));
+                                  GuestGatekeeper.checkAccess(
+                                    context,
+                                    onGranted: () {
+                                      _trackSectorUsage('keluarga');
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananKeluargaScreen()));
+                                    },
+                                  );
                                 },
                               ),
                               _buildLifePhaseCard(
@@ -785,7 +852,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 imagePath: 'assets/icon/pendidikan.png',
                                 fallbackIcon: Icons.school_rounded,
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                  GuestGatekeeper.checkAccess(
+                                    context,
+                                    onGranted: () {
+                                      _trackSectorUsage('pendidikan');
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                    },
+                                  );
                                 },
                               ),
                               _buildLifePhaseCard(
@@ -794,7 +867,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 imagePath: 'assets/icon/usaha.png',
                                 fallbackIcon: Icons.storefront_rounded,
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananUsahaScreen()));
+                                  GuestGatekeeper.checkAccess(
+                                    context,
+                                    onGranted: () {
+                                      _trackSectorUsage('usaha');
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananUsahaScreen()));
+                                    },
+                                  );
                                 },
                               ),
                               _buildLifePhaseCard(
@@ -803,7 +882,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 imagePath: 'assets/icon/lingkungan.png',
                                 fallbackIcon: Icons.home_work_rounded,
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananLingkunganScreen()));
+                                  GuestGatekeeper.checkAccess(
+                                    context,
+                                    onGranted: () {
+                                      _trackSectorUsage('lingkungan');
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananLingkunganScreen()));
+                                    },
+                                  );
                                 },
                               ),
                               _buildLifePhaseCard(
@@ -812,7 +897,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 imagePath: 'assets/icon/kendaraan.png',
                                 fallbackIcon: Icons.directions_car_rounded,
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                  GuestGatekeeper.checkAccess(
+                                    context,
+                                    onGranted: () {
+                                      _trackSectorUsage('kendaraan');
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                    },
+                                  );
                                 },
                               ),
                               _buildLifePhaseCard(
@@ -821,7 +912,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 imagePath: 'assets/icon/kesehatan.png',
                                 fallbackIcon: Icons.local_hospital_rounded,
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                  GuestGatekeeper.checkAccess(
+                                    context,
+                                    onGranted: () {
+                                      _trackSectorUsage('kesehatan');
+                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                                    },
+                                  );
                                 },
                               ),
                             ],
@@ -1396,4 +1493,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return isExpanded ? Expanded(child: content) : content;
   }
+}
+
+class _SectorItem {
+  final String id;
+  final String title;
+  final String imagePath;
+  final IconData icon;
+  final Widget Function() routeBuilder;
+
+  _SectorItem({
+    required this.id,
+    required this.title,
+    required this.imagePath,
+    required this.icon,
+    required this.routeBuilder,
+  });
 }

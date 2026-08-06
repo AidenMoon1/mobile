@@ -1,1 +1,16 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"sukabumi-one-access-app-c7f15","appId":"1:709678945324:android:83857869c836e35db7ed89","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"sukabumi-one-access-app-c7f15","configurations":{"android":"1:709678945324:android:83857869c836e35db7ed89","ios":"1:709678945324:ios:641afd317a3c4c38b7ed89","web":"1:709678945324:web:3352d09fb627cd0ab7ed89"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

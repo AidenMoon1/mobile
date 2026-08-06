@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:mobile/views/layanan/detail_layanan_keluarga.dart';
+import 'package:mobile/views/instansi/mocilegit_webview_screen.dart';
 import 'package:mobile/services/opd_service.dart';
 
 class InfoDisdukcapil extends StatefulWidget {
@@ -48,7 +48,6 @@ class _InfoDisdukcapilState extends State<InfoDisdukcapil> {
     const Color accentColor = Color(0xFFE8A33D);
 
     final opd = _opdService.getInstansiByKode('disdukcapil');
-    final layananList = _opdService.getLayananByInstansi('disdukcapil');
 
     final String namaSingkat = opd?.namaSingkat ?? 'DISDUKCAPIL';
     final String namaLengkap = opd?.namaLengkap ?? 'Dinas Kependudukan dan Pencatatan Sipil';
@@ -346,125 +345,52 @@ class _InfoDisdukcapilState extends State<InfoDisdukcapil> {
 
                   const SizedBox(height: 22),
 
-                  // 4. SEKSI LAYANAN TERSEDIA (DYNAMIC LIVE STORE)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Layanan Tersedia',
-                        style: TextStyle(
-                          color: primaryColor,
-                          fontSize: 17.5,
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: accentColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '${layananList.length} Layanan',
-                          style: const TextStyle(
-                            color: primaryColor,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                      ),
-                    ],
+                  // 4. SEKSI LAYANAN TERSEDIA
+                  const Text(
+                    'Layanan Tersedia',
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontSize: 17.5,
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
 
-                  layananList.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Center(
-                            child: Text(
-                              'Belum ada layanan terdaftar pada instansi ini.',
-                              style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MocilegitWebviewScreen(
+                              title: 'Jelajahi Layanan Disdukcapil',
+                              url: 'https://mocilegit.sukabumikota.go.id/pengajuan',
                             ),
                           ),
-                        )
-                      : SizedBox(
-                          height: 108,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: layananList.length,
-                            separatorBuilder: (context, index) => const SizedBox(width: 12),
-                            itemBuilder: (context, index) {
-                              final item = layananList[index];
-
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => DetailLayananKeluargaScreen(
-                                        judulLayanan: item.rawTitle,
-                                        subjudul: item.subjudul,
-                                        deskripsiTentang: item.deskripsi,
-                                        persyaratan: item.persyaratan,
-                                        layananModel: item,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  width: 92,
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.grey.shade300, width: 1.3),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Color(0x0C000000),
-                                        blurRadius: 6,
-                                        offset: Offset(0, 3),
-                                      )
-                                    ],
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        width: 46,
-                                        height: 46,
-                                        decoration: const BoxDecoration(
-                                          color: primaryColor,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.description_outlined,
-                                          color: accentColor,
-                                          size: 26,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(
-                                        item.rawTitle,
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: primaryColor,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Poppins',
-                                          height: 1.15,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
+                      ),
+                      icon: const Icon(Icons.explore_outlined, color: accentColor, size: 22),
+                      label: const Text(
+                        'Jelajahi Layanan',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
+                  ),
 
                   const SizedBox(height: 24),
 
