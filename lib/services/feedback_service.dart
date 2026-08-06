@@ -2,7 +2,6 @@
 // FILE: lib/services/feedback_service.dart
 // FUNGSI: Service Pengelola Ulasan & Survei Kepuasan Masyarakat (SKM)
 // PATTERN: Singleton Pattern dengan Triple Persistence (Local, SQLite, REST API)
-// LEVEL KODE: Level 2-3 (Sangat Rapi & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 import '../models/feedback_model.dart';

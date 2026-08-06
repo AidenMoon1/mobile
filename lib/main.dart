@@ -1,7 +1,6 @@
 // =============================================================================
 // FILE: lib/main.dart
 // FUNGSI: Titik Masuk Utama (Entry Point) Aplikasi Sukabumi One Access
-// LEVEL KODE: Level 2-3 (Modular, Clean & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 import 'package:flutter/material.dart';

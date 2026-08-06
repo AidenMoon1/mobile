@@ -2,7 +2,6 @@
 // FILE: lib/services/notification_service.dart
 // FUNGSI: Service Pengelola Notifikasi Real-Time Sistem Sukabumi One Access
 // PATTERN: Singleton Pattern & Reactive ChangeNotifier (State Management)
-// LEVEL KODE: Level 2-3 (Sangat Rapi & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 import 'package:flutter/foundation.dart';

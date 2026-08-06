@@ -2,7 +2,6 @@
 // FILE: lib/services/user_service.dart
 // FUNGSI: Service Pengelola Sesi & Profil Akun Pengguna (SharedPreferences Storage)
 // PATTERN: Singleton Pattern & Key-Value Local Storage
-// LEVEL KODE: Level 2-3 (Sangat Rapi & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 import '../models/user_model.dart';

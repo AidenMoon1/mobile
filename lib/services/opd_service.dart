@@ -2,7 +2,6 @@
 // FILE: lib/services/opd_service.dart
 // FUNGSI: Service Master Pengelola Data OPD (Instansi, Layanan Publik, & Sektor)
 // PATTERN: Singleton Pattern & Reactive State Management (ChangeNotifier)
-// LEVEL KODE: Level 2-3 (Sangat Rapi & Terstruktur Untuk Mahasiswa)
 // =============================================================================
 
 import 'package:flutter/material.dart';
