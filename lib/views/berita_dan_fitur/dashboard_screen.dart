@@ -12,6 +12,7 @@ import 'package:mobile/views/layanan/layanan_keluarga.dart';
 import 'package:mobile/views/layanan/layanan_usaha.dart';
 import 'package:mobile/views/layanan/layanan_lingkungan.dart';
 import 'package:mobile/views/berita_dan_fitur/detail_berita_screen.dart';
+import 'package:mobile/views/informasi/help_center_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -23,6 +24,38 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+
+  void _bukaModalPusatBantuan(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.88,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Expanded(child: HelpCenterScreen()),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   String _currentDate = "";
   String _temperature = "26°C";
@@ -1148,36 +1181,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 // =========================================================
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8A33D),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF0A1E33),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 20),
-                        ),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Text(
-                            'Sampaikan pertanyaan terkait Sukabumi One Access atau layanan publik di Kota Sukabumi',
-                            style: TextStyle(
+                  child: InkWell(
+                    onTap: () => _bukaModalPusatBantuan(context),
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8A33D),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
                               color: Color(0xFF0A1E33),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Poppins',
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Sampaikan pertanyaan terkait Sukabumi One Access atau layanan publik di Kota Sukabumi',
+                              style: TextStyle(
+                                color: Color(0xFF0A1E33),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Poppins',
+                              ),
                             ),
                           ),
-                        ),
-                        const Icon(Icons.chevron_right_rounded, color: Color(0xFF0A1E33), size: 24),
-                      ],
+                          const Icon(Icons.chevron_right_rounded, color: Color(0xFF0A1E33), size: 24),
+                        ],
+                      ),
                     ),
                   ),
                 ),
