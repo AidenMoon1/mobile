@@ -638,10 +638,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   );
                                 },
                                 child: Container(
-                                  width: 100,
-                                  height: 95,
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
+        width: 115,
+        height: 110,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(color: const Color(0xFF00A3FF), width: 2),
@@ -659,7 +659,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Icon(
                                         sector.icon,
                                         color: const Color(0xFF0A1E33),
-                                        size: 36,
+                                        size: 46,
                                       ),
                                       const SizedBox(height: 6),
                                       Text(
@@ -1374,24 +1374,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: imagePath != null
                     ? Image.asset(
                         imagePath,
-                        width: 38,
-                        height: 38,
+                        width: 68,
+                        height: 68,
+                        fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Icon(
                           fallbackIcon,
                           color: const Color(0xFF0A1E33),
-                          size: 38,
+                          size: 68,
                         ),
                       )
                     : Icon(
                         fallbackIcon,
                         color: const Color(0xFF0A1E33),
-                        size: 38,
+                        size: 68,
                       ),
               ),
             ),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 color: const Color(0xFF123457).withOpacity(0.12),
                 borderRadius: const BorderRadius.only(
@@ -1407,7 +1408,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       title,
                       style: const TextStyle(
                         color: Colors.black,
-                        fontSize: 9.5,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'Poppins',
                       ),
@@ -1416,13 +1417,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   Container(
-                    width: 12,
-                    height: 12,
+                    width: 18,
+                    height: 18,
                     decoration: const BoxDecoration(
                       color: Color(0xFFE8A33D),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 8),
+                    child: const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 12),
                   ),
                 ],
               ),
@@ -1449,7 +1450,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Container(
             width: width,
-            height: height ?? 58,
+            height: height ?? 85,
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               color: Colors.white,

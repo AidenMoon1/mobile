@@ -2,7 +2,6 @@
 // FILE: lib/models/instansi_model.dart
 // FUNGSI: Data Model untuk Instansi OPD (Organisasi Perangkat Daerah) Kota Sukabumi
 // PATTERN: Data Model dengan toMap() & fromMap() untuk Persistensi SQLite
-// LEVEL KODE: Level 2-3 (Bersih, Rapi, dan Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 /// Kelas Model Representasi Data Instansi OPD (Disdukcapil, DPMPTSP, Diskominfo, dll)

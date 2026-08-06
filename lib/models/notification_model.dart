@@ -2,7 +2,6 @@
 // FILE: lib/models/notification_model.dart
 // FUNGSI: Data Model untuk Notifikasi Sistem Sukabumi One Access
 // PATTERN: Data Transfer Object (DTO)
-// LEVEL KODE: Level 2-3 (Rapi & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 /// Enum Kategori Notifikasi (Informasi Umum, Layanan, Feedback, Berita, Kebencanaan)

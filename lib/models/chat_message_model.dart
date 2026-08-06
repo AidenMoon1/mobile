@@ -2,7 +2,6 @@
 // FILE: lib/models/chat_message_model.dart
 // FUNGSI: Data Model untuk Pesan Obrolan Live Chat & AI Bot SOA
 // PATTERN: Data Transfer Object (DTO)
-// LEVEL KODE: Level 2-3 (Sederhana & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 /// Enum Penanda Pengirim Pesan (User = Warga, Bot = AI Bot / Admin)

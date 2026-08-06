@@ -2,7 +2,6 @@
 // FILE: lib/models/feedback_model.dart
 // FUNGSI: Data Model Ulasan Kepuasan Masyarakat (SKM)
 // PATTERN: Data Transfer Object (DTO)
-// LEVEL KODE: Level 2-3 (Sederhana & Rapi Untuk Mahasiswa)
 // =============================================================================
 
 /// Kelas Model Representasi 1 Butir Ulasan / Feedback Kepuasan Warga

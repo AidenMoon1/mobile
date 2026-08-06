@@ -2,7 +2,6 @@
 // FILE: lib/models/sektor_model.dart
 // FUNGSI: Data Model untuk Sektor Fase Kehidupan (Keluarga, Usaha, Pendidikan, dll)
 // PATTERN: Data Model dengan Persistensi Map & SQLite
-// LEVEL KODE: Level 2-3 (Rapi & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 /// Kelas Model Representasi Butir Sektor Portal Layanan Publik
