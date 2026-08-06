@@ -930,7 +930,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         // TOMBOL KUNING LIHAT SEMUA SEKTOR
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                            GuestGatekeeper.checkAccess(
+                              context,
+                              onGranted: () {
+                                Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
+                              },
+                            );
                           },
                           child: Container(
                             width: double.infinity,
@@ -994,7 +999,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         imagePath: 'assets/images/diskominfo.png',
                         fallbackIcon: Icons.computer_rounded,
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDiskominfo()));
+                          GuestGatekeeper.checkAccess(
+                            context,
+                            onGranted: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDiskominfo()));
+                            },
+                          );
                         },
                       ),
                       const SizedBox(width: 16),
@@ -1004,7 +1014,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         imagePath: 'assets/images/dpmptsp.png',
                         fallbackIcon: Icons.store_rounded,
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDpmpstp()));
+                          GuestGatekeeper.checkAccess(
+                            context,
+                            onGranted: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDpmpstp()));
+                            },
+                          );
                         },
                       ),
                       const SizedBox(width: 16),
@@ -1014,7 +1029,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         imagePath: 'assets/images/dkp3.png',
                         fallbackIcon: Icons.grass_rounded,
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDkp3()));
+                          GuestGatekeeper.checkAccess(
+                            context,
+                            onGranted: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDkp3()));
+                            },
+                          );
                         },
                       ),
                       const SizedBox(width: 6),
@@ -1026,7 +1046,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         height: 38,
                         isExpanded: false,
                         onTap: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (_) => const InstansiScreen()));
+                          GuestGatekeeper.checkAccess(
+                            context,
+                            onGranted: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => const InstansiScreen()));
+                            },
+                          );
                         },
                       ),
                     ],
