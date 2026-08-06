@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/models/custom_field_config.dart';
 import 'package:mobile/models/layanan_model.dart';
 import 'package:mobile/services/opd_service.dart';
+import '../berita_dan_fitur/mitra_webview_screen.dart';
 
 class AdminFormLayananScreen extends StatefulWidget {
   final LayananModel? layanan;
@@ -128,6 +129,114 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     }
   }
 
+  // MODAL DIALOG NOTIFIKASI PENGALIHAN KE IFRAME WEB DINAS
+  void _tampilkanNotifBeralihKeIframe(BuildContext context) {
+    final urlTarget = _iframeUrlController.text.trim().isNotEmpty
+        ? _iframeUrlController.text.trim()
+        : (_urlPortalController.text.trim().isNotEmpty
+            ? _urlPortalController.text.trim()
+            : 'https://disdukcapil.sukabumikota.go.id/form-online');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.code_rounded, color: Color(0xFF0F2942), size: 24),
+            SizedBox(width: 10),
+            Text(
+              'Mode iFrame Web Dinas',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+                color: Color(0xFF0F2942),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Anda telah memilih Mode iFrame Web. Sistem akan membawa dan mengalihkan Anda untuk masuk & melihat tampilan Web iFrame resmi dari Dinas ini:',
+              style: TextStyle(fontSize: 12.5, fontFamily: 'Poppins', height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F6F9),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.link_rounded, size: 18, color: Color(0xFF0F2942)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      urlTarget,
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F2942),
+                        fontFamily: 'Poppins',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Tetap di Pengaturan', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MitraWebviewScreen(
+                    judulLayanan: _rawTitleController.text.trim().isNotEmpty
+                        ? _rawTitleController.text.trim()
+                        : 'Web iFrame Dinas',
+                    urlPortal: urlTarget,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.open_in_new_rounded, size: 16, color: Colors.white),
+            label: const Text('Masuk ke iFrame Web', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0F2942),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _pilihModeIframe(BuildContext context, {bool closeModalFirst = false}) {
+    if (closeModalFirst) {
+      Navigator.pop(context);
+    }
+    setState(() {
+      _isIframeMode = true;
+    });
+    _tampilkanNotifBeralihKeIframe(context);
+  }
+
   // MODAL DIALOG PILIH MODE PENGEDITAN (IFRAME VS MANUAL) SAMA PERSIS GAMBAR USER
   void _bukaModalPilihModeEdit(BuildContext context) {
     showDialog(
@@ -169,12 +278,7 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
                     // KARTU 1: IFRAME
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isIframeMode = true;
-                          });
-                          Navigator.pop(context);
-                        },
+                        onTap: () => _pilihModeIframe(context, closeModalFirst: true),
                         child: Container(
                           height: 120,
                           padding: const EdgeInsets.all(12),
@@ -624,7 +728,7 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
                   // KARTU 1: IFRAME
                   Expanded(
                     child: GestureDetector(
-                      onTap: () => setState(() => _isIframeMode = true),
+                      onTap: () => _pilihModeIframe(context),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                         decoration: BoxDecoration(
@@ -862,6 +966,11 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
                   decoration: InputDecoration(
                     hintText: 'https://disdukcapil.sukabumikota.go.id/form-online',
                     prefixIcon: const Icon(Icons.code_rounded, color: primaryColor),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.open_in_new_rounded, color: primaryColor),
+                      tooltip: 'Buka & Masuk ke iFrame Web',
+                      onPressed: () => _tampilkanNotifBeralihKeIframe(context),
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -875,24 +984,29 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF6E5),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: accentColor),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info_outline_rounded, color: primaryColor, size: 20),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'Mode iFrame aktif: Permohonan warga akan langsung menampilkan halaman Web Embed resmi dari server Dinas terkait.',
-                          style: TextStyle(fontSize: 11.5, color: primaryColor, fontFamily: 'Poppins'),
+                InkWell(
+                  onTap: () => _tampilkanNotifBeralihKeIframe(context),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF6E5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: accentColor),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.info_outline_rounded, color: primaryColor, size: 20),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Mode iFrame aktif: Klik di sini untuk menguji & berpindah langsung ke halaman Web iFrame resmi Dinas.',
+                            style: TextStyle(fontSize: 11.5, color: primaryColor, fontFamily: 'Poppins', fontWeight: FontWeight.bold),
+                          ),
                         ),
-                      ),
-                    ],
+                        Icon(Icons.chevron_right_rounded, color: primaryColor, size: 20),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 20),
