@@ -24,6 +24,10 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
   late TextEditingController _deskripsiController;
   late TextEditingController _urlPortalController;
 
+  // FITUR BARU: MODE PENGEDITAN (IFRAME VS MANUAL)
+  bool _isIframeMode = false;
+  late TextEditingController _iframeUrlController;
+
   final List<TextEditingController> _persyaratanControllers = [];
   final List<CustomFieldConfig> _formFields = [];
 
@@ -57,6 +61,13 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     _deskripsiController = TextEditingController(text: item?.deskripsi ?? '');
     _urlPortalController = TextEditingController(
       text: item?.urlPortal ?? 'https://disdukcapil.sukabumikota.go.id',
+    );
+
+    _isIframeMode = item?.isIframeMode ?? false;
+    _iframeUrlController = TextEditingController(
+      text: item?.iframeUrl.isNotEmpty == true
+          ? item!.iframeUrl
+          : (item?.urlPortal ?? 'https://disdukcapil.sukabumikota.go.id/form-online'),
     );
 
     if (item != null) {
@@ -95,6 +106,7 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     _subjudulController.dispose();
     _deskripsiController.dispose();
     _urlPortalController.dispose();
+    _iframeUrlController.dispose();
     for (var c in _persyaratanControllers) {
       c.dispose();
     }
@@ -114,6 +126,177 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
         _persyaratanControllers.removeAt(index);
       });
     }
+  }
+
+  // MODAL DIALOG PILIH MODE PENGEDITAN (IFRAME VS MANUAL) SAMA PERSIS GAMBAR USER
+  void _bukaModalPilihModeEdit(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Container(
+            width: 380,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Pilih Mode Pengeditan Form',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F2942),
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Pilih metode pengisian formulir permohonan warga yang Anda inginkan:',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
+                ),
+                const SizedBox(height: 20),
+
+                // 2 KARTU PILIHAN: IFRAME DAN MANUAL
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // KARTU 1: IFRAME
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isIframeMode = true;
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          height: 120,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: _isIframeMode ? const Color(0xFFEBF5FF) : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: _isIframeMode ? const Color(0xFF0F2942) : Colors.grey.shade300,
+                              width: _isIframeMode ? 2 : 1.5,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x0E000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 3),
+                              )
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F2942).withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.code_rounded,
+                                  color: Color(0xFF0F2942),
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                'iframe',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F2942),
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(width: 14),
+
+                    // KARTU 2: MANUAL
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isIframeMode = false;
+                          });
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          height: 120,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: !_isIframeMode ? const Color(0xFFEBF5FF) : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: !_isIframeMode ? const Color(0xFF0F2942) : Colors.grey.shade300,
+                              width: !_isIframeMode ? 2 : 1.5,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x0E000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 3),
+                              )
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F2942).withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.edit_note_rounded,
+                                  color: Color(0xFF0F2942),
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                'Manual',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0F2942),
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Tutup', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // DIALOG FORM BUILDER DENGAN 6 TIPE FIELD
@@ -350,6 +533,8 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
         persyaratan: reqList,
         urlPortal: _urlPortalController.text.trim(),
         iconName: 'description_outlined',
+        isIframeMode: _isIframeMode,
+        iframeUrl: _iframeUrlController.text.trim(),
         formFields: _formFields,
       );
 
@@ -364,7 +549,7 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
         SnackBar(
           content: Text(
             isEdit
-                ? 'Layanan "${newModel.rawTitle}" berhasil diperbarui!'
+                ? 'Layanan "${newModel.rawTitle}" (${_isIframeMode ? "Mode iFrame Web" : "Mode Form Manual"}) berhasil diperbarui!'
                 : 'Layanan baru "${newModel.rawTitle}" berhasil ditambahkan!',
           ),
           backgroundColor: const Color(0xFF123457),
@@ -406,6 +591,146 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ===============================================================
+              // SEKSI BARU: PILIHAN MODE PENGEDITAN FORM (IFRAME VS MANUAL)
+              // ===============================================================
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Pilihan Mode Pengeditan Form',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => _bukaModalPilihModeEdit(context),
+                    icon: const Icon(Icons.swap_horiz_rounded, color: primaryColor, size: 18),
+                    label: const Text(
+                      'Ubah Mode',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // 2 KARTU VISUAL PILIHAN MODE SAMA PERSIS TAMPILAN GAMBAR USER
+              Row(
+                children: [
+                  // KARTU 1: IFRAME
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _isIframeMode = true),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: _isIframeMode ? const Color(0xFFEBF5FF) : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: _isIframeMode ? primaryColor : Colors.grey.shade300,
+                            width: _isIframeMode ? 2.5 : 1.5,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0D000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 3),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.code_rounded,
+                                color: primaryColor,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'iframe',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 14),
+
+                  // KARTU 2: MANUAL
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _isIframeMode = false),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: !_isIframeMode ? const Color(0xFFEBF5FF) : Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: !_isIframeMode ? primaryColor : Colors.grey.shade300,
+                            width: !_isIframeMode ? 2.5 : 1.5,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x0D000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 3),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: primaryColor.withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.edit_note_rounded,
+                                color: primaryColor,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Manual',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
               _buildSectionHeader('Pengelompokan Instansi & Sektor'),
               const SizedBox(height: 12),
 
@@ -514,127 +839,179 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
 
               _buildInputField(
                 controller: _urlPortalController,
-                label: 'Link Web Portal Resmi / Pengajuan Online',
+                label: 'Link Web Portal Resmi Instansi',
                 hint: 'https://disdukcapil.sukabumikota.go.id',
                 validator: (val) => (val == null || val.isEmpty) ? 'Link portal wajib diisi' : null,
               ),
               const SizedBox(height: 18),
 
-              // SEKSI FORM BUILDER ENGINE DINAMIS
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Form Builder (Elemen Isian Warga)',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
-                      fontFamily: 'Poppins',
-                    ),
+              // ===============================================================
+              // SEKSI LOGIKA DYNAMIC TAMPILAN: MODE IFRAME VS MODE MANUAL
+              // ===============================================================
+              if (_isIframeMode) ...[
+                _buildSectionHeader('Pengaturan Form Mode iFrame Dinas'),
+                const SizedBox(height: 10),
+                const Text(
+                  'Masukkan URL / Link Embed Formulir Web Resmi Dinas:',
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                ),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _iframeUrlController,
+                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                  decoration: InputDecoration(
+                    hintText: 'https://disdukcapil.sukabumikota.go.id/form-online',
+                    prefixIcon: const Icon(Icons.code_rounded, color: primaryColor),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () => _bukaModalTambahAtauEditField(),
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    label: const Text(
-                      '+ Tambah Field',
-                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accentColor,
-                      foregroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    ),
+                  validator: (val) {
+                    if (_isIframeMode && (val == null || val.trim().isEmpty)) {
+                      return 'URL / iFrame Dinas wajib diisi pada Mode iFrame';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF6E5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: accentColor),
                   ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Admin dapat membuat & mengatur sendiri tipe field (Teks Pendek, Teks Panjang, Dropdown, Kalender, Angka, Upload).',
-                style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
-              ),
-              const SizedBox(height: 10),
-
-              _formFields.isEmpty
-                  ? Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: const Center(
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, color: primaryColor, size: 20),
+                      SizedBox(width: 10),
+                      Expanded(
                         child: Text(
-                          'Belum ada field formulir. Klik "+ Tambah Field" untuk membuat.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                          'Mode iFrame aktif: Permohonan warga akan langsung menampilkan halaman Web Embed resmi dari server Dinas terkait.',
+                          style: TextStyle(fontSize: 11.5, color: primaryColor, fontFamily: 'Poppins'),
                         ),
                       ),
-                    )
-                  : ReorderableListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _formFields.length,
-                      onReorder: (oldIdx, newIdx) {
-                        setState(() {
-                          if (newIdx > oldIdx) newIdx -= 1;
-                          final item = _formFields.removeAt(oldIdx);
-                          _formFields.insert(newIdx, item);
-                        });
-                      },
-                      itemBuilder: (context, index) {
-                        final f = _formFields[index];
-                        return Container(
-                          key: ValueKey(f.id),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: primaryColor.withOpacity(0.2)),
-                          ),
-                          child: ListTile(
-                            leading: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: primaryColor.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                '${index + 1}',
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 12),
-                              ),
-                            ),
-                            title: Text(
-                              f.label,
-                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
-                            ),
-                            subtitle: Text(
-                              'Tipe: ${f.type.displayName}${f.isRequired ? " • (Wajib)" : " • (Opsional)"}',
-                              style: TextStyle(fontSize: 11, color: Colors.grey.shade700, fontFamily: 'Poppins'),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_rounded, color: primaryColor, size: 20),
-                                  onPressed: () => _bukaModalTambahAtauEditField(editField: f, index: index),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-                                  onPressed: () {
-                                    setState(() {
-                                      _formFields.removeAt(index);
-                                    });
-                                  },
-                                ),
-                                const Icon(Icons.drag_handle_rounded, color: Colors.grey),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ] else ...[
+                // SEKSI FORM BUILDER ENGINE DINAMIS MANUAL
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Form Builder Manual (Elemen Isian Warga)',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
+                        fontFamily: 'Poppins',
+                      ),
                     ),
+                    ElevatedButton.icon(
+                      onPressed: () => _bukaModalTambahAtauEditField(),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text(
+                        '+ Tambah Field',
+                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentColor,
+                        foregroundColor: primaryColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Admin dapat membuat & mengatur sendiri tipe field (Teks Pendek, Teks Panjang, Dropdown, Kalender, Angka, Upload).',
+                  style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                ),
+                const SizedBox(height: 10),
 
-              const SizedBox(height: 20),
+                _formFields.isEmpty
+                    ? Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.shade300),
+                        ),
+                        child: const Center(
+                          child: Text(
+                            'Belum ada field formulir. Klik "+ Tambah Field" untuk membuat.',
+                            style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                          ),
+                        ),
+                      )
+                    : ReorderableListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _formFields.length,
+                        onReorder: (oldIdx, newIdx) {
+                          setState(() {
+                            if (newIdx > oldIdx) newIdx -= 1;
+                            final item = _formFields.removeAt(oldIdx);
+                            _formFields.insert(newIdx, item);
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          final f = _formFields[index];
+                          return Container(
+                            key: ValueKey(f.id),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: primaryColor.withOpacity(0.2)),
+                            ),
+                            child: ListTile(
+                              leading: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withOpacity(0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 12),
+                                ),
+                              ),
+                              title: Text(
+                                f.label,
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                              ),
+                              subtitle: Text(
+                                'Tipe: ${f.type.displayName}${f.isRequired ? " • (Wajib)" : " • (Opsional)"}',
+                                style: TextStyle(fontSize: 11, color: Colors.grey.shade700, fontFamily: 'Poppins'),
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_rounded, color: primaryColor, size: 20),
+                                    onPressed: () => _bukaModalTambahAtauEditField(editField: f, index: index),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                                    onPressed: () {
+                                      setState(() {
+                                        _formFields.removeAt(index);
+                                      });
+                                    },
+                                  ),
+                                  const Icon(Icons.drag_handle_rounded, color: Colors.grey),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                const SizedBox(height: 20),
+              ],
 
               // SEKSI SYARAT & DOKUMEN DINAMIS
               Row(
