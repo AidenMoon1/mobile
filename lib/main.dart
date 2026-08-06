@@ -12,7 +12,6 @@ import 'package:mobile/views/berita_dan_fitur/dashboard_screen.dart';
 import 'package:mobile/views/berita_dan_fitur/report_screen.dart';
 import 'package:mobile/views/berita_dan_fitur/notification_screen.dart';
 import 'package:mobile/views/profile/profile_screen.dart';
-import 'package:mobile/views/profile/login_screen.dart';
 import 'package:mobile/widgets/custom_navbar.dart';
 
 // --- SERVICES / KONTROLER DATA ---
@@ -67,8 +66,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
       
-      // Layar Awal Saat Aplikasi Dibuka: Halaman Login
-      home: const LoginScreen(),
+      // Layar Awal Saat Aplikasi Dibuka: Halaman Utama Beranda (Home)
+      home: const MainNavigationScreen(),
     );
   }
 }
