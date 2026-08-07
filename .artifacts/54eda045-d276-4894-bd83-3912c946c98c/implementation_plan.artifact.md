@@ -1,36 +1,35 @@
-# Rencana Implementasi: Autopopulasi Data IKD SSO
+# Rencana Implementasi: Update Website (Firebase Hosting)
 
-Rencana ini menjelaskan bagaimana aplikasi "Sukabumi One Access" secara otomatis mengambil data NIK dan profil warga dari server Dukcapil saat login IKD, sehingga pengguna tidak perlu mengisi data secara manual.
+Rencana ini bertujuan untuk memperbarui isi website resmi **Sukabumi One Access** di alamat `https://sukabumi-one-access-app-c7f15.web.app/` agar sesuai dengan kodingan terbaru (termasuk fitur Login Google asli) yang ada di laptop Kakak.
 
-## Konsep Teknis
+## User Review Required
 
-> [!TIP]
-> **Manfaat Utama SSO**: Pengguna mendapatkan kenyamanan "Satu Klik" dan pemerintah mendapatkan jaminan "Data Valid".
+> [!IMPORTANT]
+> - **Proses Build**: Saya akan menjalankan perintah `flutter build web`. Proses ini mungkin memakan waktu 2-5 menit tergantung kecepatan laptop.
+> - **Koneksi Internet**: Dibutuhkan koneksi internet yang stabil untuk mengunggah file (sekitar 10-20MB) ke server Firebase.
 
-### 1. Mekanisme Pengambilan Data (OIDC Scopes)
-Saat proses login IKD berlangsung, aplikasi kita akan meminta izin (*Scopes*) untuk mengakses data tertentu:
-- `openid`: Untuk identitas akun.
-- `profile`: Untuk mengambil nama lengkap.
-- `nik`: Khusus IKD, untuk mengambil Nomor Induk Kependudukan resmi.
+---
 
-### 2. Alur Pengisian Otomatis (Auto-Population)
-1. **Verifikasi Luar**: Pengguna memasukkan PIN/Scan Wajah di portal resmi IKD (bukan di aplikasi kita).
-2. **Penerimaan Token**: IKD mengirimkan token digital ke aplikasi kita.
-3. **Ekstraksi Data**: Kodingan di Laravel/Flutter akan membongkar token tersebut dan mengambil data NIK & Nama.
-4. **Login Instan**: Aplikasi langsung mengisi profil pengguna dengan NIK asli tersebut dan mengarahkan ke Dashboard.
+## Langkah-Langkah Eksekusi
 
-## Perubahan yang Diusulkan (Simulasi)
+### 1. Kompilasi Kode ke Web (Build)
+Mengubah kodingan Flutter menjadi file website yang dimengerti browser.
+- **Perintah**: `flutter build web --release`
+- **Output**: File akan dihasilkan di folder `build/web/`.
 
-### [Frontend/Flutter]
+### 2. Pengunggahan ke Firebase (Deploy)
+Mengirim file hasil build ke server hosting Google.
+- **Perintah**: `npx firebase deploy --only hosting`
+- **Hasil**: Perubahan akan langsung aktif di link `web.app` tersebut.
 
-#### [MODIFY] [login_screen.dart](file:///C:/src/mobile/lib/views/profile/login_screen.dart)
-- Mengubah simulasi modal IKD.
-- Menghilangkan input NIK manual (karena data seharusnya datang dari server).
-- Menampilkan indikator "Mengambil Data dari IKD Dukcapil..." sebelum login sukses.
+---
 
 ## Rencana Verifikasi
 
 ### Manual Verification
-- Klik "Masuk dengan IKD".
-- Verifikasi bahwa sistem langsung memproses data tanpa meminta user mengetik nomor NIK lagi.
-- Cek di halaman Profil: Pastikan nomor NIK yang muncul adalah NIK resmi yang dikirim oleh "server IKD".
+1. **Akses Link**: Buka `https://sukabumi-one-access-app-c7f15.web.app/` di browser.
+2. **Cek Fitur**:
+    - Pastikan logo Google terbaru sudah muncul.
+    - Pastikan klik tombol Google memicu login asli.
+    - Pastikan fitur IKD dan WhatsApp (Simulasi) tetap berjalan.
+3. **Responsive Test**: Coba buka link tersebut dari **Browser HP**. Pastikan tampilannya tetap rapi seperti aplikasi mobile.

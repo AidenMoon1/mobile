@@ -1,9 +1,5 @@
-- [x] Fix White Screen (Web Compatibility)
-    - [x] Remove `dart:io` dependency from `smart_image.dart`
-    - [x] Disable `sqflite` imports on Web in `database_helper.dart`
-- [/] Enhance IKD SSO Simulation (Auto-Population)
-    - [ ] Remove manual NIK input field in `login_screen.dart`
-    - [ ] Update modal UI to show "Secure Handshake" animation
-    - [ ] Update profile state with "Received" NIK and Name automatically
-- [ ] Verification
-    - [ ] Test the one-click login experience in the app
+- [x] Update Website (Firebase Hosting)
+    - [x] Run `flutter build web --release`
+    - [x] Run `npx firebase deploy --only hosting`
+- [x] Verification
+    - [x] Verify the live URL `https://sukabumi-one-access-app-c7f15.web.app/`

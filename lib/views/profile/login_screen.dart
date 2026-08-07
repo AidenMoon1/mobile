@@ -83,149 +83,59 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // 1. MODAL PICKER AKUN GOOGLE (SIMULASI GOOGLE OAUTH API DEVICE)
+  // 1. PROSES LOGIN GOOGLE OAUTH
   // ---------------------------------------------------------------------------
-  void _bukaGoogleAccountPicker() {
-    final currentUserEmail = UserService().currentUser.email != 'guest@sukabumi.go.id' && UserService().currentUser.email != '-'
-        ? UserService().currentUser.email
-        : 'dzakwanmuh304@gmail.com';
-    final currentUserName = UserService().currentUser.name != 'Tamu Sukabumi' && UserService().currentUser.name != 'Warga Sukabumi'
-        ? UserService().currentUser.name
-        : 'Muhammad Dzakwan';
+  void _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-    final List<Map<String, String>> googleAccounts = [
-      {
-        'name': currentUserName,
-        'email': currentUserEmail,
-      },
-      {
-        'name': 'Ahmad Subagja',
-        'email': 'ahmad.subagja@gmail.com',
-      },
-      {
-        'name': 'Warga Sukabumi',
-        'email': 'warga.sukabumi@gmail.com',
-      },
-    ];
+    try {
+      final credential = await UserService().signInWithGoogle();
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(22),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (credential != null) {
+        await NotificationService().addNotification(
+          title: '🌐 Login Google OAuth Berhasil',
+          description: 'Terhubung dengan akun Google ${credential.user?.email}.',
+          category: NotificationCategory.general,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login berhasil dengan Google (${credential.user?.email})!'),
+            backgroundColor: const Color(0xFF4285F4),
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal masuk dengan Google. Pastikan koneksi internet stabil.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Terjadi kesalahan: $e'),
+          backgroundColor: Colors.redAccent,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(Icons.g_mobiledata_rounded, color: Color(0xFF4285F4), size: 36),
-                SizedBox(width: 8),
-                Text(
-                  'Pilih Akun Google',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0A1E33),
-                    fontFamily: 'Poppins',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Pilih akun Google terdaftar di HP Anda untuk melanjutkan ke Sukabumi One Access:',
-              style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
-            ),
-            const SizedBox(height: 16),
-
-            // LIST AKUN GOOGLE DISIMPULASIKAN DARI DEVICE
-            ...googleAccounts.map((account) {
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                leading: CircleAvatar(
-                  backgroundColor: const Color(0xFF4285F4).withOpacity(0.12),
-                  child: Text(
-                    account['name']![0],
-                    style: const TextStyle(color: Color(0xFF4285F4), fontWeight: FontWeight.bold),
-                  ),
-                ),
-                title: Text(
-                  account['name']!,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, fontFamily: 'Poppins'),
-                ),
-                subtitle: Text(
-                  account['email']!,
-                  style: const TextStyle(fontSize: 11.5, fontFamily: 'Poppins'),
-                ),
-                onTap: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  final navigator = Navigator.of(context);
-                  Navigator.pop(context); // Tutup Picker Sheet
-
-                  setState(() => _isLoading = true);
-                  await Future.delayed(const Duration(milliseconds: 900));
-
-                  await UserService().loginWithGoogleAccount(account['name']!, account['email']!);
-
-                  await NotificationService().addNotification(
-                    title: '🌐 Login Google OAuth Berhasil',
-                    description: 'Terhubung dengan akun Google ${account['email']}.',
-                    category: NotificationCategory.general,
-                  );
-
-                  if (!mounted) return;
-                  setState(() => _isLoading = false);
-
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text('Login berhasil dengan Google (${account['email']})!'),
-                      backgroundColor: const Color(0xFF4285F4),
-                    ),
-                  );
-
-                  navigator.pushReplacement(
-                    MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-                  );
-                },
-              );
-            }),
-
-            const Divider(),
-
-            ListTile(
-              leading: const Icon(Icons.person_add_alt_outlined, color: Color(0xFF0A1E33)),
-              title: const Text(
-                'Tambah Akun Google Lainnya...',
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+      );
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -700,7 +610,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         height: 48,
                         child: OutlinedButton(
-                          onPressed: _bukaGoogleAccountPicker,
+                          onPressed: _isLoading ? null : _handleGoogleSignIn,
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.grey.shade300, width: 1.2),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -709,21 +619,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Container(
-                                width: 22,
-                                height: 22,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF4285F4),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'G',
-                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                                  ),
-                                ),
+                              Image.network(
+                                'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1024px-Google_%22G%22_logo.svg.png',
+                                width: 20,
+                                height: 20,
                               ),
-                              const SizedBox(width: 10),
+                              const SizedBox(width: 12),
                               const Text(
                                 'Masuk dengan Google',
                                 style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Poppins'),

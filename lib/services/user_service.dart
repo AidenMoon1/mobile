@@ -2,6 +2,8 @@ import '../models/user_model.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class UserService {
   static final UserService _instance = UserService._internal();
@@ -11,6 +13,9 @@ class UserService {
   }
 
   UserService._internal();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   bool _isLoggedIn = false;
   bool get isLoggedIn => _isLoggedIn;
@@ -176,7 +181,53 @@ class UserService {
     return true;
   }
 
-  // LOGIN VIA GOOGLE OAUTH
+  // LOGIN VIA GOOGLE OAUTH (REAL FIREBASE INTEGRATION)
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      // 1. Trigger the Google Authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null; // User cancelled the sign-in
+
+      // 2. Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // 3. Create a new credential
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // 4. Once signed in, return the UserCredential
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final User? firebaseUser = userCredential.user;
+
+      if (firebaseUser != null) {
+        _isLoggedIn = true;
+        final now = DateTime.now();
+        final String dateStr = "${now.day} ${_getBulan(now.month)} ${now.year}";
+
+        _currentUser = UserModel(
+          name: firebaseUser.displayName ?? 'User Google',
+          email: firebaseUser.email ?? '-',
+          username: (firebaseUser.email ?? 'user').split('@').first,
+          phoneNumber: firebaseUser.phoneNumber ?? '-',
+          status: 'Terverifikasi (Google Auth Resmi)',
+          joinedDate: dateStr,
+          id: _generateUniqueId(),
+          profileImagePath: firebaseUser.photoURL ?? '',
+        );
+
+        await _saveToLocal(_currentUser);
+      }
+
+      return userCredential;
+    } catch (e) {
+      print("Error during Google Sign-In: $e");
+      return null;
+    }
+  }
+
+  // LOGIN VIA GOOGLE OAUTH (OLD SIMULATION)
   Future<void> loginWithGoogleAccount(String googleName, String googleEmail) async {
     _isLoggedIn = true;
     final now = DateTime.now();

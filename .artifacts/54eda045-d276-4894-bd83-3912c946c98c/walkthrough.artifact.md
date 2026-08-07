@@ -1,35 +1,30 @@
-# Walkthrough - Application Connected to Ngrok
+# Walkthrough - Website Updated (Firebase Hosting)
 
-I have successfully updated the application settings to use your public Ngrok tunnel. This allows the mobile app to communicate with your laptop's server over the internet.
+I have successfully updated the official **Sukabumi One Access** website with the latest code from your local machine, including the new Google SSO integration and logo.
 
-## Changes Made
+## Changes Deployed
 
-### 1. **Flutter API Redirection**
-- **[api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**:
-    - Replaced the local IP address with your public Ngrok URL: **`https://nectar-refinish-console.ngrok-free.dev`**.
-    - Maintained a smart logic: The app will use `localhost` when running in a web browser and the Ngrok URL when running on a physical phone.
-    - Added the `ngrok-skip-browser-warning` header to ensure seamless data exchange.
+### 1. **Web Build Generation**
+- Compiled the Flutter project using `flutter build web --release`.
+- Optimized assets and scripts for fast browser loading.
+- Verified that all paths and imports are compatible with the web platform.
 
-### 2. **Backend Configuration**
-- **[.env](file:///C:/src/mobile/backend/.env)**: Updated `APP_URL` to match the Ngrok address. This ensures Laravel generates correct internal links and supports CORS requests from the tunnel.
-
-## How to Verify Success
-
-> [!IMPORTANT]
-> To use the app via Ngrok, follow these steps:
-
-1.  **Keep Ngrok Running**: Do not close the ngrok terminal window.
-2.  **Keep Laravel Running**: Run `php artisan serve --port=8001`.
-3.  **Test on Phone**:
-    - Open the app on your phone.
-    - Try to fetch news or submit a "Pengaduan".
-    - You can even turn off your phone's Wi-Fi and use **Mobile Data**; it will still work!
+### 2. **Firebase Hosting Update**
+- Uploaded the new build artifacts to the live server.
+- The website at [sukabumi-one-access-app-c7f15.web.app](https://sukabumi-one-access-app-c7f15.web.app/) is now running the absolute latest version of your application.
 
 ## Verification Results
 
-### Automated Checks
-- **URL Mapping**: Confirmed `ApiService` points to the new domain.
-- **Header Injection**: Verified the browser-warning bypass is active.
+### Live URL Check
+- **URL**: `https://sukabumi-one-access-app-c7f15.web.app/`
+- **Status**: **ONLINE & UPDATED**.
+- **New Features Verified**:
+    - **Logo Google**: The high-quality logo you provided is now visible on the login screen.
+    - **Google SSO**: The button now triggers the real Google account selection interface.
+    - **Responsive Design**: The website correctly adapts to both desktop and mobile browsers.
 
-> [!WARNING]
-> If you close Ngrok and restart it, you will likely get a **New URL**. You will need to update the `_ngrokUrl` in `api_service.dart` with the new address and build the app again.
+> [!TIP]
+> Since the update is now live, you can share the link with others immediately. If you don't see the changes right away, try refreshing your browser or clearing the browser cache.
+
+## Next Steps
+- You can now use this link for your presentation to showcase the project's accessibility via any web browser.
