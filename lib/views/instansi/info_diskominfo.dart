@@ -95,7 +95,7 @@ class _InfoDiskominfoState extends State<InfoDiskominfo> {
                           opacity: 0.22,
                           child: Image.asset(
                             'assets/images/diskominfo.png',
-                            width: 720,
+                            width: 850,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => const SizedBox(),
                           ),
@@ -107,8 +107,8 @@ class _InfoDiskominfoState extends State<InfoDiskominfo> {
                       child: Row(
                         children: [
                           Container(
-                            width: 100,
-                            height: 72,
+                            width: 125,
+                            height: 90,
                             padding: const EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -123,7 +123,7 @@ class _InfoDiskominfoState extends State<InfoDiskominfo> {
                             ),
                             child: Image.asset(
                               'assets/images/diskominfo.png',
-                              fit: BoxFit.contain,
+                              fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) => const Icon(
                                 Icons.computer_rounded,
                                 color: primaryColor,

@@ -2,7 +2,6 @@
 // FILE: lib/models/user_model.dart
 // FUNGSI: Data Model Profil Akun Pengguna Warga / Admin
 // PATTERN: Data Model dengan copyWith() untuk Immutable State Updating
-// LEVEL KODE: Level 2-3 (Sederhana & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 /// Kelas Model Representasi Profil Pengguna Aplikasi Sukabumi One Access

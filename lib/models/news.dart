@@ -2,7 +2,6 @@
 // FILE: lib/models/news.dart
 // FUNGSI: Data Model untuk Berita Publik & Pengumuman Kota Sukabumi
 // PATTERN: Data Transfer Object (DTO) dengan JSON Parsing
-// LEVEL KODE: Level 2-3 (Rapi & Mudah Dipahami Mahasiswa)
 // =============================================================================
 
 /// Kelas Model Representasi Butir Berita Publik Sukabumi

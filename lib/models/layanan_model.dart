@@ -1,8 +1,7 @@
 // =============================================================================
 // FILE: lib/models/layanan_model.dart
 // FUNGSI: Data Model untuk Katalog Layanan Publik & Formulir Pengajuan Digital
-// PATTERN: Data Transfer Object (DTO) dengan Mesin Custom Dynamic Form Fields & Mode iFrame
-// LEVEL KODE: Level 2-3 (Sangat Rapi & Terstruktur Untuk Mahasiswa)
+// PATTERN: Data Transfer Object (DTO) dengan Mesin Custom Dynamic Form Fields
 // =============================================================================
 
 import 'custom_field_config.dart';
@@ -19,8 +18,8 @@ class LayananModel {
   final List<String> persyaratan; // Syarat dokumen yang dibutuhkan
   final String urlPortal;    // Tautan web resmi instansi
   final String iconName;     // Nama ikon pemetakan visual
-  final bool isIframeMode;   // Flag apakah pengeditan formulir menggunakan iFrame Web Dinas
-  final String iframeUrl;    // Link URL / HTML iFrame Web Dinas
+  final bool isIframeMode;   // Apakah mengarahkan ke iframe webview
+  final String iframeUrl;    // URL iframe portal
 
   // MESIN FORM BUILDER: Daftar Element Form Dinamis Yang Dibuat Admin
   final List<CustomFieldConfig> formFields;
@@ -54,8 +53,6 @@ class LayananModel {
       'persyaratanJson': persyaratan.join('|||'),
       'urlPortal': urlPortal,
       'iconName': iconName,
-      'isIframeMode': isIframeMode ? 1 : 0,
-      'iframeUrl': iframeUrl,
       'formFieldsJson': formFields.map((f) => f.toMap()).toList(),
     };
   }
@@ -87,8 +84,6 @@ class LayananModel {
       persyaratan: reqList,
       urlPortal: map['urlPortal'] ?? '',
       iconName: map['iconName'] ?? '',
-      isIframeMode: map['isIframeMode'] == 1 || map['isIframeMode'] == true,
-      iframeUrl: map['iframeUrl'] ?? '',
       formFields: fieldsList,
     );
   }
@@ -105,8 +100,6 @@ class LayananModel {
     List<String>? persyaratan,
     String? urlPortal,
     String? iconName,
-    bool? isIframeMode,
-    String? iframeUrl,
     List<CustomFieldConfig>? formFields,
   }) {
     return LayananModel(
@@ -120,8 +113,6 @@ class LayananModel {
       persyaratan: persyaratan ?? this.persyaratan,
       urlPortal: urlPortal ?? this.urlPortal,
       iconName: iconName ?? this.iconName,
-      isIframeMode: isIframeMode ?? this.isIframeMode,
-      iframeUrl: iframeUrl ?? this.iframeUrl,
       formFields: formFields ?? this.formFields,
     );
   }

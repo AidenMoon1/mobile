@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile/views/instansi/mocilegit_webview_screen.dart';
+import 'package:mobile/widgets/guest_gatekeeper.dart';
 import 'package:mobile/services/opd_service.dart';
 
 class InfoDisdukcapil extends StatefulWidget {
@@ -362,14 +363,19 @@ class _InfoDisdukcapilState extends State<InfoDisdukcapil> {
                     height: 50,
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.push(
+                        GuestGatekeeper.checkAccess(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const MocilegitWebviewScreen(
-                              title: 'Jelajahi Layanan Disdukcapil',
-                              url: 'https://mocilegit.sukabumikota.go.id/pengajuan',
-                            ),
-                          ),
+                          onGranted: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MocilegitWebviewScreen(
+                                  title: 'Jelajahi Layanan Disdukcapil',
+                                  url: 'https://mocilegit.sukabumikota.go.id/pengajuan',
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                       style: ElevatedButton.styleFrom(

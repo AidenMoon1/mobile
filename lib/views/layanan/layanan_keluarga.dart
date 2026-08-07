@@ -347,16 +347,16 @@ class LayananKeluargaScreen extends StatelessWidget {
                                     child: Icon(
                                       item['icon'] as IconData,
                                       color: const Color(0xFFE8A33D),
-                                      size: 44,
+                                      size: 58,
                                     ),
                                   ),
                                 ),
                               ),
 
-                              // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 64PX)
+                              // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 68PX)
                               Container(
                                 width: double.infinity,
-                                height: 64,
+                                height: 68,
                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                 decoration: const BoxDecoration(
                                   color: Color(0xFFD9D9D9),
@@ -373,7 +373,7 @@ class LayananKeluargaScreen extends StatelessWidget {
                                       item['title'] as String,
                                       style: const TextStyle(
                                         color: Color(0xFF123457),
-                                        fontSize: 13,
+                                        fontSize: 14.5,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'Poppins',
                                       ),
