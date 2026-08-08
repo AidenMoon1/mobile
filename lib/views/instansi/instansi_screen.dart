@@ -7,6 +7,7 @@ import 'package:mobile/views/instansi/info_dpmpstp.dart';
 import 'package:mobile/views/instansi/info_dkp3.dart';
 import 'package:mobile/views/instansi/info_bpkpd.dart';
 import 'package:mobile/widgets/guest_gatekeeper.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
 
 class InstansiScreen extends StatefulWidget {
   const InstansiScreen({super.key});
@@ -179,6 +180,19 @@ class _InstansiScreenState extends State<InstansiScreen> {
                         GuestGatekeeper.checkAccess(
                           context,
                           onGranted: () {
+                            if (!item.isActive) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MaintenanceScreen(
+                                    title: item.namaLengkap,
+                                    category: 'Instansi ${item.namaSingkat}',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
                             final kode = item.kodeInstansi.toLowerCase();
                             if (kode == 'disdukcapil') {
                               Navigator.push(

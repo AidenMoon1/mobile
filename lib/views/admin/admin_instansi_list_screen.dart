@@ -267,22 +267,50 @@ class _AdminInstansiListScreenState extends State<AdminInstansiListScreen> {
                             ),
                             Column(
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_rounded, color: primaryColor, size: 22),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AdminFormInstansiScreen(instansi: item),
-                                      ),
-                                    );
-                                  },
-                                  tooltip: 'Edit Instansi',
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Switch(
+                                      value: item.isActive,
+                                      activeColor: accentColor,
+                                      activeTrackColor: primaryColor,
+                                      onChanged: (val) {
+                                        _opdService.toggleInstansiStatus(item.id);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              val
+                                                  ? '✅ Instansi ${item.namaSingkat} diaktifkan kembali!'
+                                                  : '⚠️ Instansi ${item.namaSingkat} diubah ke status Pemeliharaan (Maintenance)!',
+                                            ),
+                                            backgroundColor: val ? primaryColor : Colors.orange.shade800,
+                                            duration: const Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
-                                  onPressed: () => _konfirmasiHapus(context, item),
-                                  tooltip: 'Hapus Instansi',
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_rounded, color: primaryColor, size: 20),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AdminFormInstansiScreen(instansi: item),
+                                          ),
+                                        );
+                                      },
+                                      tooltip: 'Edit Instansi',
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                                      onPressed: () => _konfirmasiHapus(context, item),
+                                      tooltip: 'Hapus Instansi',
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

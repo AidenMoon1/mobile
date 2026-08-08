@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile/views/layanan/form_pengajuan_screen.dart';
 
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
+
 class InfoDiskominfo extends StatefulWidget {
   const InfoDiskominfo({super.key});
 
@@ -57,6 +60,14 @@ class _InfoDiskominfoState extends State<InfoDiskominfo> {
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF123457);
     const Color accentColor = Color(0xFFE8A33D);
+
+    final opd = OpdService().getInstansiByKode('diskominfo');
+    if (opd != null && !opd.isActive) {
+      return MaintenanceScreen(
+        title: opd.namaLengkap,
+        category: 'Instansi ${opd.namaSingkat}',
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
