@@ -88,10 +88,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          children: [
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(22),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              children: [
             // HEADER HERO CARD
             Container(
               width: double.infinity,
@@ -298,7 +301,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }
 
@@ -445,10 +450,13 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          children: [
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(22),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              children: [
             // SIMULATED GMAIL NOTIFICATION BANNER
             Container(
               padding: const EdgeInsets.all(14),
@@ -643,9 +651,11 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
                 ],
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
