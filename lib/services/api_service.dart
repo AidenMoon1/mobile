@@ -14,11 +14,9 @@ class ApiService {
   static const String _ngrokUrl = 'https://nectar-refinish-console.ngrok-free.dev';
   static const String _port = '8001';
 
-  // FUNGSI 1: Resolver Otomatis Alamat Base URL (Localhost untuk Web Browser, Ngrok untuk HP)
+  // FUNGSI 1: Resolver Otomatis Alamat Base URL (Ngrok untuk HP & Web Online)
   static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:$_port/api';
-    }
+    // Catatan: Diubah ke Ngrok agar versi Web di internet bisa memanggil laptop Kakak
     return '$_ngrokUrl/api';
   }
 

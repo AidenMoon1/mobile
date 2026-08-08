@@ -1,5 +1,8 @@
-- [/] Deploy Update to Firebase Hosting
-    - [ ] Run `flutter build web --release`
-    - [ ] Run `npx firebase deploy --only hosting`
+- [x] Deploy Update to Firebase Hosting (Web Stability Fix)
+    - [x] Update `ApiService` to use ngrok for Web
+    - [x] Run `flutter build web --release`
+    - [x] Run `npx firebase deploy --only hosting`
 - [ ] Verification
-    - [ ] Access `https://sukabumi-one-access-app-c7f15.web.app/` and test Real Email OTP flow
+    - [ ] Access `https://sukabumi-one-access-app-c7f15.web.app/`
+    - [ ] Verify interactivity (clicking and typing works)
+    - [ ] Verify data fetching from backend (ngrok connection)

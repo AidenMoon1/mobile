@@ -1,27 +1,27 @@
-# Rencana Perbaikan: Website Beku/Frozen (Web Compatibility)
+# Rencana Implementasi: Deploy Firebase & Perbaikan Kompatibilitas Web
 
-Rencana ini menangani masalah website `web.app` yang tampil tapi tidak bisa diklik atau diketik. Kita akan meningkatkan stabilitas pemuatan aplikasi di browser.
+Rencana ini mencakup proses pembaruan aplikasi web Kakak ke Firebase Hosting, sekaligus memastikan website tersebut tidak "hang" (macet) dan bisa mengambil data dari server laptop Kakak meskipun diakses lewat internet.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> - **HTML Renderer**: Saya akan memaksa aplikasi menggunakan mode HTML saat di-build. Ini akan membuat website Kakak lebih lancar di browser HP dan menghilangkan masalah "tidak bisa dipencet".
-> - **CORS & Mixed Content**: Saya akan menyesuaikan `ApiService` agar tidak menyebabkan error keamanan di browser saat aplikasi sudah "online" di internet.
+> - **Konektivitas Live**: Saya akan mengubah `ApiService` agar versi web menggunakan alamat **ngrok**. Tanpa ini, website Kakak di internet tidak akan bisa menampilkan berita atau melakukan login karena mencoba memanggil `localhost` (laptop user sendiri).
+> - **HTML Renderer**: Kita akan menggunakan renderer HTML agar website lebih lancar di browser HP.
 
 ---
 
-## Langkah Perbaikan
+## Langkah-Langkah Eksekusi
 
-### 1. Perbaikan ApiService (Web Security)
-Mencegah browser memblokir permintaan data karena perbedaan protokol (HTTPS vs HTTP).
-- **[MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**: Menyesuaikan deteksi URL untuk versi web yang sudah online.
+### 1. Penyesuaian Jalur Data (API)
+Mengaktifkan alamat publik ngrok untuk versi web agar bisa "berbicara" dengan laptop Kakak dari internet.
+- **[MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**
 
-### 2. Build Web dengan Renderer Stabil
-Menjalankan kompilasi dengan parameter khusus untuk kompatibilitas maksimal.
+### 2. Kompilasi Kode (Build Web)
+Membangun file website dengan optimasi stabilitas.
 - **Perintah**: `flutter build web --release --web-renderer html`
 
-### 3. Deploy Ulang
-Mengunggah versi yang sudah diperbaiki ke Firebase Hosting.
+### 3. Pengunggahan (Deploy Firebase)
+Mengirim file terbaru ke `https://sukabumi-one-access-app-c7f15.web.app/`.
 - **Perintah**: `npx firebase deploy --only hosting`
 
 ---
@@ -29,7 +29,7 @@ Mengunggah versi yang sudah diperbaiki ke Firebase Hosting.
 ## Rencana Verifikasi
 
 ### Manual Verification
-1. **Akses Link**: Buka kembali `https://sukabumi-one-access-app-c7f15.web.app/`.
-2. **Uji Ketik**: Coba ketik di kolom Email/Password.
-3. **Uji Klik**: Pastikan tombol "Masuk Akun" dan tombol "Google" merespon sentuhan.
-4. **Cek Console**: Tekan F12 di browser, pastikan tidak ada pesan error merah bertuliskan "CORS" atau "Mixed Content".
+1. **Akses Link**: Buka `https://sukabumi-one-access-app-c7f15.web.app/`.
+2. **Uji Responsif**: Pastikan tombol bisa diklik dan input bisa diketik.
+3. **Uji Data**: Pastikan daftar berita muncul (menandakan koneksi ke Laravel via ngrok berhasil).
+4. **Uji Login**: Coba login Google atau Email OTP di versi web tersebut.
