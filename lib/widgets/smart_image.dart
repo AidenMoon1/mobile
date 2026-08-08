@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 class SmartImage extends StatelessWidget {
   final String imagePath;
