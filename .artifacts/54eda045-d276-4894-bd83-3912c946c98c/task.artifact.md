@@ -1,9 +1,5 @@
-- [ ] Implement Real Firebase Email/Password Auth
-    - [ ] Update `UserService.registerAccount` with real Firebase logic
-    - [ ] Update `UserService.authenticateAccount` with real Firebase login
-    - [ ] Update `RegisterScreen` with Firebase error handling
-    - [ ] Update `LoginScreen` with real authentication calls
+- [/] Deploy Update to Firebase Hosting
+    - [ ] Run `flutter build web --release`
+    - [ ] Run `npx firebase deploy --only hosting`
 - [ ] Verification
-    - [ ] Create a new real account via app
-    - [ ] Verify user appears in Firebase Console
-    - [ ] Test successful and failed login attempts
+    - [ ] Access `https://sukabumi-one-access-app-c7f15.web.app/` and test Real Email OTP flow

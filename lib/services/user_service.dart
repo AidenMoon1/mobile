@@ -1,9 +1,10 @@
-import '../models/user_model.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:mobile/services/api_service.dart';
+import 'package:mobile/models/user_model.dart';
 
 class UserService {
   static final UserService _instance = UserService._internal();

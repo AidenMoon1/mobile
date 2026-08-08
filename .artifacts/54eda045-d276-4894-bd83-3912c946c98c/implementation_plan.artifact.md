@@ -1,38 +1,35 @@
-# Rencana Implementasi: Aktivasi Real Gmail OTP
+# Rencana Perbaikan: Website Beku/Frozen (Web Compatibility)
 
-Tujuan dari rencana ini adalah menghubungkan Laravel ke server SMTP Gmail agar kode verifikasi 6 digit benar-benar masuk ke kotak masuk (Inbox) email warga secara otomatis.
+Rencana ini menangani masalah website `web.app` yang tampil tapi tidak bisa diklik atau diketik. Kita akan meningkatkan stabilitas pemuatan aplikasi di browser.
 
 ## User Review Required
 
-> [!CAUTION]
-> **Tindakan Wajib Kakak (Keamanan Google):**
-> Gmail tidak mengizinkan aplikasi asing mengirim email menggunakan password Gmail biasa. Kakak **HARUS** membuat **App Password** 16 karakter.
->
-> **Cara Membuatnya:**
-> 1. Buka [Google Account Security](https://myaccount.google.com/security).
-> 2. Pastikan **2-Step Verification** sudah AKTIF.
-> 3. Klik menu **App passwords**.
-> 4. Ketik nama bebas (contoh: "Laravel Sukabumi") lalu klik **Create**.
-> 5. **Salin 16 karakter** yang muncul di kotak kuning. Masukkan kode tersebut nanti saat saya minta.
+> [!IMPORTANT]
+> - **HTML Renderer**: Saya akan memaksa aplikasi menggunakan mode HTML saat di-build. Ini akan membuat website Kakak lebih lancar di browser HP dan menghilangkan masalah "tidak bisa dipencet".
+> - **CORS & Mixed Content**: Saya akan menyesuaikan `ApiService` agar tidak menyebabkan error keamanan di browser saat aplikasi sudah "online" di internet.
 
 ---
 
-## Perubahan yang Akan Dilakukan
+## Langkah Perbaikan
 
-### 1. Backend (Laravel) - Aktivasi SMTP
-- **[MODIFY] [.env](file:///C:/src/mobile/backend/.env)**:
-    - Mengubah `MAIL_MAILER` dari `log` menjadi `smtp`.
-    - Mengatur host ke `smtp.gmail.com` dan port `465` (SSL).
-    - Menyiapkan kolom `MAIL_USERNAME` dan `MAIL_PASSWORD` untuk diisi data Kakak.
-- **[MODIFY] [EmailOtpController.php](file:///C:/src/mobile/backend/app/Http/Controllers/Api/EmailOtpController.php)**:
-    - Mengaktifkan fungsi `Mail::raw()` yang sebelumnya saya beri tanda komentar (`//`).
+### 1. Perbaikan ApiService (Web Security)
+Mencegah browser memblokir permintaan data karena perbedaan protokol (HTTPS vs HTTP).
+- **[MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**: Menyesuaikan deteksi URL untuk versi web yang sudah online.
+
+### 2. Build Web dengan Renderer Stabil
+Menjalankan kompilasi dengan parameter khusus untuk kompatibilitas maksimal.
+- **Perintah**: `flutter build web --release --web-renderer html`
+
+### 3. Deploy Ulang
+Mengunggah versi yang sudah diperbaiki ke Firebase Hosting.
+- **Perintah**: `npx firebase deploy --only hosting`
 
 ---
 
 ## Rencana Verifikasi
 
 ### Manual Verification
-1. **Input Kredensial**: Kakak memasukkan email dan 16 digit App Password ke file `.env`.
-2. **Kirim OTP**: Buka aplikasi di HP, masukkan email asli Kakak, klik "Kirim OTP".
-3. **Cek Inbox**: Buka Gmail Kakak di perangkat apa pun. Pastikan ada pesan baru dari "Sukabumi One Access" berisi 6 digit angka.
-4. **Verifikasi**: Masukkan angka tersebut di HP untuk memastikan login berhasil 100%.
+1. **Akses Link**: Buka kembali `https://sukabumi-one-access-app-c7f15.web.app/`.
+2. **Uji Ketik**: Coba ketik di kolom Email/Password.
+3. **Uji Klik**: Pastikan tombol "Masuk Akun" dan tombol "Google" merespon sentuhan.
+4. **Cek Console**: Tekan F12 di browser, pastikan tidak ada pesan error merah bertuliskan "CORS" atau "Mixed Content".
