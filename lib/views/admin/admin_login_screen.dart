@@ -13,8 +13,8 @@ class AdminLoginScreen extends StatefulWidget {
 
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController(text: 'admin.oneaccess@gmail.com');
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController(text: 'dzakwanmuh304@gmail.com');
+  final TextEditingController _passwordController = TextEditingController(text: 'admin123');
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -189,7 +189,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
                       decoration: InputDecoration(
-                        hintText: 'admin.oneaccess@gmail.com',
+                        hintText: 'dzakwanmuh304@gmail.com',
                         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5, fontFamily: 'Poppins'),
                         prefixIcon: const Icon(Icons.mark_email_read_outlined, color: primaryColor),
                         fillColor: const Color(0xFFF8FAFC),
