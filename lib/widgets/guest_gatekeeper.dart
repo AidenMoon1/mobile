@@ -3,9 +3,10 @@ import 'package:mobile/services/user_service.dart';
 import 'package:mobile/views/profile/login_screen.dart';
 
 class GuestGatekeeper {
-  /// Memeriksa apakah pengguna sudah login.
-  /// Jika belum (Mode Tamu), tampilkan dialog peringatan & cegah akses lebih jauh.
-  /// Jika sudah login, eksekusi callback [onGranted].
+  /// Gatekeeper Keamanan Aplikasi Sukabumi One Access.
+  /// Memeriksa status otentikasi akun pengguna.
+  /// - Pengguna Logged-In: Akses diberikan langsung (onGranted).
+  /// - Pengguna Mode Tamu: Tampilkan dialog Pop-Up Keamanan "Harus Login Terlebih Dahulu".
   static bool checkAccess(BuildContext context, {required VoidCallback onGranted}) {
     if (UserService().isLoggedIn) {
       onGranted();
@@ -23,53 +24,70 @@ class GuestGatekeeper {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Padding(
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Container(
+          width: 360,
           padding: const EdgeInsets.all(22.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // IKON PROTEKSI KEAMANAN DENGAN WADAH NAVY
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: primaryColor.withOpacity(0.08),
                   shape: BoxShape.circle,
+                  border: Border.all(color: primaryColor.withOpacity(0.15), width: 1.5),
                 ),
                 child: const Icon(
-                  Icons.lock_person_rounded,
+                  Icons.admin_panel_settings_rounded,
                   color: primaryColor,
-                  size: 44,
+                  size: 46,
                 ),
               ),
               const SizedBox(height: 16),
+
               const Text(
                 'Akses Terbatas Mode Tamu',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: primaryColor,
                   fontFamily: 'Poppins',
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Mode Tamu hanya diperbolehkan melihat halaman depan.\n\nUntuk menjelajah layanan digital dan melakukan pengajuan berkas, Anda WAJIB Masuk atau Mendaftar Akun Warga terlebih dahulu.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: Colors.black87,
-                  height: 1.45,
-                  fontFamily: 'Poppins',
+
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF6E5),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: accentColor),
+                ),
+                child: const Text(
+                  '🔒 Demi keamanan sistem & perlindungan data warga Kota Sukabumi, fitur ini hanya dapat diakses oleh akun terverifikasi.\n\nSilakan Masuk (Login) atau Mendaftar Akun terlebih dahulu.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: primaryColor,
+                    height: 1.45,
+                    fontFamily: 'Poppins',
+                  ),
                 ),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 20),
 
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(dialogContext),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         side: BorderSide(color: Colors.grey.shade300),
@@ -83,38 +101,38 @@ class GuestGatekeeper {
                           color: Colors.grey,
                           fontWeight: FontWeight.bold,
                           fontFamily: 'Poppins',
-                          fontSize: 12.5,
+                          fontSize: 12,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.pop(context); // Tutup dialog
+                        Navigator.pop(dialogContext); // Tutup dialog
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const LoginScreen()),
                         );
                       },
+                      icon: const Icon(Icons.login_rounded, size: 16, color: primaryColor),
+                      label: const Text(
+                        'Login / Daftar',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
+                          fontSize: 12,
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
+                        backgroundColor: accentColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        elevation: 2,
-                      ),
-                      child: const Text(
-                        'Login / Daftar',
-                        style: TextStyle(
-                          color: accentColor,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
-                          fontSize: 12.5,
-                        ),
+                        elevation: 1,
                       ),
                     ),
                   ),

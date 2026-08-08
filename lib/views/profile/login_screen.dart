@@ -4,7 +4,6 @@ import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/models/notification_model.dart';
 import 'package:mobile/main.dart';
 import 'package:mobile/views/profile/register_screen.dart';
-import 'package:mobile/views/admin/admin_login_screen.dart';
 
 import 'package:mobile/views/profile/email_otp_screen.dart'; // Import layar OTP
 
@@ -691,9 +690,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Image.network(
-                                'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1024px-Google_%22G%22_logo.svg.png',
-                                width: 20,
-                                height: 20,
+                                'https://developers.google.com/identity/images/g-logo.png',
+                                width: 22,
+                                height: 22,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  width: 22,
+                                  height: 22,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF4285F4),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                      'G',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 12),
                               const Text(
@@ -754,44 +772,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
 
             const SizedBox(height: 20),
-
-            // LINK INFORMASI PORTAL ADMIN (WEBSITE & OTP GMAIL 2FA)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.admin_panel_settings_outlined, color: Color(0xFF0A1E33), size: 18),
-                      SizedBox(width: 8),
-                      Text(
-                        'Login Admin Instansi (Gmail & OTP 2FA)',
-                        style: TextStyle(
-                          color: Color(0xFF0A1E33),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: 'Poppins',
-                          decoration: TextDecoration.underline,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
 
             const SizedBox(height: 28),
           ],

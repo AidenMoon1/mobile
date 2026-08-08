@@ -1,1 +1,39 @@
-{"hosting":{"public":"build/web","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"flutter":{"platforms":{"android":{"default":{"projectId":"sukabumi-one-access-app-c7f15","appId":"1:709678945324:android:83857869c836e35db7ed89","fileOutput":"android/app/google-services.json"}}}}}
+{
+  "hosting": {
+    "site": "sukabumi-one-access-app-c7f15",
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(html|js|json)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "sukabumi-one-access-app-c7f15",
+          "appId": "1:709678945324:android:83857869c836e35db7ed89",
+          "fileOutput": "android/app/google-services.json"
+        }
+      }
+    }
+  }
+}
