@@ -6,6 +6,8 @@ import 'package:mobile/main.dart';
 import 'package:mobile/views/profile/register_screen.dart';
 import 'package:mobile/views/admin/admin_login_screen.dart';
 
+import 'package:mobile/views/profile/email_otp_screen.dart'; // Import layar OTP
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -35,48 +37,47 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 700));
+    try {
+      final email = _usernameController.text.trim();
+      final password = _passwordController.text.trim();
 
-    if (!mounted) return;
-
-    final usernameOrEmail = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
-
-    // MEMERIKSA APAKAH AKUN SUDAH TERDAFTAR DI DATABASE USER
-    final bool isSuccess = await UserService().authenticateAccount(usernameOrEmail, password);
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (isSuccess) {
-      final current = UserService().currentUser;
-      await NotificationService().addNotification(
-        title: '👋 Selamat Datang Kembali',
-        description: 'Anda berhasil masuk sebagai ${current.name}.',
-        category: NotificationCategory.general,
-      );
+      // LAPIS 1: AUTENTIKASI FIREBASE (EMAIL & PASSWORD)
+      final bool lapis1Success = await UserService().loginWithEmailPassword(email, password);
 
       if (!mounted) return;
+      setState(() => _isLoading = false);
 
+      if (lapis1Success) {
+        // PINDAH KE LAPIS 2: VERIFIKASI OTP EMAIL
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EmailOtpScreen(
+              email: email,
+              onVerified: () async {
+                await UserService().finalizeLogin();
+                if (!mounted) return;
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Verifikasi Berhasil! Selamat Datang.')),
+                );
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                );
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Berhasil masuk! Selamat datang ${current.name}'),
-          backgroundColor: const Color(0xFF0A1E33),
-        ),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-      );
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('⚠️ Username/Email atau Kata Sandi tidak terdaftar/salah!\nSilakan lakukan Registrasi Akun Baru terlebih dahulu.'),
+          content: Text('⚠️ Gagal Masuk: ${e.toString().split(']').last}'),
           backgroundColor: Colors.redAccent,
-          duration: Duration(seconds: 4),
         ),
       );
     }
@@ -136,6 +137,48 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     }
+  }
+
+  void _showForgotPasswordDialog() {
+    final TextEditingController emailController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Lupa Kata Sandi?', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Masukkan email Anda untuk menerima tautan reset kata sandi.', style: TextStyle(fontSize: 13)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              decoration: InputDecoration(
+                hintText: 'Email Anda...',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+          ElevatedButton(
+            onPressed: () async {
+              if (emailController.text.isNotEmpty) {
+                await UserService().sendPasswordResetEmail(emailController.text);
+                if (!mounted) return;
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Tautan reset telah dikirim ke email Anda.')),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0A1E33), foregroundColor: Colors.white),
+            child: const Text('Kirim'),
+          ),
+        ],
+      ),
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -520,7 +563,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            _showForgotPasswordDialog();
+                          },
+                          child: const Text(
+                            'Lupa Kata Sandi?',
+                            style: TextStyle(color: primaryColor, fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
 
                       // SUBMIT BUTTON (LOGIN MANUAL)
                       SizedBox(
@@ -589,7 +646,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            _showForgotPasswordDialog();
+                          },
+                          child: const Text(
+                            'Lupa Kata Sandi?',
+                            style: TextStyle(color: primaryColor, fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
 
                       // DIVIDER SOCIAL LOGIN
                       const Row(

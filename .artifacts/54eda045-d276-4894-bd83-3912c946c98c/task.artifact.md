@@ -1,5 +1,9 @@
-- [x] Update Website (Firebase Hosting)
-    - [x] Run `flutter build web --release`
-    - [x] Run `npx firebase deploy --only hosting`
-- [x] Verification
-    - [x] Verify the live URL `https://sukabumi-one-access-app-c7f15.web.app/`
+- [ ] Implement Real Firebase Email/Password Auth
+    - [ ] Update `UserService.registerAccount` with real Firebase logic
+    - [ ] Update `UserService.authenticateAccount` with real Firebase login
+    - [ ] Update `RegisterScreen` with Firebase error handling
+    - [ ] Update `LoginScreen` with real authentication calls
+- [ ] Verification
+    - [ ] Create a new real account via app
+    - [ ] Verify user appears in Firebase Console
+    - [ ] Test successful and failed login attempts

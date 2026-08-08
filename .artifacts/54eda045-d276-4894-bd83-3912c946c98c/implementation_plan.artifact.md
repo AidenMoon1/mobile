@@ -1,35 +1,38 @@
-# Rencana Implementasi: Update Website (Firebase Hosting)
+# Rencana Implementasi: Aktivasi Real Gmail OTP
 
-Rencana ini bertujuan untuk memperbarui isi website resmi **Sukabumi One Access** di alamat `https://sukabumi-one-access-app-c7f15.web.app/` agar sesuai dengan kodingan terbaru (termasuk fitur Login Google asli) yang ada di laptop Kakak.
+Tujuan dari rencana ini adalah menghubungkan Laravel ke server SMTP Gmail agar kode verifikasi 6 digit benar-benar masuk ke kotak masuk (Inbox) email warga secara otomatis.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> - **Proses Build**: Saya akan menjalankan perintah `flutter build web`. Proses ini mungkin memakan waktu 2-5 menit tergantung kecepatan laptop.
-> - **Koneksi Internet**: Dibutuhkan koneksi internet yang stabil untuk mengunggah file (sekitar 10-20MB) ke server Firebase.
+> [!CAUTION]
+> **Tindakan Wajib Kakak (Keamanan Google):**
+> Gmail tidak mengizinkan aplikasi asing mengirim email menggunakan password Gmail biasa. Kakak **HARUS** membuat **App Password** 16 karakter.
+>
+> **Cara Membuatnya:**
+> 1. Buka [Google Account Security](https://myaccount.google.com/security).
+> 2. Pastikan **2-Step Verification** sudah AKTIF.
+> 3. Klik menu **App passwords**.
+> 4. Ketik nama bebas (contoh: "Laravel Sukabumi") lalu klik **Create**.
+> 5. **Salin 16 karakter** yang muncul di kotak kuning. Masukkan kode tersebut nanti saat saya minta.
 
 ---
 
-## Langkah-Langkah Eksekusi
+## Perubahan yang Akan Dilakukan
 
-### 1. Kompilasi Kode ke Web (Build)
-Mengubah kodingan Flutter menjadi file website yang dimengerti browser.
-- **Perintah**: `flutter build web --release`
-- **Output**: File akan dihasilkan di folder `build/web/`.
-
-### 2. Pengunggahan ke Firebase (Deploy)
-Mengirim file hasil build ke server hosting Google.
-- **Perintah**: `npx firebase deploy --only hosting`
-- **Hasil**: Perubahan akan langsung aktif di link `web.app` tersebut.
+### 1. Backend (Laravel) - Aktivasi SMTP
+- **[MODIFY] [.env](file:///C:/src/mobile/backend/.env)**:
+    - Mengubah `MAIL_MAILER` dari `log` menjadi `smtp`.
+    - Mengatur host ke `smtp.gmail.com` dan port `465` (SSL).
+    - Menyiapkan kolom `MAIL_USERNAME` dan `MAIL_PASSWORD` untuk diisi data Kakak.
+- **[MODIFY] [EmailOtpController.php](file:///C:/src/mobile/backend/app/Http/Controllers/Api/EmailOtpController.php)**:
+    - Mengaktifkan fungsi `Mail::raw()` yang sebelumnya saya beri tanda komentar (`//`).
 
 ---
 
 ## Rencana Verifikasi
 
 ### Manual Verification
-1. **Akses Link**: Buka `https://sukabumi-one-access-app-c7f15.web.app/` di browser.
-2. **Cek Fitur**:
-    - Pastikan logo Google terbaru sudah muncul.
-    - Pastikan klik tombol Google memicu login asli.
-    - Pastikan fitur IKD dan WhatsApp (Simulasi) tetap berjalan.
-3. **Responsive Test**: Coba buka link tersebut dari **Browser HP**. Pastikan tampilannya tetap rapi seperti aplikasi mobile.
+1. **Input Kredensial**: Kakak memasukkan email dan 16 digit App Password ke file `.env`.
+2. **Kirim OTP**: Buka aplikasi di HP, masukkan email asli Kakak, klik "Kirim OTP".
+3. **Cek Inbox**: Buka Gmail Kakak di perangkat apa pun. Pastikan ada pesan baru dari "Sukabumi One Access" berisi 6 digit angka.
+4. **Verifikasi**: Masukkan angka tersebut di HP untuk memastikan login berhasil 100%.

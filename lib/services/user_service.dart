@@ -141,44 +141,97 @@ class UserService {
     return false;
   }
 
-  // REGISTRASI USER BARU
+  // REGISTRASI USER BARU (REAL FIREBASE)
   Future<bool> registerAccount({
     required String name,
     required String email,
-    required String nikOrPhone,
     required String password,
+    String? nikOrPhone,
   }) async {
-    final newAccount = {
-      'usernameOrEmail': email.trim().toLowerCase(),
-      'nikOrPhone': nikOrPhone.trim(),
-      'password': password.trim(),
-      'name': name.trim(),
-      'email': email.trim().toLowerCase(),
-    };
+    try {
+      // 1. Create account in Firebase
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
 
-    _registeredUsers.add(newAccount);
+      final User? firebaseUser = userCredential.user;
+      if (firebaseUser != null) {
+        // Update display name in Firebase
+        await firebaseUser.updateDisplayName(name);
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('registered_users_db', jsonEncode(_registeredUsers));
+        final now = DateTime.now();
+        final String dateStr = "${now.day} ${_getBulan(now.month)} ${now.year}";
 
-    // Otomatis login akun baru yang terdaftar
+        _currentUser = UserModel(
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          username: (nikOrPhone ?? email).split('@').first,
+          phoneNumber: nikOrPhone ?? '-',
+          status: 'Menunggu Verifikasi OTP',
+          joinedDate: dateStr,
+          id: _generateUniqueId(),
+          profileImagePath: '',
+        );
+
+        await _saveToLocal(_currentUser);
+
+        // 2. Trigger OTP sending via Laravel
+        await ApiService.post('auth/otp/email/send', {'email': email});
+        
+        return true;
+      }
+    } catch (e) {
+      print("Registration error: $e");
+      rethrow;
+    }
+    return false;
+  }
+
+  // LOGIN USER (REAL FIREBASE)
+  Future<bool> loginWithEmailPassword(String email, String password) async {
+    try {
+      // 1. Sign in with Firebase
+      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
+
+      final User? firebaseUser = userCredential.user;
+      if (firebaseUser != null) {
+        final now = DateTime.now();
+        final String dateStr = "${now.day} ${_getBulan(now.month)} ${now.year}";
+
+        _currentUser = UserModel(
+          name: firebaseUser.displayName ?? 'Warga Sukabumi',
+          email: firebaseUser.email ?? email,
+          username: (firebaseUser.email ?? email).split('@').first,
+          phoneNumber: '-',
+          status: 'Menunggu Verifikasi OTP',
+          joinedDate: dateStr,
+          id: _generateUniqueId(),
+          profileImagePath: firebaseUser.photoURL ?? '',
+        );
+
+        await _saveToLocal(_currentUser);
+
+        // 2. Trigger OTP sending via Laravel
+        await ApiService.post('auth/otp/email/send', {'email': email});
+        
+        return true;
+      }
+    } catch (e) {
+      print("Login error: $e");
+      rethrow;
+    }
+    return false;
+  }
+
+  // FINALIZE LOGIN AFTER OTP
+  Future<void> finalizeLogin() async {
     _isLoggedIn = true;
-    final now = DateTime.now();
-    final String dateStr = "${now.day} ${_getBulan(now.month)} ${now.year}";
-
-    _currentUser = UserModel(
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      username: nikOrPhone.trim(),
-      phoneNumber: nikOrPhone.trim(),
-      status: 'Terverifikasi Akun Baru',
-      joinedDate: dateStr,
-      id: _generateUniqueId(),
-      profileImagePath: '',
-    );
-
+    _currentUser = _currentUser.copyWith(status: 'Terverifikasi (Email + OTP)');
     await _saveToLocal(_currentUser);
-    return true;
   }
 
   // LOGIN VIA GOOGLE OAUTH (REAL FIREBASE INTEGRATION)
@@ -279,6 +332,11 @@ class UserService {
     _setGuestMode();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_logged_in', false);
+  }
+
+  // FORGOT PASSWORD
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email.trim());
   }
 
   String _generateUniqueId() {

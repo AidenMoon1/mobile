@@ -4,6 +4,8 @@ import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/models/notification_model.dart';
 import 'package:mobile/main.dart';
 
+import 'package:mobile/views/profile/email_otp_screen.dart'; // Import layar OTP
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -42,62 +44,55 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      final messenger = ScaffoldMessenger.of(context);
-      final navigator = Navigator.of(context);
-
       final fullName = _fullNameController.text.trim();
       final email = _emailController.text.trim();
-      final nikOrPhone = _nikOrPhoneController.text.trim();
       final password = _passwordController.text.trim();
+      final nikOrPhone = _nikOrPhoneController.text.trim();
 
-      // REGISTRASI & SIMPAN AKUN BARU KE DATABASE USER
-      await UserService().registerAccount(
+      // LAPIS 1: PENDAFTARAN FIREBASE
+      final bool success = await UserService().registerAccount(
         name: fullName,
         email: email,
-        nikOrPhone: nikOrPhone,
         password: password,
+        nikOrPhone: nikOrPhone,
       );
-
-      try {
-        await NotificationService().addNotification(
-          title: '🎉 Registrasi Berhasil',
-          description: 'Selamat datang $fullName! Akun Sukabumi One Access Anda telah siap digunakan.',
-          category: NotificationCategory.general,
-        );
-      } catch (e) {
-        // Fallback
-      }
 
       if (!mounted) return;
+      setState(() => _isLoading = false);
 
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('Registrasi berhasil! Selamat datang $fullName'),
-          backgroundColor: const Color(0xFF0A1E33),
-        ),
-      );
+      if (success) {
+        // PINDAH KE LAPIS 2: VERIFIKASI OTP EMAIL
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EmailOtpScreen(
+              email: email,
+              onVerified: () async {
+                await UserService().finalizeLogin();
+                if (!mounted) return;
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Registrasi & Verifikasi Berhasil!')),
+                );
 
-      navigator.pushReplacement(
-        MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-      );
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                );
+              },
+            ),
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
+      setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registrasi berhasil diproses! Selamat datang.'),
-          backgroundColor: Color(0xFF0A1E33),
+        SnackBar(
+          content: Text('⚠️ Gagal Daftar: ${e.toString().split(']').last}'),
+          backgroundColor: Colors.redAccent,
         ),
       );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
