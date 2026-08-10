@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -237,22 +238,25 @@ class UserService {
   // LOGIN VIA GOOGLE OAUTH (REAL FIREBASE INTEGRATION)
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // 1. Trigger the Google Authentication flow
-      final GoogleSignIn googleSignIn = GoogleSignIn();
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) return null; // User cancelled the sign-in
+      UserCredential userCredential;
 
-      // 2. Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      if (kIsWeb) {
+        // Web flow: Use popup to avoid native dependency issues
+        userCredential = await _auth.signInWithPopup(GoogleAuthProvider());
+      } else {
+        // Mobile flow: Use google_sign_in plugin
+        final GoogleSignIn googleSignIn = GoogleSignIn();
+        final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+        if (googleUser == null) return null; // User cancelled the sign-in
 
-      // 3. Create a new credential
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        userCredential = await _auth.signInWithCredential(credential);
+      }
 
-      // 4. Once signed in, return the UserCredential
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
       final User? firebaseUser = userCredential.user;
 
       if (firebaseUser != null) {
