@@ -5,6 +5,7 @@
 // =============================================================================
 
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/instansi_model.dart';
 import '../models/layanan_model.dart';
 import '../models/custom_field_config.dart';
@@ -17,6 +18,46 @@ class OpdService extends ChangeNotifier {
 
   OpdService._internal() {
     _initDefaultData();
+    _listenToCloudStatus();
+  }
+
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  void _listenToCloudStatus() {
+    try {
+      _db.collection('opd_status').snapshots().listen((snapshot) {
+        for (var doc in snapshot.docs) {
+          final data = doc.data();
+          final String id = data['id']?.toString() ?? '';
+          final String type = data['type']?.toString() ?? '';
+          final bool isActive = data['isActive'] == true;
+
+          if (id.isEmpty) continue;
+
+          if (type == 'instansi') {
+            int idx = _instansiList.indexWhere((e) => e.id == id || e.kodeInstansi.toLowerCase() == id.toLowerCase());
+            if (idx != -1) {
+              _instansiList[idx] = _instansiList[idx].copyWith(isActive: isActive);
+            }
+          } else if (type == 'layanan') {
+            int idx = _layananList.indexWhere((e) => e.id == id);
+            if (idx != -1) {
+              _layananList[idx] = _layananList[idx].copyWith(isActive: isActive);
+            }
+          } else if (type == 'sektor') {
+            int idx = _sektorList.indexWhere((e) => e.id == id);
+            if (idx != -1) {
+              _sektorList[idx] = _sektorList[idx].copyWith(isActive: isActive);
+            }
+          }
+        }
+        notifyListeners();
+      }, onError: (e) {
+        debugPrint('Firestore opd_status listen error: $e');
+      });
+    } catch (e) {
+      debugPrint('Firestore opd_status init error: $e');
+    }
   }
 
   final List<InstansiModel> _instansiList = [];
@@ -662,8 +703,20 @@ class OpdService extends ChangeNotifier {
     int idx = _sektorList.indexWhere((e) => e.id == id);
     if (idx != -1) {
       final current = _sektorList[idx];
-      _sektorList[idx] = current.copyWith(isActive: !current.isActive);
+      final newStatus = !current.isActive;
+      _sektorList[idx] = current.copyWith(isActive: newStatus);
       notifyListeners();
+
+      try {
+        _db.collection('opd_status').doc('sektor_${current.id}').set({
+          'id': current.id,
+          'type': 'sektor',
+          'isActive': newStatus,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('Firestore sektor status sync error: $e');
+      }
     }
   }
 
@@ -701,8 +754,22 @@ class OpdService extends ChangeNotifier {
   void toggleInstansiStatus(String id) {
     int idx = _instansiList.indexWhere((e) => e.id == id);
     if (idx != -1) {
-      _instansiList[idx] = _instansiList[idx].copyWith(isActive: !_instansiList[idx].isActive);
+      final current = _instansiList[idx];
+      final newStatus = !current.isActive;
+      _instansiList[idx] = current.copyWith(isActive: newStatus);
       notifyListeners();
+
+      try {
+        _db.collection('opd_status').doc('instansi_${current.id}').set({
+          'id': current.id,
+          'kodeInstansi': current.kodeInstansi,
+          'type': 'instansi',
+          'isActive': newStatus,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('Firestore instansi status sync error: $e');
+      }
     }
   }
 
@@ -743,8 +810,21 @@ class OpdService extends ChangeNotifier {
   void toggleLayananStatus(String id) {
     int idx = _layananList.indexWhere((e) => e.id == id);
     if (idx != -1) {
-      _layananList[idx] = _layananList[idx].copyWith(isActive: !_layananList[idx].isActive);
+      final current = _layananList[idx];
+      final newStatus = !current.isActive;
+      _layananList[idx] = current.copyWith(isActive: newStatus);
       notifyListeners();
+
+      try {
+        _db.collection('opd_status').doc('layanan_${current.id}').set({
+          'id': current.id,
+          'type': 'layanan',
+          'isActive': newStatus,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      } catch (e) {
+        debugPrint('Firestore layanan status sync error: $e');
+      }
     }
   }
 }
