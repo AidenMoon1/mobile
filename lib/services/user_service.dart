@@ -277,7 +277,7 @@ class UserService {
       return userCredential;
     } catch (e) {
       print("Error during Google Sign-In: $e");
-      return null;
+      rethrow;
     }
   }
 

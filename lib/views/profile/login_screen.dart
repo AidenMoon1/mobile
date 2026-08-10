@@ -130,8 +130,8 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Terjadi kesalahan: $e'),
+        const SnackBar(
+          content: Text('Gagal masuk dengan Google. Pastikan koneksi internet stabil.'),
           backgroundColor: Colors.redAccent,
         ),
       );
@@ -645,19 +645,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
 
-                      const SizedBox(height: 10),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {
-                            _showForgotPasswordDialog();
-                          },
-                          child: const Text(
-                            'Lupa Kata Sandi?',
-                            style: TextStyle(color: primaryColor, fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                          ),
-                        ),
-                      ),
+
 
                       const SizedBox(height: 12),
 

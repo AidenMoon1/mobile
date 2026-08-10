@@ -1,5 +1,5 @@
-- [/] Repair MySQL and Switch back to Database Storage
-    - [/] Fix MySQL 1130 "Host not allowed" error
-    - [ ] Update `.env` to use `database` for Cache and Session
-    - [ ] Clear Laravel configuration and application cache
-    - [ ] Verify database connection and OTP flow
+- [/] Cleanup Login UI Duplication
+    - [ ] Remove second "Lupa Kata Sandi" block in `login_screen.dart`
+    - [ ] Adjust vertical spacing between elements
+- [ ] Verification
+    - [ ] Refresh app and verify single "Lupa Kata Sandi" button
