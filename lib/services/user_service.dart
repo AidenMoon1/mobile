@@ -16,7 +16,6 @@ class UserService {
   UserService._internal();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   bool _isLoggedIn = false;
   bool get isLoggedIn => _isLoggedIn;
@@ -239,7 +238,8 @@ class UserService {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       // 1. Trigger the Google Authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return null; // User cancelled the sign-in
 
       // 2. Obtain the auth details from the request

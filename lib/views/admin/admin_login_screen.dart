@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/models/notification_model.dart';
+import 'package:mobile/services/admin_auth_service.dart';
 import 'package:mobile/views/admin/admin_dashboard_screen.dart';
 
 class AdminLoginScreen extends StatefulWidget {
@@ -372,6 +373,8 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
     setState(() => _isVerifying = false);
 
     if (entered == _currentOtp) {
+      await AdminAuthService().saveSession(widget.adminEmail);
+
       await NotificationService().addNotification(
         title: '🔐 Verifikasi OTP Gmail Berhasil',
         description: 'Administrator terverifikasi dari Gmail ${widget.adminEmail}.',
@@ -387,9 +390,9 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
         ),
       );
 
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushNamedAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const AdminDashboardScreen()),
+        '/admin/dashboard',
         (route) => false,
       );
     } else {

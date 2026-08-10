@@ -11,8 +11,8 @@ import '../../models/layanan_model.dart';
 import '../../models/sektor_model.dart';
 import '../../services/opd_service.dart';
 import '../../services/feedback_service.dart';
+import '../../services/admin_auth_service.dart';
 import '../../widgets/smart_image.dart';
-import '../profile/login_screen.dart';
 import 'admin_form_instansi_screen.dart';
 import 'admin_form_layanan_screen.dart';
 import 'admin_form_sektor_screen.dart';
@@ -23,8 +23,53 @@ import 'admin_chat_inbox_screen.dart';
 /// ----------------------------------------------------------------------------
 class AdminDashboardScreen extends StatefulWidget {
   final int initialNavIndex;
+  final String? initialTab;
 
-  const AdminDashboardScreen({super.key, this.initialNavIndex = 0});
+  const AdminDashboardScreen({
+    super.key,
+    this.initialNavIndex = 0,
+    this.initialTab,
+  });
+
+  static int tabNameToIndex(String? tabName) {
+    switch (tabName?.toLowerCase()) {
+      case 'instansi':
+        return 1;
+      case 'layanan':
+        return 2;
+      case 'sektor':
+        return 3;
+      case 'chat':
+        return 4;
+      case 'feedback':
+        return 5;
+      case 'profil':
+        return 6;
+      case 'overview':
+      default:
+        return 0;
+    }
+  }
+
+  static String indexToTabName(int index) {
+    switch (index) {
+      case 1:
+        return 'instansi';
+      case 2:
+        return 'layanan';
+      case 3:
+        return 'sektor';
+      case 4:
+        return 'chat';
+      case 5:
+        return 'feedback';
+      case 6:
+        return 'profil';
+      case 0:
+      default:
+        return 'overview';
+    }
+  }
 
   @override
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
@@ -47,8 +92,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedNavIndex = widget.initialNavIndex;
+    if (widget.initialTab != null && widget.initialTab!.isNotEmpty) {
+      _selectedNavIndex = AdminDashboardScreen.tabNameToIndex(widget.initialTab);
+    } else {
+      _selectedNavIndex = widget.initialNavIndex;
+    }
     _opdService.addListener(_refresh);
+  }
+
+  void _onTabSelected(int index) {
+    if (_selectedNavIndex == index) return;
+    setState(() {
+      _selectedNavIndex = index;
+      _isProfileMenuVisible = false;
+    });
+    final tabName = AdminDashboardScreen.indexToTabName(index);
+    Navigator.pushReplacementNamed(
+      context,
+      '/admin/dashboard?tab=$tabName',
+    );
   }
 
   @override
@@ -200,13 +262,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     width: 110,
                     height: 40,
                     child: OutlinedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         Navigator.pop(context);
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          (route) => false,
-                        );
+                        await AdminAuthService().logout();
+                        if (context.mounted) {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/admin',
+                            (route) => false,
+                          );
+                        }
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF0F2942), width: 1.5),
@@ -316,52 +381,265 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  Widget _buildInstansiStatusCell(InstansiModel instansi) {
+    return Center(
+      child: InkWell(
+        onTap: () {
+          _opdService.toggleInstansiStatus(instansi.id);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                !instansi.isActive
+                    ? '✅ Instansi ${instansi.namaSingkat} diaktifkan kembali!'
+                    : '⚠️ Instansi ${instansi.namaSingkat} diubah ke status Pemeliharaan (Maintenance)!',
+              ),
+              backgroundColor: !instansi.isActive ? const Color(0xFF0F2942) : Colors.orange.shade900,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Transform.scale(
+                scale: 0.8,
+                child: Switch(
+                  value: instansi.isActive,
+                  activeColor: const Color(0xFFE8A33D),
+                  activeTrackColor: const Color(0xFF0F2942),
+                  inactiveThumbColor: Colors.grey.shade400,
+                  inactiveTrackColor: Colors.grey.shade200,
+                  onChanged: (val) {
+                    _opdService.toggleInstansiStatus(instansi.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          val
+                              ? '✅ Instansi ${instansi.namaSingkat} diaktifkan kembali!'
+                              : '⚠️ Instansi ${instansi.namaSingkat} diubah ke status Pemeliharaan (Maintenance)!',
+                        ),
+                        backgroundColor: val ? const Color(0xFF0F2942) : Colors.orange.shade900,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: instansi.isActive ? const Color(0xFFE2F7E2) : const Color(0xFFFFF3CD),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: instansi.isActive ? const Color(0xFF81C784) : const Color(0xFFFFB74D),
+                  ),
+                ),
+                child: Text(
+                  instansi.isActive ? 'Aktif' : 'Pemeliharaan',
+                  style: TextStyle(
+                    color: instansi.isActive ? const Color(0xFF2E7D32) : const Color(0xFFE65100),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLayananStatusCell(LayananModel layanan) {
+    return Center(
+      child: InkWell(
+        onTap: () {
+          _opdService.toggleLayananStatus(layanan.id);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                !layanan.isActive
+                    ? '✅ Layanan ${layanan.rawTitle} diaktifkan kembali!'
+                    : '⚠️ Layanan ${layanan.rawTitle} diubah ke status Pemeliharaan (Maintenance)!',
+              ),
+              backgroundColor: !layanan.isActive ? const Color(0xFF0F2942) : Colors.orange.shade900,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Transform.scale(
+                scale: 0.8,
+                child: Switch(
+                  value: layanan.isActive,
+                  activeColor: const Color(0xFFE8A33D),
+                  activeTrackColor: const Color(0xFF0F2942),
+                  inactiveThumbColor: Colors.grey.shade400,
+                  inactiveTrackColor: Colors.grey.shade200,
+                  onChanged: (val) {
+                    _opdService.toggleLayananStatus(layanan.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          val
+                              ? '✅ Layanan ${layanan.rawTitle} diaktifkan kembali!'
+                              : '⚠️ Layanan ${layanan.rawTitle} diubah ke status Pemeliharaan (Maintenance)!',
+                        ),
+                        backgroundColor: val ? const Color(0xFF0F2942) : Colors.orange.shade900,
+                        duration: const Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: layanan.isActive ? const Color(0xFFE2F7E2) : const Color(0xFFFFF3CD),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: layanan.isActive ? const Color(0xFF81C784) : const Color(0xFFFFB74D),
+                  ),
+                ),
+                child: Text(
+                  layanan.isActive ? 'Aktif' : 'Pemeliharaan',
+                  style: TextStyle(
+                    color: layanan.isActive ? const Color(0xFF2E7D32) : const Color(0xFFE65100),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const Color sidebarBg = Color(0xFF0F2942);
     const Color accentGold = Color(0xFFE8A33D);
     const Color mainBg = Color(0xFFF4F7FC);
 
-    final isWideScreen = MediaQuery.of(context).size.width >= 900;
-
     return Scaffold(
       backgroundColor: mainBg,
-      appBar: isWideScreen
-          ? null
-          : AppBar(
-              backgroundColor: sidebarBg,
-              elevation: 0,
-              leading: Builder(
-                builder: (context) => IconButton(
-                  icon: const Icon(Icons.menu_rounded, color: Colors.white),
-                  onPressed: () => Scaffold.of(context).openDrawer(),
-                ),
-              ),
-              title: Text(
-                _getNavTitle(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
+      body: Row(
+        children: [
+          // SIDEBAR NAVIGATION PERMANEN KHUSUS MONITOR PC / DESKTOP (260px)
+          SizedBox(
+            width: 260,
+            child: _buildSidebar(context, sidebarBg, accentGold),
+          ),
+
+          // KONTEN UTAMA DESKTOP
+          Expanded(
+            child: Column(
+              children: [
+                // TOP HEADER BAR DESKTOP MONITOR
+                _buildTopHeaderBar(sidebarBg, accentGold),
+
+                // AREA KONTEN SWITCHER
+                Expanded(
+                  child: _buildMainContentWrapper(context, sidebarBg, accentGold),
                 ),
               ],
             ),
-      drawer: isWideScreen ? null : Drawer(child: _buildSidebar(context, sidebarBg, accentGold)),
-      body: Row(
-        children: [
-          // SIDEBAR NAVIGATION PERMANEN UNTUK MONITOR PC / TABLET
-          if (isWideScreen) SizedBox(width: 250, child: _buildSidebar(context, sidebarBg, accentGold)),
+          ),
+        ],
+      ),
+    );
+  }
 
-          // AREA KONTEN UTAMA KANAN (DYNAMICAL SINGLE PAGE SWITCHER)
-          Expanded(
-            child: _buildMainContentWrapper(context, sidebarBg, accentGold),
+  Widget _buildTopHeaderBar(Color sidebarBg, Color accentGold) {
+    String nowStr;
+    try {
+      nowStr = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now());
+    } catch (_) {
+      nowStr = DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
+    }
+
+    return Container(
+      height: 64,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          Text(
+            _getNavTitle(),
+            style: const TextStyle(
+              color: Color(0xFF0F2942),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
+            ),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF0F2942)),
+                const SizedBox(width: 8),
+                Text(
+                  nowStr,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF0F2942),
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0x1F76A9EA),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              children: [
+                CircleAvatar(
+                  radius: 4,
+                  backgroundColor: Colors.green,
+                ),
+                SizedBox(width: 6),
+                Text(
+                  'Web Portal Online',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F2942),
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -609,10 +887,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   // POPUP ITEM 1: PROFIL SAYA
                   InkWell(
                     onTap: () {
-                      setState(() {
-                        _selectedNavIndex = 5;
-                        _isProfileMenuVisible = false;
-                      });
+                      _onTabSelected(6);
                     },
                     child: const Padding(
                       padding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
@@ -737,15 +1012,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: InkWell(
-        onTap: () {
-          setState(() {
-            _selectedNavIndex = index;
-            _isProfileMenuVisible = false;
-          });
-          if (Scaffold.of(context).isDrawerOpen) {
-            Navigator.pop(context);
-          }
-        },
+        onTap: () => _onTabSelected(index),
         borderRadius: BorderRadius.circular(10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -1602,13 +1869,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ),
                           Expanded(
                             flex: 2,
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                                decoration: BoxDecoration(color: const Color(0xFFE2F7E2), borderRadius: BorderRadius.circular(20)),
-                                child: const Text('Aktif', style: TextStyle(color: Color(0xFF2E7D32), fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                              ),
-                            ),
+                            child: _buildInstansiStatusCell(instansi),
                           ),
                           SizedBox(
                             width: 50,
@@ -1617,11 +1878,45 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               onSelected: (val) {
                                 if (val == 'edit') {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => AdminFormInstansiScreen(instansi: instansi)));
+                                } else if (val == 'toggle') {
+                                  _opdService.toggleInstansiStatus(instansi.id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        !instansi.isActive
+                                            ? '✅ Instansi ${instansi.namaSingkat} diaktifkan kembali!'
+                                            : '⚠️ Instansi ${instansi.namaSingkat} diubah ke status Pemeliharaan (Maintenance)!',
+                                      ),
+                                      backgroundColor: !instansi.isActive ? const Color(0xFF0F2942) : Colors.orange.shade900,
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
                                 } else if (val == 'hapus') {
                                   _konfirmasiHapusInstansi(context, instansi);
                                 }
                               },
                               itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'toggle',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        instansi.isActive ? Icons.power_settings_new_rounded : Icons.check_circle_outline_rounded,
+                                        size: 16,
+                                        color: instansi.isActive ? Colors.orange.shade800 : Colors.green,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        instansi.isActive ? 'Set Pemeliharaan' : 'Aktifkan Kembali',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontFamily: 'Poppins',
+                                          color: instansi.isActive ? Colors.orange.shade800 : Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 const PopupMenuItem(
                                   value: 'edit',
                                   child: Row(
@@ -1784,6 +2079,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       flex: 2,
                       child: Center(child: Text('Sektor', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
                     ),
+                    Expanded(
+                      flex: 2,
+                      child: Center(child: Text('Status Maintenance', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                    ),
                     SizedBox(
                       width: 50,
                       child: Center(child: Text('Aksi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
@@ -1833,6 +2132,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               ),
                             ),
                           ),
+                          Expanded(
+                            flex: 2,
+                            child: _buildLayananStatusCell(layanan),
+                          ),
                           SizedBox(
                             width: 50,
                             child: PopupMenuButton<String>(
@@ -1840,11 +2143,45 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               onSelected: (val) {
                                 if (val == 'edit') {
                                   Navigator.push(context, MaterialPageRoute(builder: (context) => AdminFormLayananScreen(layanan: layanan)));
+                                } else if (val == 'toggle') {
+                                  _opdService.toggleLayananStatus(layanan.id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        !layanan.isActive
+                                            ? '✅ Layanan ${layanan.rawTitle} diaktifkan kembali!'
+                                            : '⚠️ Layanan ${layanan.rawTitle} diubah ke status Pemeliharaan (Maintenance)!',
+                                      ),
+                                      backgroundColor: !layanan.isActive ? const Color(0xFF0F2942) : Colors.orange.shade900,
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
                                 } else if (val == 'hapus') {
                                   _konfirmasiHapusLayanan(context, layanan);
                                 }
                               },
                               itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'toggle',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        layanan.isActive ? Icons.power_settings_new_rounded : Icons.check_circle_outline_rounded,
+                                        size: 16,
+                                        color: layanan.isActive ? Colors.orange.shade800 : Colors.green,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        layanan.isActive ? 'Set Pemeliharaan' : 'Aktifkan Kembali',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontFamily: 'Poppins',
+                                          color: layanan.isActive ? Colors.orange.shade800 : Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 const PopupMenuItem(
                                   value: 'edit',
                                   child: Row(
@@ -1990,8 +2327,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               itemCount: filteredList.length,
               itemBuilder: (context, index) {
                 final sektor = filteredList[index];
-                final totalLayanan = _opdService.getLayananList().where((l) => l.sektor.toLowerCase() == sektor.title.toLowerCase()).length;
-                final displayCount = totalLayanan > 0 ? totalLayanan : 6;
+                final totalLayanan = _opdService.getLayananList().where((l) => l.sektor.toLowerCase().contains(sektor.title.toLowerCase()) || sektor.title.toLowerCase().contains(l.sektor.toLowerCase())).length;
+                final displayCount = totalLayanan;
 
                 return Container(
                   padding: const EdgeInsets.all(14),
@@ -2322,7 +2659,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     Expanded(flex: 3, child: Text(instansi.namaSingkat.toUpperCase(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins'))),
                     Expanded(flex: 2, child: Center(child: Text('$totalLayananInstansi', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')))),
-                    Expanded(flex: 2, child: Center(child: Container(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4), decoration: BoxDecoration(color: const Color(0xFFE2F7E2), borderRadius: BorderRadius.circular(20)), child: const Text('Aktif', style: TextStyle(color: Color(0xFF2E7D32), fontSize: 11, fontWeight: FontWeight.bold, fontFamily: 'Poppins'))))),
+                    Expanded(
+                      flex: 2,
+                      child: _buildInstansiStatusCell(instansi),
+                    ),
                     SizedBox(
                       width: 50,
                       child: PopupMenuButton<String>(
@@ -2462,8 +2802,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 itemCount: sektorList.length,
                 itemBuilder: (context, index) {
                   final sektor = sektorList[index];
-                  final totalLayanan = _opdService.getLayananList().where((l) => l.sektor.toLowerCase() == sektor.title.toLowerCase()).length;
-                  final displayCount = totalLayanan > 0 ? totalLayanan : 6;
+                  final totalLayanan = _opdService.getLayananList().where((l) => l.sektor.toLowerCase().contains(sektor.title.toLowerCase()) || sektor.title.toLowerCase().contains(l.sektor.toLowerCase())).length;
+                  final displayCount = totalLayanan;
 
                   return Container(
                     padding: const EdgeInsets.all(12),

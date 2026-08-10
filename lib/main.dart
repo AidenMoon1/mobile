@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'firebase_options.dart';
 
 // --- LAYAR / VIEWS WARGA ---
@@ -22,6 +23,7 @@ import 'package:mobile/views/admin/admin_dashboard_screen.dart';
 import 'package:mobile/services/notification_service.dart';
 import 'package:mobile/services/feedback_service.dart';
 import 'package:mobile/services/user_service.dart';
+import 'package:mobile/services/admin_auth_service.dart';
 
 /// ----------------------------------------------------------------------------
 /// FUNGSI MAIN (Pertama Kali Dijalankan Saat Aplikasi Ditingkatkan/Dimulai)
@@ -29,6 +31,10 @@ import 'package:mobile/services/user_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  try {
+    await initializeDateFormatting('id_ID', null);
+  } catch (_) {}
+
   // Try-catch safe initializations agar Web tidak blank jika ada plugin gagal
   try {
     await Firebase.initializeApp(
@@ -75,12 +81,64 @@ class MyApp extends StatelessWidget {
         ),
       ),
       
-      // ROUTING WEB TERPISAH (SEPARATED WEB ROUTES)
+      // ROUTING WEB TERPISAH (SEPARATED WEB ROUTES WITH QUERY PARAM & SESSION GUARD)
       initialRoute: '/',
-      routes: {
-        '/': (context) => const MainNavigationScreen(),
-        '/admin': (context) => const AdminLoginScreen(),
-        '/admin/dashboard': (context) => const AdminDashboardScreen(),
+      onGenerateRoute: (settings) {
+        final uri = Uri.parse(settings.name ?? '/');
+
+        if (uri.path == '/admin/dashboard') {
+          final tab = uri.queryParameters['tab'] ?? 'overview';
+          return MaterialPageRoute(
+            builder: (context) => FutureBuilder<bool>(
+              future: AdminAuthService().isLoggedIn(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    backgroundColor: Color(0xFF0F2942),
+                    body: Center(
+                      child: CircularProgressIndicator(color: Color(0xFFE8A33D)),
+                    ),
+                  );
+                }
+                final isLoggedIn = snapshot.data ?? false;
+                if (!isLoggedIn) {
+                  return const AdminLoginScreen();
+                }
+                return AdminDashboardScreen(initialTab: tab);
+              },
+            ),
+            settings: settings,
+          );
+        }
+
+        if (uri.path == '/admin') {
+          return MaterialPageRoute(
+            builder: (context) => FutureBuilder<bool>(
+              future: AdminAuthService().isLoggedIn(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    backgroundColor: Color(0xFF0F2942),
+                    body: Center(
+                      child: CircularProgressIndicator(color: Color(0xFFE8A33D)),
+                    ),
+                  );
+                }
+                final isLoggedIn = snapshot.data ?? false;
+                if (isLoggedIn) {
+                  return const AdminDashboardScreen(initialTab: 'overview');
+                }
+                return const AdminLoginScreen();
+              },
+            ),
+            settings: settings,
+          );
+        }
+
+        return MaterialPageRoute(
+          builder: (context) => const MainNavigationScreen(),
+          settings: settings,
+        );
       },
     );
   }
