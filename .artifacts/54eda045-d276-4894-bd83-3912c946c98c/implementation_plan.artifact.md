@@ -1,23 +1,31 @@
-# Rencana Perbaikan: Pembersihan Duplikasi UI Login
+# Rencana Perbaikan: Error Null Check di Google SSO Web
 
-Tujuan dari rencana ini adalah untuk merapikan tampilan layar Login yang berantakan setelah proses `git pull`, khususnya menghapus tombol "Lupa Kata Sandi" yang muncul dua kali.
+Rencana ini menangani error "Null check operator used on a null value" yang terjadi saat mencoba login Google di platform Web. Kita akan beralih ke metode `signInWithPopup` yang lebih stabil untuk browser.
 
 ## User Review Required
 
-> [!NOTE]
-> - Saya hanya akan menghapus kode yang duplikat.
-> - Fitur login Google tetap dipertahankan, namun pesan error pada gambar menunjukkan kendala koneksi atau konfigurasi Firebase yang perlu dicek jika login Google gagal.
+> [!TIP]
+> **Kenyamanan Web**: Dengan metode Popup, warga yang membuka link `web.app` akan melihat jendela kecil baru untuk login Google, sama seperti login di situs-situs besar lainnya. Metode ini tidak memerlukan konfigurasi SHA-1 tambahan.
 
-## Perubahan yang Akan Dilakukan
+---
 
-### [Frontend/Flutter]
+## Langkah Perbaikan
 
-#### [MODIFY] [login_screen.dart](file:///C:/src/mobile/lib/views/profile/login_screen.dart)
-- Menghapus blok kode "Lupa Kata Sandi" yang kedua (yang terletak di bawah link pendaftaran).
-- Memastikan tata letak tombol login dan SSO tetap simetris.
+### 1. Modifikasi Logika Login (Platform Branching)
+Kita akan memisahkan alur login antara HP dan Web agar masing-masing menggunakan teknologi terbaiknya.
+- **[MODIFY] [user_service.dart](file:///C:/src/mobile/lib/services/user_service.dart)**:
+    - Jika `kIsWeb` true: Gunakan `_auth.signInWithPopup(GoogleAuthProvider())`.
+    - Jika `kIsWeb` false: Gunakan alur `google_sign_in` + `signInWithCredential`.
+
+### 2. Deploy Ulang
+Setelah kodingan diperbaiki, kita harus melakukan build dan deploy ulang agar perubahan bisa dirasakan di link `web.app`.
+
+---
 
 ## Rencana Verifikasi
 
 ### Manual Verification
-1. **Buka Layar Login**: Pastikan hanya ada satu tombol "Lupa Kata Sandi" di bawah kolom Password.
-2. **Cek Alur**: Pastikan tombol "Masuk Akun", "Google", dan "SSO" tetap berfungsi dan memiliki jarak yang rapi.
+1. **Akses Link**: Buka [https://sukabumi-one-access-app-c7f15.web.app/](https://sukabumi-one-access-app-c7f15.web.app/).
+2. **Uji Login**: Klik tombol "Masuk dengan Google".
+3. **Pastikan Popup Muncul**: Verifikasi bahwa tidak ada lagi error merah "Null check", melainkan muncul jendela login Google yang asli.
+4. **Cek Profil**: Pastikan Nama dan Foto profil terisi otomatis setelah login sukses.

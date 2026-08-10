@@ -129,10 +129,12 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _isLoading = false;
       });
+      // Menampilkan error asli agar bisa didebug
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Gagal masuk dengan Google. Pastikan koneksi internet stabil.'),
+        SnackBar(
+          content: Text('⚠️ Detail Error Google: ${e.toString()}'),
           backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 10), // Lebih lama agar bisa dibaca
         ),
       );
     }
