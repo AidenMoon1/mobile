@@ -4,8 +4,12 @@
 // PATTERN: Singleton Pattern & Reactive State Management (ChangeNotifier)
 // =============================================================================
 
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import '../models/instansi_model.dart';
 import '../models/layanan_model.dart';
 import '../models/custom_field_config.dart';
@@ -16,12 +20,100 @@ class OpdService extends ChangeNotifier {
   static final OpdService _instance = OpdService._internal();
   factory OpdService() => _instance;
 
+  static const String _rtdbBaseUrl = 'https://sukabumi-one-access-app-c7f15-default-rtdb.firebaseio.com/opd_status';
+
   OpdService._internal() {
     _initDefaultData();
+    _loadSavedStatusLocal();
+    _fetchRealtimeDatabaseStatus();
     _listenToCloudStatus();
+
+    // Polling Realtime Database setiap 3 detik agar sync instan tanpa billing
+    Timer.periodic(const Duration(seconds: 3), (_) {
+      _fetchRealtimeDatabaseStatus();
+    });
   }
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  Future<void> _fetchRealtimeDatabaseStatus() async {
+    try {
+      final res = await http.get(Uri.parse('$_rtdbBaseUrl.json'));
+      if (res.statusCode == 200 && res.body != 'null') {
+        final dynamic decoded = json.decode(res.body);
+        if (decoded is Map) {
+          decoded.forEach((key, val) {
+            if (val is Map) {
+              final String id = val['id']?.toString() ?? '';
+              final String type = val['type']?.toString() ?? '';
+              final bool isActive = val['isActive'] == true;
+
+              if (id.isNotEmpty) {
+                if (type == 'instansi') {
+                  int idx = _instansiList.indexWhere((e) => e.id == id || e.kodeInstansi.toLowerCase() == id.toLowerCase());
+                  if (idx != -1 && _instansiList[idx].isActive != isActive) {
+                    _instansiList[idx] = _instansiList[idx].copyWith(isActive: isActive);
+                  }
+                } else if (type == 'layanan') {
+                  int idx = _layananList.indexWhere((e) => e.id == id);
+                  if (idx != -1 && _layananList[idx].isActive != isActive) {
+                    _layananList[idx] = _layananList[idx].copyWith(isActive: isActive);
+                  }
+                } else if (type == 'sektor') {
+                  int idx = _sektorList.indexWhere((e) => e.id == id);
+                  if (idx != -1 && _sektorList[idx].isActive != isActive) {
+                    _sektorList[idx] = _sektorList[idx].copyWith(isActive: isActive);
+                  }
+                }
+              }
+            }
+          });
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('RTDB fetch status error: $e');
+    }
+  }
+
+  void _syncToRtdb(String docId, Map<String, dynamic> data) async {
+    try {
+      final url = '$_rtdbBaseUrl/$docId.json';
+      await http.put(Uri.parse(url), body: json.encode(data));
+    } catch (e) {
+      debugPrint('RTDB sync error: $e');
+    }
+  }
+
+  Future<void> _loadSavedStatusLocal() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      for (int i = 0; i < _instansiList.length; i++) {
+        final key = 'status_instansi_${_instansiList[i].id}';
+        if (prefs.containsKey(key)) {
+          final bool val = prefs.getBool(key) ?? true;
+          _instansiList[i] = _instansiList[i].copyWith(isActive: val);
+        }
+      }
+      for (int i = 0; i < _layananList.length; i++) {
+        final key = 'status_layanan_${_layananList[i].id}';
+        if (prefs.containsKey(key)) {
+          final bool val = prefs.getBool(key) ?? true;
+          _layananList[i] = _layananList[i].copyWith(isActive: val);
+        }
+      }
+      for (int i = 0; i < _sektorList.length; i++) {
+        final key = 'status_sektor_${_sektorList[i].id}';
+        if (prefs.containsKey(key)) {
+          final bool val = prefs.getBool(key) ?? true;
+          _sektorList[i] = _sektorList[i].copyWith(isActive: val);
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading local status: $e');
+    }
+  }
 
   void _listenToCloudStatus() {
     try {
@@ -699,13 +791,24 @@ class OpdService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleSektorStatus(String id) {
+  void toggleSektorStatus(String id) async {
     int idx = _sektorList.indexWhere((e) => e.id == id);
     if (idx != -1) {
       final current = _sektorList[idx];
       final newStatus = !current.isActive;
       _sektorList[idx] = current.copyWith(isActive: newStatus);
       notifyListeners();
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('status_sektor_${current.id}', newStatus);
+      } catch (_) {}
+
+      _syncToRtdb('sektor_${current.id}', {
+        'id': current.id,
+        'type': 'sektor',
+        'isActive': newStatus,
+      });
 
       try {
         _db.collection('opd_status').doc('sektor_${current.id}').set({
@@ -751,13 +854,25 @@ class OpdService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleInstansiStatus(String id) {
+  void toggleInstansiStatus(String id) async {
     int idx = _instansiList.indexWhere((e) => e.id == id);
     if (idx != -1) {
       final current = _instansiList[idx];
       final newStatus = !current.isActive;
       _instansiList[idx] = current.copyWith(isActive: newStatus);
       notifyListeners();
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('status_instansi_${current.id}', newStatus);
+      } catch (_) {}
+
+      _syncToRtdb('instansi_${current.id}', {
+        'id': current.id,
+        'kodeInstansi': current.kodeInstansi,
+        'type': 'instansi',
+        'isActive': newStatus,
+      });
 
       try {
         _db.collection('opd_status').doc('instansi_${current.id}').set({
@@ -807,13 +922,24 @@ class OpdService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleLayananStatus(String id) {
+  void toggleLayananStatus(String id) async {
     int idx = _layananList.indexWhere((e) => e.id == id);
     if (idx != -1) {
       final current = _layananList[idx];
       final newStatus = !current.isActive;
       _layananList[idx] = current.copyWith(isActive: newStatus);
       notifyListeners();
+
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('status_layanan_${current.id}', newStatus);
+      } catch (_) {}
+
+      _syncToRtdb('layanan_${current.id}', {
+        'id': current.id,
+        'type': 'layanan',
+        'isActive': newStatus,
+      });
 
       try {
         _db.collection('opd_status').doc('layanan_${current.id}').set({
