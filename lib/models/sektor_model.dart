@@ -11,6 +11,7 @@ class SektorModel {
   final String imagePath; // Jalur Gambar Ikon Sektor
   final String desc;      // Deskripsi Singkat Cakupan Layanan Sektor
   final String iconName;  // Nama Ikon Pemetakan Visual
+  final bool isActive;    // Status Aktif / Maintenance Sektor
 
   SektorModel({
     required this.id,
@@ -18,6 +19,7 @@ class SektorModel {
     required this.imagePath,
     required this.desc,
     required this.iconName,
+    this.isActive = true,
   });
 
   // FUNGSI 1: Mengubah Objek SektorModel Menjadi Map (Untuk Disimpan ke SQLite / Local State)
@@ -28,6 +30,7 @@ class SektorModel {
       'imagePath': imagePath,
       'desc': desc,
       'iconName': iconName,
+      'isActive': isActive ? 1 : 0,
     };
   }
 
@@ -39,6 +42,7 @@ class SektorModel {
       imagePath: map['imagePath']?.toString() ?? 'assets/icon/keluarga.png',
       desc: map['desc']?.toString() ?? '',
       iconName: map['iconName']?.toString() ?? 'category',
+      isActive: map['isActive'] == null || map['isActive'] == 1 || map['isActive'] == true,
     );
   }
 
@@ -49,6 +53,7 @@ class SektorModel {
     String? imagePath,
     String? desc,
     String? iconName,
+    bool? isActive,
   }) {
     return SektorModel(
       id: id ?? this.id,
@@ -56,6 +61,7 @@ class SektorModel {
       imagePath: imagePath ?? this.imagePath,
       desc: desc ?? this.desc,
       iconName: iconName ?? this.iconName,
+      isActive: isActive ?? this.isActive,
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile/views/layanan/detail_layanan_usaha.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
+import 'package:mobile/services/opd_service.dart';
 
 class InfoDkp3 extends StatefulWidget {
   const InfoDkp3({super.key});
@@ -10,7 +12,24 @@ class InfoDkp3 extends StatefulWidget {
 }
 
 class _InfoDkp3State extends State<InfoDkp3> {
+  final OpdService _opdService = OpdService();
   bool _isTentangExpanded = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _opdService.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    _opdService.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
 
   final List<Map<String, dynamic>> _layananTersedia = const [
     {
@@ -68,6 +87,14 @@ class _InfoDkp3State extends State<InfoDkp3> {
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF123457);
     const Color accentColor = Color(0xFFE8A33D);
+
+    final opd = _opdService.getInstansiByKode('dkp3');
+    if (opd != null && !opd.isActive) {
+      return MaintenanceScreen(
+        title: opd.namaLengkap,
+        category: 'Instansi ${opd.namaSingkat}',
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),

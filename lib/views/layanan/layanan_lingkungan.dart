@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/views/layanan/detail_layanan_lingkungan.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/models/layanan_model.dart';
+import 'package:mobile/models/sektor_model.dart';
 
 class LayananLingkunganScreen extends StatelessWidget {
   const LayananLingkunganScreen({super.key});
@@ -161,6 +165,31 @@ class LayananLingkunganScreen extends StatelessWidget {
 
                       return GestureDetector(
                         onTap: () {
+                          final titleStr = item['title'] as String;
+                          final sektor = OpdService().getSektorList().firstWhere(
+                                (s) => s.title.toLowerCase().contains('lingkungan'),
+                                orElse: () => SektorModel(id: '', title: '', imagePath: '', desc: '', iconName: ''),
+                              );
+                          final instansi = OpdService().getInstansiByKode('bpkpd');
+                          final allLayanan = OpdService().getLayananList();
+                          final matchedLayanan = allLayanan.firstWhere(
+                            (l) => l.rawTitle.toLowerCase().contains(titleStr.toLowerCase()) || titleStr.toLowerCase().contains(l.rawTitle.toLowerCase()),
+                            orElse: () => LayananModel(id: '', kodeInstansi: 'bpkpd', sektor: 'Lingkungan', judulLayanan: titleStr, rawTitle: titleStr, subjudul: '', deskripsi: '', persyaratan: [], urlPortal: '', iconName: ''),
+                          );
+
+                          if ((sektor.id.isNotEmpty && !sektor.isActive) || (instansi != null && !instansi.isActive) || (matchedLayanan.id.isNotEmpty && !matchedLayanan.isActive)) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MaintenanceScreen(
+                                  title: titleStr,
+                                  category: 'Sektor Lingkungan & BPKPD',
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
                           Navigator.push(
                             context,
                             MaterialPageRoute(

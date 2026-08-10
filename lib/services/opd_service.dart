@@ -658,6 +658,15 @@ class OpdService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleSektorStatus(String id) {
+    int idx = _sektorList.indexWhere((e) => e.id == id);
+    if (idx != -1) {
+      final current = _sektorList[idx];
+      _sektorList[idx] = current.copyWith(isActive: !current.isActive);
+      notifyListeners();
+    }
+  }
+
   // --- FUNGSI OPERASI CRUD INSTANSI ---
   List<InstansiModel> getInstansiList() => _instansiList;
 

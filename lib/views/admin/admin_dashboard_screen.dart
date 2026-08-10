@@ -2393,10 +2393,42 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ],
                         ),
                       ),
+                      Transform.scale(
+                        scale: 0.75,
+                        child: Switch(
+                          value: sektor.isActive,
+                          activeColor: Colors.green,
+                          onChanged: (val) {
+                            _opdService.toggleSektorStatus(sektor.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  val
+                                      ? 'Sektor "${sektor.title}" diaktifkan kembali!'
+                                      : 'Sektor "${sektor.title}" diubah ke status Pemeliharaan (Maintenance)!',
+                                ),
+                                backgroundColor: val ? Colors.green : Colors.orange,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                       PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
                         onSelected: (value) {
-                          if (value == 'edit') {
+                          if (value == 'toggle') {
+                            _opdService.toggleSektorStatus(sektor.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  !sektor.isActive
+                                      ? 'Sektor "${sektor.title}" diaktifkan kembali!'
+                                      : 'Sektor "${sektor.title}" diubah ke status Pemeliharaan (Maintenance)!',
+                                ),
+                                backgroundColor: !sektor.isActive ? Colors.green : Colors.orange,
+                              ),
+                            );
+                          } else if (value == 'edit') {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -2408,6 +2440,28 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           }
                         },
                         itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'toggle',
+                            child: Row(
+                              children: [
+                                Icon(
+                                  sektor.isActive ? Icons.pause_circle_outline : Icons.play_circle_outline,
+                                  size: 16,
+                                  color: sektor.isActive ? Colors.orange : Colors.green,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  sektor.isActive ? 'Set Pemeliharaan' : 'Aktifkan Kembali',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontFamily: 'Poppins',
+                                    color: sektor.isActive ? Colors.orange : Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           const PopupMenuItem(
                             value: 'edit',
                             child: Row(
