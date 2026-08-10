@@ -3,6 +3,9 @@ import 'package:mobile/views/berita_dan_fitur/activity_log_screen.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/services/user_service.dart';
 import 'package:mobile/widgets/guest_gatekeeper.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/models/layanan_model.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
 
 class FormPengajuanScreen extends StatefulWidget {
   final String judulLayanan;
@@ -372,6 +375,22 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF123457);
     const Color accentColor = Color(0xFFE8A33D);
+
+    final allLayanan = OpdService().getLayananList();
+    final matchedLayanan = allLayanan.firstWhere(
+      (l) => l.judulLayanan.toLowerCase().contains(widget.judulLayanan.toLowerCase()) ||
+             widget.judulLayanan.toLowerCase().contains(l.judulLayanan.toLowerCase()) ||
+             l.rawTitle.toLowerCase().contains(widget.judulLayanan.toLowerCase()) ||
+             widget.judulLayanan.toLowerCase().contains(l.rawTitle.toLowerCase()),
+      orElse: () => LayananModel(id: '', kodeInstansi: '', sektor: '', judulLayanan: widget.judulLayanan, rawTitle: widget.judulLayanan, subjudul: '', deskripsi: '', persyaratan: [], urlPortal: '', iconName: ''),
+    );
+
+    if (matchedLayanan.id.isNotEmpty && !matchedLayanan.isActive) {
+      return MaintenanceScreen(
+        title: widget.judulLayanan,
+        category: 'Layanan Publik',
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),

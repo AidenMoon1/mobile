@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile/views/instansi/mocilegit_webview_screen.dart';
 import 'package:mobile/widgets/guest_gatekeeper.dart';
 import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
 
 class InfoDisdukcapil extends StatefulWidget {
   const InfoDisdukcapil({super.key});
@@ -49,6 +50,13 @@ class _InfoDisdukcapilState extends State<InfoDisdukcapil> {
     const Color accentColor = Color(0xFFE8A33D);
 
     final opd = _opdService.getInstansiByKode('disdukcapil');
+
+    if (opd != null && !opd.isActive) {
+      return MaintenanceScreen(
+        title: opd.namaLengkap,
+        category: 'Instansi ${opd.namaSingkat}',
+      );
+    }
 
     final String namaSingkat = opd?.namaSingkat ?? 'DISDUKCAPIL';
     final String namaLengkap = opd?.namaLengkap ?? 'Dinas Kependudukan dan Pencatatan Sipil';

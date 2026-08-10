@@ -17,6 +17,7 @@ class InstansiModel {
   final String deskripsi;       // Deskripsi profil instansi
   final String mapsQuery;       // Query pencarian lokasi di Google Maps
   final List<String> tugasFungsi;// Daftar rincian tugas & fungsi OPD
+  final bool isActive;          // Status Layanan OPD: true (Aktif), false (Pemeliharaan / Maintenance)
 
   InstansiModel({
     required this.id,
@@ -30,6 +31,7 @@ class InstansiModel {
     required this.deskripsi,
     required this.mapsQuery,
     required this.tugasFungsi,
+    this.isActive = true,
   });
 
   // FUNGSI 1: Mengubah Objek InstansiModel Menjadi Map (Untuk Disimpan ke Database SQLite)
@@ -46,6 +48,7 @@ class InstansiModel {
       'deskripsi': deskripsi,
       'mapsQuery': mapsQuery,
       'tugasFungsiJson': tugasFungsi.join('|||'),
+      'isActive': isActive ? 1 : 0,
     };
   }
 
@@ -67,6 +70,7 @@ class InstansiModel {
       deskripsi: map['deskripsi'] ?? '',
       mapsQuery: map['mapsQuery'] ?? '',
       tugasFungsi: tfList,
+      isActive: (map['isActive'] ?? 1) == 1,
     );
   }
 
@@ -83,6 +87,7 @@ class InstansiModel {
     String? deskripsi,
     String? mapsQuery,
     List<String>? tugasFungsi,
+    bool? isActive,
   }) {
     return InstansiModel(
       id: id ?? this.id,
@@ -96,6 +101,7 @@ class InstansiModel {
       deskripsi: deskripsi ?? this.deskripsi,
       mapsQuery: mapsQuery ?? this.mapsQuery,
       tugasFungsi: tugasFungsi ?? this.tugasFungsi,
+      isActive: isActive ?? this.isActive,
     );
   }
 }

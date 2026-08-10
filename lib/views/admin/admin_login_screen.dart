@@ -13,8 +13,8 @@ class AdminLoginScreen extends StatefulWidget {
 
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _emailController = TextEditingController(text: 'admin.oneaccess@gmail.com');
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController(text: 'dzakwanmuh304@gmail.com');
+  final TextEditingController _passwordController = TextEditingController(text: 'admin123');
 
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -88,10 +88,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          children: [
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(22),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              children: [
             // HEADER HERO CARD
             Container(
               width: double.infinity,
@@ -189,7 +192,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                       keyboardType: TextInputType.emailAddress,
                       style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
                       decoration: InputDecoration(
-                        hintText: 'admin.oneaccess@gmail.com',
+                        hintText: 'dzakwanmuh304@gmail.com',
                         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5, fontFamily: 'Poppins'),
                         prefixIcon: const Icon(Icons.mark_email_read_outlined, color: primaryColor),
                         fillColor: const Color(0xFFF8FAFC),
@@ -298,7 +301,9 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }
 
@@ -445,10 +450,13 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(22),
-        child: Column(
-          children: [
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(22),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 520),
+            child: Column(
+              children: [
             // SIMULATED GMAIL NOTIFICATION BANNER
             Container(
               padding: const EdgeInsets.all(14),
@@ -643,9 +651,11 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
                 ],
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

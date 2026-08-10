@@ -1,35 +1,40 @@
-# Rencana Implementasi: Deploy Firebase & Perbaikan Kompatibilitas Web
+# Rencana Implementasi: Kembali Menggunakan MySQL (Mode Produksi)
 
-Rencana ini mencakup proses pembaruan aplikasi web Kakak ke Firebase Hosting, sekaligus memastikan website tersebut tidak "hang" (macet) dan bisa mengambil data dari server laptop Kakak meskipun diakses lewat internet.
+Rencana ini bertujuan untuk memperbaiki masalah perizinan pada MySQL Kakak (Error 1130) dan mengalihkan kembali penyimpanan data (Cache & Session) dari file ke database MySQL agar aplikasi siap digunakan secara nyata.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> - **Konektivitas Live**: Saya akan mengubah `ApiService` agar versi web menggunakan alamat **ngrok**. Tanpa ini, website Kakak di internet tidak akan bisa menampilkan berita atau melakukan login karena mencoba memanggil `localhost` (laptop user sendiri).
-> - **HTML Renderer**: Kita akan menggunakan renderer HTML agar website lebih lancar di browser HP.
+> [!CRITICAL]
+> **Tindakan Penting**: Kita akan meriset hak akses database `root`. Ini akan memastikan Laravel diizinkan kembali untuk berbicara dengan MySQL.
 
 ---
 
-## Langkah-Langkah Eksekusi
+## Langkah Perbaikan
 
-### 1. Penyesuaian Jalur Data (API)
-Mengaktifkan alamat publik ngrok untuk versi web agar bisa "berbicara" dengan laptop Kakak dari internet.
-- **[MODIFY] [api_service.dart](file:///C:/src/mobile/lib/services/api_service.dart)**
+### 1. Memperbaiki Izin MySQL (Fix Error 1130)
+Saya akan mencoba memperbaiki tabel perizinan MariaDB agar mengizinkan koneksi dari `localhost` dan `127.0.0.1`.
 
-### 2. Kompilasi Kode (Build Web)
-Membangun file website dengan optimasi stabilitas.
-- **Perintah**: `flutter build web --release --web-renderer html`
+### 2. Mengembalikan Setelan Laravel ke Database
+Setelah database bisa diakses, saya akan mengubah kembali file `.env`:
+- **`CACHE_STORE`**: Dari `file` kembali ke `database`.
+- **`SESSION_DRIVER`**: Dari `file` kembali ke `database`.
 
-### 3. Pengunggahan (Deploy Firebase)
-Mengirim file terbaru ke `https://sukabumi-one-access-app-c7f15.web.app/`.
-- **Perintah**: `npx firebase deploy --only hosting`
+### 3. Pembersihan Cache Sistem
+Menjalankan `php artisan config:clear` agar Laravel benar-benar beralih menggunakan MySQL kembali.
+
+---
+
+## Perubahan yang Akan Dilakukan
+
+#### [MODIFY] [.env](file:///C:/src/mobile/backend/.env)
+- Mengembalikan `SESSION_DRIVER=database`
+- Mengembalikan `CACHE_STORE=database`
 
 ---
 
 ## Rencana Verifikasi
 
 ### Manual Verification
-1. **Akses Link**: Buka `https://sukabumi-one-access-app-c7f15.web.app/`.
-2. **Uji Responsif**: Pastikan tombol bisa diklik dan input bisa diketik.
-3. **Uji Data**: Pastikan daftar berita muncul (menandakan koneksi ke Laravel via ngrok berhasil).
-4. **Uji Login**: Coba login Google atau Email OTP di versi web tersebut.
+1. **Tes Koneksi**: Menjalankan perintah `php artisan migrate:status`. Jika tidak muncul error merah, berarti MySQL sudah sembuh.
+2. **Tes OTP**: Klik "Kirim Ulang Kode" di HP. Pastikan email tetap masuk dan kode tersimpan di tabel `cache` MySQL.
+3. **Cek Dashboard**: Pastikan data berita dan pengaduan muncul dengan lancar.

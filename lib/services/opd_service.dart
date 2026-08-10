@@ -353,6 +353,14 @@ class OpdService extends ChangeNotifier {
     notifyListeners();
   }
 
+  void toggleInstansiStatus(String id) {
+    int idx = _instansiList.indexWhere((e) => e.id == id);
+    if (idx != -1) {
+      _instansiList[idx] = _instansiList[idx].copyWith(isActive: !_instansiList[idx].isActive);
+      notifyListeners();
+    }
+  }
+
   // --- FUNGSI OPERASI CRUD LAYANAN ---
   List<LayananModel> getLayananList() => _layananList;
 
@@ -385,5 +393,13 @@ class OpdService extends ChangeNotifier {
   void deleteLayanan(String id) {
     _layananList.removeWhere((e) => e.id == id);
     notifyListeners();
+  }
+
+  void toggleLayananStatus(String id) {
+    int idx = _layananList.indexWhere((e) => e.id == id);
+    if (idx != -1) {
+      _layananList[idx] = _layananList[idx].copyWith(isActive: !_layananList[idx].isActive);
+      notifyListeners();
+    }
   }
 }

@@ -20,6 +20,7 @@ class LayananModel {
   final String iconName;     // Nama ikon pemetakan visual
   final bool isIframeMode;   // Apakah mengarahkan ke iframe webview
   final String iframeUrl;    // URL iframe portal
+  final bool isActive;       // Status Layanan: true (Aktif), false (Pemeliharaan / Maintenance)
 
   // MESIN FORM BUILDER: Daftar Element Form Dinamis Yang Dibuat Admin
   final List<CustomFieldConfig> formFields;
@@ -37,6 +38,7 @@ class LayananModel {
     required this.iconName,
     this.isIframeMode = false,
     this.iframeUrl = '',
+    this.isActive = true,
     this.formFields = const [],
   });
 
@@ -53,6 +55,9 @@ class LayananModel {
       'persyaratanJson': persyaratan.join('|||'),
       'urlPortal': urlPortal,
       'iconName': iconName,
+      'isIframeMode': isIframeMode ? 1 : 0,
+      'iframeUrl': iframeUrl,
+      'isActive': isActive ? 1 : 0,
       'formFieldsJson': formFields.map((f) => f.toMap()).toList(),
     };
   }
@@ -84,6 +89,9 @@ class LayananModel {
       persyaratan: reqList,
       urlPortal: map['urlPortal'] ?? '',
       iconName: map['iconName'] ?? '',
+      isIframeMode: (map['isIframeMode'] ?? 0) == 1,
+      iframeUrl: map['iframeUrl'] ?? '',
+      isActive: (map['isActive'] ?? 1) == 1,
       formFields: fieldsList,
     );
   }
@@ -100,6 +108,9 @@ class LayananModel {
     List<String>? persyaratan,
     String? urlPortal,
     String? iconName,
+    bool? isIframeMode,
+    String? iframeUrl,
+    bool? isActive,
     List<CustomFieldConfig>? formFields,
   }) {
     return LayananModel(
@@ -113,6 +124,9 @@ class LayananModel {
       persyaratan: persyaratan ?? this.persyaratan,
       urlPortal: urlPortal ?? this.urlPortal,
       iconName: iconName ?? this.iconName,
+      isIframeMode: isIframeMode ?? this.isIframeMode,
+      iframeUrl: iframeUrl ?? this.iframeUrl,
+      isActive: isActive ?? this.isActive,
       formFields: formFields ?? this.formFields,
     );
   }

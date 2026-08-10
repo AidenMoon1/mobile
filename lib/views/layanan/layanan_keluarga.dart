@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/views/instansi/mocilegit_webview_screen.dart';
 import 'package:mobile/widgets/guest_gatekeeper.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/models/layanan_model.dart';
 
 class LayananKeluargaScreen extends StatelessWidget {
   const LayananKeluargaScreen({super.key});
@@ -310,6 +313,27 @@ class LayananKeluargaScreen extends StatelessWidget {
                           GuestGatekeeper.checkAccess(
                             context,
                             onGranted: () {
+                              final titleStr = item['title'] as String;
+                              final instansi = OpdService().getInstansiByKode('disdukcapil');
+                              final allLayanan = OpdService().getLayananList();
+                              final matchedLayanan = allLayanan.firstWhere(
+                                (l) => l.rawTitle.toLowerCase().contains(titleStr.toLowerCase()) || titleStr.toLowerCase().contains(l.rawTitle.toLowerCase()),
+                                orElse: () => LayananModel(id: '', kodeInstansi: 'disdukcapil', sektor: 'Keluarga', judulLayanan: titleStr, rawTitle: titleStr, subjudul: '', deskripsi: '', persyaratan: [], urlPortal: '', iconName: ''),
+                              );
+
+                              if ((instansi != null && !instansi.isActive) || (matchedLayanan.id.isNotEmpty && !matchedLayanan.isActive)) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MaintenanceScreen(
+                                      title: titleStr,
+                                      category: 'Layanan Kependudukan (Disdukcapil)',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+
                               _tampilkanDialogRedireksi(
                                 context,
                                 item['title'] as String,

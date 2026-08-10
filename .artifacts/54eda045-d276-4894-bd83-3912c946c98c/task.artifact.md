@@ -1,8 +1,5 @@
-- [x] Deploy Update to Firebase Hosting (Web Stability Fix)
-    - [x] Update `ApiService` to use ngrok for Web
-    - [x] Run `flutter build web --release`
-    - [x] Run `npx firebase deploy --only hosting`
-- [ ] Verification
-    - [ ] Access `https://sukabumi-one-access-app-c7f15.web.app/`
-    - [ ] Verify interactivity (clicking and typing works)
-    - [ ] Verify data fetching from backend (ngrok connection)
+- [/] Repair MySQL and Switch back to Database Storage
+    - [/] Fix MySQL 1130 "Host not allowed" error
+    - [ ] Update `.env` to use `database` for Cache and Session
+    - [ ] Clear Laravel configuration and application cache
+    - [ ] Verify database connection and OTP flow

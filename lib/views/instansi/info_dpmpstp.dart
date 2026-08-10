@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mobile/views/layanan/detail_layanan_usaha.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
 
 class InfoDpmpstp extends StatefulWidget {
   const InfoDpmpstp({super.key});
@@ -88,6 +90,14 @@ class _InfoDpmpstpState extends State<InfoDpmpstp> {
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF123457);
     const Color accentColor = Color(0xFFE8A33D);
+
+    final opd = OpdService().getInstansiByKode('dpmpstp');
+    if (opd != null && !opd.isActive) {
+      return MaintenanceScreen(
+        title: opd.namaLengkap,
+        category: 'Instansi ${opd.namaSingkat}',
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
