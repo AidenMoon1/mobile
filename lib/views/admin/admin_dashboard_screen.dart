@@ -576,80 +576,160 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Widget _buildTopHeaderBar(Color sidebarBg, Color accentGold) {
-    String nowStr;
+    String nowTimeStr;
+    String nowDateStr;
     try {
-      nowStr = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now());
+      nowTimeStr = DateFormat('HH.mm.ss').format(DateTime.now());
+      nowDateStr = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now()).toUpperCase();
     } catch (_) {
-      nowStr = DateFormat('EEEE, d MMMM yyyy').format(DateTime.now());
+      nowTimeStr = DateFormat('HH.mm.ss').format(DateTime.now());
+      nowDateStr = DateFormat('EEEE, d MMMM yyyy').format(DateTime.now()).toUpperCase();
     }
 
     return Container(
-      height: 64,
+      height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFFAF9F6),
         border: Border(
           bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
         ),
       ),
       child: Row(
         children: [
-          Text(
-            _getNavTitle(),
-            style: const TextStyle(
-              color: Color(0xFF0F2942),
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Poppins',
+          // OTORITAS AKSES HEADER BADGE
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEBF3FE),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFD0E2FF)),
+            ),
+            child: const Icon(
+              Icons.shield_outlined,
+              color: Color(0xFF0A1E33),
+              size: 22,
             ),
           ),
+          const SizedBox(width: 14),
+          const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Otoritas Akses',
+                style: TextStyle(
+                  color: Color(0xFF0A1E33),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                'Kelola akun & pantau aktivitas operator portal.',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 11.5,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+            ],
+          ),
           const Spacer(),
+
+          // TIME PILL BADGE
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
             ),
             child: Row(
               children: [
-                const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF0F2942)),
+                const Icon(Icons.access_time_rounded, size: 15, color: Colors.grey),
                 const SizedBox(width: 8),
                 Text(
-                  nowStr,
+                  '$nowTimeStr WIB\n$nowDateStr',
+                  textAlign: TextAlign.left,
                   style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF0F2942),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0A1E33),
                     fontFamily: 'Poppins',
+                    height: 1.1,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
+
+          // SYSTEM OPERATIONAL BADGE
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0x1F76A9EA),
+              color: const Color(0xFFE6F4EA),
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFCEEAD6)),
             ),
             child: const Row(
               children: [
                 CircleAvatar(
                   radius: 4,
-                  backgroundColor: Colors.green,
+                  backgroundColor: Color(0xFF1E8E3E),
                 ),
-                SizedBox(width: 6),
+                SizedBox(width: 8),
                 Text(
-                  'Web Portal Online',
+                  'SYSTEM OPERATIONAL',
                   style: TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 10.5,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0F2942),
+                    color: Color(0xFF137333),
+                    letterSpacing: 0.5,
                     fontFamily: 'Poppins',
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 12),
+
+          // NOTIFICATION BUTTON
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_none_rounded, color: Color(0xFF0A1E33), size: 18),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Tidak ada notifikasi baru.')),
+                );
+              },
+              tooltip: 'Notifikasi',
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // POWER / LOGOUT BUTTON
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFCE8E6),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFFAD2CF)),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.power_settings_new_rounded, color: Color(0xFFC5221F), size: 18),
+              onPressed: () => _showKeluarDialog(context),
+              tooltip: 'Keluar Akses Portal',
             ),
           ),
         ],
@@ -717,31 +797,32 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   // ---------------------------------------------------------------------------
   Widget _buildSidebar(BuildContext context, Color sidebarBg, Color accentGold) {
     return Container(
-      color: sidebarBg,
+      color: const Color(0xFF0A1E33),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // BRAND LOGO HEADER
+          // BRAND LOGO HEADER (SUKABUMI ONE ACCESS ADMIN)
           Container(
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 20),
+            padding: const EdgeInsets.fromLTRB(18, 24, 18, 20),
             child: Row(
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFF1E3A5F),
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: accentGold.withOpacity(0.4)),
                   ),
                   child: Center(
                     child: Image.asset(
                       'assets/images/logo.png',
-                      width: 28,
-                      height: 28,
+                      width: 24,
+                      height: 24,
                       errorBuilder: (context, error, stackTrace) => const Icon(
                         Icons.account_balance_rounded,
-                        color: Color(0xFF0F2942),
-                        size: 24,
+                        color: Color(0xFFE8A33D),
+                        size: 22,
                       ),
                     ),
                   ),
@@ -752,21 +833,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Sukabumi One Acces',
+                        'SUKABUMI',
                         style: TextStyle(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13.5,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          letterSpacing: 0.8,
                           fontFamily: 'Poppins',
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        'Admin Panel',
+                        'ONE ACCESS ADMIN',
                         style: TextStyle(
-                          color: Colors.white54,
-                          fontSize: 11,
+                          color: Color(0xFFE8A33D),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
                           fontFamily: 'Poppins',
                         ),
                       ),
@@ -777,87 +861,82 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
           ),
 
-          const Divider(color: Colors.white12, height: 1),
-          const SizedBox(height: 16),
+          const Divider(color: Colors.white10, height: 1),
+          const SizedBox(height: 14),
 
-          // SECTION TITLE: MENU UTAMA
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'MENU UTAMA',
-              style: TextStyle(
-                color: Colors.white38,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-                fontFamily: 'Poppins',
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // MAIN MENU CATEGORY
+                  _buildSidebarCategoryHeader('MAIN MENU'),
+                  _buildSidebarNavItem(
+                    index: 0,
+                    icon: Icons.space_dashboard_outlined,
+                    label: 'Dashboard',
+                    accentGold: accentGold,
+                  ),
+                  _buildSidebarNavItem(
+                    index: 7,
+                    icon: Icons.people_alt_outlined,
+                    label: 'Kelola Super Admin',
+                    accentGold: accentGold,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // USER MANAGEMENT CATEGORY
+                  _buildSidebarCategoryHeader('USER MANAGEMENT'),
+                  _buildSidebarNavItem(
+                    index: 1,
+                    icon: Icons.badge_outlined,
+                    label: 'Kelola Admin Dinas',
+                    accentGold: accentGold,
+                  ),
+                  _buildSidebarNavItem(
+                    index: 3,
+                    icon: Icons.person_search_outlined,
+                    label: 'Kelola Pengguna',
+                    accentGold: accentGold,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // PORTAL CONFIGURATION CATEGORY
+                  _buildSidebarCategoryHeader('PORTAL CONFIGURATION'),
+                  _buildSidebarNavItem(
+                    index: 9,
+                    icon: Icons.business_outlined,
+                    label: 'Profil Instansi',
+                    accentGold: accentGold,
+                  ),
+                  _buildSidebarNavItem(
+                    index: 2,
+                    icon: Icons.link_outlined,
+                    label: 'Daftar Layanan',
+                    accentGold: accentGold,
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // SUPPORT CATEGORY
+                  _buildSidebarCategoryHeader('SUPPORT'),
+                  _buildSidebarNavItem(
+                    index: 5,
+                    icon: Icons.chat_bubble_outline_rounded,
+                    label: 'Pengaduan Warga',
+                    accentGold: accentGold,
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(height: 10),
-
-          // NAV ITEM 0: DASHBOARD
-          _buildSidebarNavItem(
-            index: 0,
-            icon: Icons.grid_view_rounded,
-            label: 'Dashboard',
-            accentGold: accentGold,
-          ),
-
-          // NAV ITEM 1: KELOLA INSTANSI
-          _buildSidebarNavItem(
-            index: 1,
-            icon: Icons.account_balance_rounded,
-            label: 'Kelola Instansi',
-            accentGold: accentGold,
-          ),
-
-          // NAV ITEM 2: KELOLA LAYANAN
-          _buildSidebarNavItem(
-            index: 2,
-            icon: Icons.format_list_bulleted_rounded,
-            label: 'Kelola Layanan',
-            accentGold: accentGold,
-          ),
-
-          // NAV ITEM 3: KELOLA SEKTOR
-          _buildSidebarNavItem(
-            index: 3,
-            icon: Icons.widgets_outlined,
-            label: 'Kelola Sektor',
-            accentGold: accentGold,
-          ),
-
-          // NAV ITEM 4: LIVE CHAT WARGA
-          _buildSidebarNavItem(
-            index: 4,
-            icon: Icons.mark_chat_unread_rounded,
-            label: 'Live Chat Warga',
-            accentGold: accentGold,
-          ),
-
-          // NAV ITEM 5: KRITIK & SARAN WARGA
-          _buildSidebarNavItem(
-            index: 5,
-            icon: Icons.rate_review_rounded,
-            label: 'Kritik & Saran Warga',
-            accentGold: accentGold,
-          ),
-
-          // NAV ITEM 7: KELOLA ADMIN (SUPERADMIN ONLY)
-          _buildSidebarNavItem(
-            index: 7,
-            icon: Icons.supervisor_account_rounded,
-            label: 'Kelola Admin (Super)',
-            accentGold: accentGold,
-          ),
-
-          const Spacer(),
 
           // POP UP PROFIL CONTAINER (WHEN CLICKED ON BOTTOM BAR)
           if (_isProfileMenuVisible)
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -877,26 +956,26 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     children: [
                       const CircleAvatar(
                         radius: 14,
-                        backgroundColor: Color(0xFF0F2942),
-                        child: Icon(Icons.person_rounded, color: Colors.white, size: 16),
+                        backgroundColor: Color(0xFF0A1E33),
+                        child: Text('AD', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                       ),
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'SOA',
+                            'Administrator',
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 12.5,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F2942),
+                              color: Color(0xFF0A1E33),
                               fontFamily: 'Poppins',
                             ),
                           ),
                           Text(
-                            'Admin Panel',
+                            'DISKOMINFO',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 9.5,
                               color: Colors.grey.shade600,
                               fontFamily: 'Poppins',
                             ),
@@ -907,7 +986,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                   const Divider(height: 16),
 
-                  // POPUP ITEM 1: PROFIL SAYA
                   InkWell(
                     onTap: () {
                       _onTabSelected(6);
@@ -916,57 +994,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       padding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                       child: Row(
                         children: [
-                          Icon(Icons.person_outline_rounded, size: 16, color: Color(0xFF0F2942)),
+                          Icon(Icons.person_outline_rounded, size: 16, color: Color(0xFF0A1E33)),
                           SizedBox(width: 10),
-                          Text('Profil Saya', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+                          Text('Profil Saya', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0A1E33), fontFamily: 'Poppins')),
                         ],
                       ),
                     ),
                   ),
 
-                  // POPUP ITEM 2: PENGATURAN
-                  InkWell(
-                    onTap: () {
-                      setState(() => _isProfileMenuVisible = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Menu Pengaturan Admin dibuka.')),
-                      );
-                    },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                      child: Row(
-                        children: [
-                          Icon(Icons.settings_outlined, size: 16, color: Color(0xFF0F2942)),
-                          SizedBox(width: 10),
-                          Text('Pengaturan', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // POPUP ITEM 3: UBAH PASSWORD
-                  InkWell(
-                    onTap: () {
-                      setState(() => _isProfileMenuVisible = false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Menu Ubah Password dibuka.')),
-                      );
-                    },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                      child: Row(
-                        children: [
-                          Icon(Icons.lock_outline_rounded, size: 16, color: Color(0xFF0F2942)),
-                          SizedBox(width: 10),
-                          Text('Ubah Password', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const Divider(height: 12),
-
-                  // POPUP ITEM 4: KELUAR (TEKS MERAH)
                   InkWell(
                     onTap: () {
                       setState(() => _isProfileMenuVisible = false);
@@ -978,7 +1013,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         children: [
                           Icon(Icons.logout_rounded, size: 16, color: Colors.red),
                           SizedBox(width: 10),
-                          Text('Keluar', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red, fontFamily: 'Poppins')),
+                          Text('Keluar Portal', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red, fontFamily: 'Poppins')),
                         ],
                       ),
                     ),
@@ -987,7 +1022,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
 
-          // BOTTOM PROFILE BAR (SOA GOLD BUTTON)
+          // BOTTOM PROFILE CARD WIDGET (EXACT MATCH USER SCREENSHOT)
           InkWell(
             onTap: () {
               setState(() {
@@ -995,31 +1030,89 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               });
             },
             child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: accentGold,
-              child: const Row(
+              margin: const EdgeInsets.all(12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF13283E),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 14,
-                    backgroundColor: Color(0xFF0F2942),
-                    child: Icon(Icons.person_rounded, color: Colors.white, size: 16),
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    'SOA',
-                    style: TextStyle(
-                      color: Color(0xFF0F2942),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      fontFamily: 'Poppins',
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: accentGold,
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    child: const Center(
+                      child: Text(
+                        'AD',
+                        style: TextStyle(
+                          color: Color(0xFF0A1E33),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Administrator',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                            fontFamily: 'Poppins',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'DISKOMINFO',
+                          style: TextStyle(
+                            color: Colors.white38,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                            fontFamily: 'Poppins',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _isProfileMenuVisible ? Icons.keyboard_arrow_down_rounded : Icons.unfold_more_rounded,
+                    color: Colors.white54,
+                    size: 18,
                   ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSidebarCategoryHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white38,
+          fontSize: 9.5,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1.2,
+          fontFamily: 'Poppins',
+        ),
       ),
     );
   }
@@ -1033,27 +1126,48 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final bool isSelected = _selectedNavIndex == index;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: InkWell(
         onTap: () => _onTabSelected(index),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? accentGold : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            color: isSelected ? const Color(0xFF1B324D) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
-              Icon(icon, color: isSelected ? Colors.white : Colors.white70, size: 20),
+              // YELLOW LEFT INDICATOR BAR (EXACT MATCH SCREENSHOT)
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 4,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: isSelected ? accentGold : Colors.transparent,
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(4),
+                    bottomRight: Radius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.white60,
+                size: 19,
+              ),
               const SizedBox(width: 12),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.white70,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 13,
-                  fontFamily: 'Poppins',
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : Colors.white70,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    fontSize: 12.5,
+                    fontFamily: 'Poppins',
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -2945,7 +3059,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // SUB-VIEW KELOLA ADMIN & SUPERADMIN MANAGEMENT
+  // SUB-VIEW KELOLA ADMIN & SUPERADMIN MANAGEMENT (EXACT MATCH USER SCREENSHOT)
   // ---------------------------------------------------------------------------
   Widget _buildKelolaAdminView(BuildContext context, Color sidebarBg, Color accentGold) {
     final allAdmins = _adminService.adminList;
@@ -2953,6 +3067,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       final query = _adminSearchQuery.toLowerCase();
       return admin.nama.toLowerCase().contains(query) ||
           admin.email.toLowerCase().contains(query) ||
+          admin.username.toLowerCase().contains(query) ||
           admin.nip.toLowerCase().contains(query) ||
           admin.instansi.toLowerCase().contains(query) ||
           admin.role.toLowerCase().contains(query);
@@ -2961,492 +3076,824 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 10, offset: Offset(0, 4))],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
+        boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 16, offset: Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // CARD TOP HEADER ROW
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.all(24.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Manajemen Administrator & SuperAdmin',
+                      'Manajemen Operator',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF0F2942),
+                        color: Color(0xFF0A1E33),
                         fontFamily: 'Poppins',
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Total ${allAdmins.length} Administrator Terdaftar di Sistem SOA',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                      '${allAdmins.length} SUPER ADMIN TERDAFTAR',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        letterSpacing: 0.8,
+                        fontFamily: 'Poppins',
+                      ),
                     ),
                   ],
                 ),
+                const Spacer(),
+
+                // SEARCH INPUT BOX
+                SizedBox(
+                  width: 220,
+                  height: 42,
+                  child: TextField(
+                    controller: _adminSearchController,
+                    onChanged: (val) => setState(() => _adminSearchQuery = val),
+                    style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+                    decoration: InputDecoration(
+                      hintText: 'Cari nama...',
+                      hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                      prefixIcon: const Icon(Icons.search_rounded, color: Colors.grey, size: 18),
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+
+                // + TAMBAH BUTTON (EXACT MATCH SCREENSHOT)
                 ElevatedButton.icon(
                   onPressed: () => _showFormTambahAdminDialog(context),
-                  icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+                  icon: const Icon(Icons.person_add_rounded, size: 16),
                   label: const Text(
-                    'Tambah Admin Baru',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                    '+ TAMBAH',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                      fontFamily: 'Poppins',
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F2942),
-                    foregroundColor: accentGold,
+                    backgroundColor: const Color(0xFF0A1E33),
+                    foregroundColor: Colors.white,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                 ),
               ],
             ),
           ),
 
-          // SEARCH BAR ADMIN
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+          // LIST OPERATOR CARDS (EXACT MATCH USER SCREENSHOT 1)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-            child: TextField(
-              controller: _adminSearchController,
-              onChanged: (val) => setState(() => _adminSearchQuery = val),
-              decoration: InputDecoration(
-                hintText: 'Cari nama admin, email, NIP, atau instansi...',
-                hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
-                prefixIcon: const Icon(Icons.search_rounded, color: Colors.grey, size: 20),
-                suffixIcon: _adminSearchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18),
-                        onPressed: () {
-                          _adminSearchController.clear();
-                          setState(() => _adminSearchQuery = '');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: const Color(0xFFF8FAFC),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
+            padding: const EdgeInsets.all(20.0),
+            child: filteredAdmins.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text(
+                        'Tidak ada operator admin yang cocok dengan pencarian.',
+                        style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filteredAdmins.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 14),
+                    itemBuilder: (context, index) {
+                      final admin = filteredAdmins[index];
 
-          // TABLE HEADER
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            color: const Color(0xFFF1F5F9),
-            child: const Row(
-              children: [
-                Expanded(flex: 4, child: Text('Nama & Email Admin', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
-                Expanded(flex: 3, child: Text('NIP Pegawai', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
-                Expanded(flex: 2, child: Center(child: Text('Instansi OPD', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
-                Expanded(flex: 2, child: Center(child: Text('Jabatan Role', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
-                Expanded(flex: 2, child: Center(child: Text('Status Akses', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
-                SizedBox(width: 50, child: Center(child: Text('Aksi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
-              ],
-            ),
-          ),
-
-          // TABLE BODY LIST
-          if (filteredAdmins.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(32.0),
-              child: Center(
-                child: Text('Tidak ada administrator yang cocok dengan pencarian.', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
-              ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: filteredAdmins.length,
-              separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
-              itemBuilder: (context, index) {
-                final admin = filteredAdmins[index];
-                final isSuper = admin.role == 'Super Admin';
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  child: Row(
-                    children: [
-                      // NAMA & EMAIL ADMIN
-                      Expanded(
-                        flex: 4,
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAFAFA),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFEFEFEF)),
+                        ),
                         child: Row(
                           children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundColor: isSuper ? const Color(0xFF0F2942) : const Color(0xFFE8A33D),
-                              child: Icon(
-                                isSuper ? Icons.admin_panel_settings_rounded : Icons.person_rounded,
-                                color: Colors.white,
-                                size: 18,
+                            // CIRCLE AVATAR WITH INITIALS
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF0A1E33),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  admin.initials,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 16),
+
+                            // COLUMN 1: NAME & HANDLE TAG
                             Expanded(
+                              flex: 4,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     admin.nama,
                                     style: const TextStyle(
-                                      fontSize: 13,
+                                      fontSize: 14,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0F2942),
+                                      color: Color(0xFF0A1E33),
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    admin.handleTag,
+                                    style: const TextStyle(
+                                      fontSize: 9.5,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.3,
                                       fontFamily: 'Poppins',
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
+                                ],
+                              ),
+                            ),
+
+                            // COLUMN 2: EMAIL KERJA
+                            Expanded(
+                              flex: 4,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'EMAIL KERJA',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey,
+                                      letterSpacing: 0.5,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
                                   Text(
                                     admin.email,
-                                    style: const TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF334155),
+                                      fontFamily: 'Poppins',
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
 
-                      // NIP PEGAWAI
-                      Expanded(
-                        flex: 3,
-                        child: Text(
-                          admin.nip.isNotEmpty ? admin.nip : '-',
-                          style: const TextStyle(fontSize: 12, fontFamily: 'Poppins', color: Color(0xFF334155)),
-                        ),
-                      ),
-
-                      // INSTANSI OPD CHIP
-                      Expanded(
-                        flex: 2,
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFFCBD5E1)),
-                            ),
-                            child: Text(
-                              admin.instansi.toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F2942),
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // ROLE BADGE
-                      Expanded(
-                        flex: 2,
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: isSuper ? const Color(0xFFF3E8FF) : const Color(0xFFE0F2FE),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isSuper ? const Color(0xFFC084FC) : const Color(0xFF38BDF8)),
-                            ),
-                            child: Text(
-                              admin.role,
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                                color: isSuper ? const Color(0xFF7E22CE) : const Color(0xFF0369A1),
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // STATUS SWITCH (AKSES AKTIF / NONAKTIF)
-                      Expanded(
-                        flex: 2,
-                        child: Center(
-                          child: Transform.scale(
-                            scale: 0.8,
-                            child: Switch(
-                              value: admin.isActive,
-                              activeColor: const Color(0xFFE8A33D),
-                              activeTrackColor: const Color(0xFF0F2942),
-                              onChanged: (val) {
-                                _adminService.toggleAdminStatus(admin.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      val
-                                          ? '✅ Akses admin "${admin.nama}" diaktifkan!'
-                                          : '⚠️ Akses admin "${admin.nama}" dinonaktifkan!',
-                                    ),
-                                    backgroundColor: val ? const Color(0xFF0F2942) : Colors.orange.shade900,
+                            // COLUMN 3: STATUS BADGE (ONLINE / OFFLINE)
+                            Expanded(
+                              flex: 3,
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 3.5,
+                                    backgroundColor: admin.isOnline ? const Color(0xFF10B981) : Colors.grey.shade400,
                                   ),
-                                );
-                              },
+                                  const SizedBox(width: 6),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        admin.isOnline ? 'ONLINE' : 'OFFLINE',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: admin.isOnline ? const Color(0xFF10B981) : Colors.grey.shade600,
+                                          letterSpacing: 0.5,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                      if (!admin.isOnline)
+                                        const Text(
+                                          'BELUM LOGIN',
+                                          style: TextStyle(
+                                            fontSize: 8.5,
+                                            color: Colors.grey,
+                                            fontWeight: FontWeight.w500,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
 
-                      // AKSI POPUP MENU
-                      SizedBox(
-                        width: 50,
-                        child: PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
-                          onSelected: (val) {
-                            if (val == 'edit') {
-                              _showFormTambahAdminDialog(context, adminToEdit: admin);
-                            } else if (val == 'hapus') {
-                              _konfirmasiHapusAdmin(context, admin);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)),
-                                  SizedBox(width: 8),
-                                  Text('Edit Admin', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'hapus',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
-                                  SizedBox(width: 8),
-                                  Text('Hapus Admin', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins')),
-                                ],
-                              ),
+                            // COLUMN 4: ACTION BUTTONS (EDIT & HAPUS)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_rounded, color: Color(0xFF0A1E33), size: 18),
+                                  onPressed: () => _showFormTambahAdminDialog(context, adminToEdit: admin),
+                                  tooltip: 'Edit Operator',
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
+                                  onPressed: () => _konfirmasiHapusAdmin(context, admin),
+                                  tooltip: 'Hapus Operator',
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-          const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 10),
         ],
       ),
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // FORM REGISTRASI ADMIN BARU DIALOG (EXACT MATCH SCREENSHOT 2 & 3)
+  // ---------------------------------------------------------------------------
   void _showFormTambahAdminDialog(BuildContext context, {AdminUserModel? adminToEdit}) {
     final isEdit = adminToEdit != null;
     final formKey = GlobalKey<FormState>();
     final namaController = TextEditingController(text: adminToEdit?.nama ?? '');
+    final usernameController = TextEditingController(text: adminToEdit?.username ?? '');
     final emailController = TextEditingController(text: adminToEdit?.email ?? '');
-    final nipController = TextEditingController(text: adminToEdit?.nip ?? '');
-    String selectedInstansi = adminToEdit?.instansi ?? 'DISKOMINFO';
-    String selectedRole = adminToEdit?.role ?? 'Admin OPD';
-    bool isActive = adminToEdit?.isActive ?? true;
+    final whatsappController = TextEditingController(text: adminToEdit?.whatsapp ?? '');
+    final passwordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
 
-    final instansiList = ['SUPERADMIN', 'DISDUKCAPIL', 'DISKOMINFO', 'DPMPTSP', 'BPKPD', 'DKP3'];
-    final roleList = ['Super Admin', 'Admin OPD'];
+    String selectedInstansi = adminToEdit?.instansi ?? 'DISKOMINFO';
+    String selectedRole = adminToEdit?.role ?? 'Super Admin';
+    bool isVerified = isEdit;
+    bool obscurePassword = true;
+    bool obscureConfirm = true;
+
+    final instansiList = [
+      'DISKOMINFO',
+      'DISDUKCAPIL',
+      'DPMPTSP',
+      'BPKPD',
+      'DKP3',
+      'DINAS KESEHATAN',
+      'DINAS PENDIDIKAN',
+      'SUPERADMIN',
+    ];
 
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Row(
-                children: [
-                  const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF0F2942), size: 24),
-                  const SizedBox(width: 10),
-                  Text(
-                    isEdit ? 'Edit Data Admin' : 'Tambah Admin Baru',
-                    style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ],
-              ),
-              content: SingleChildScrollView(
-                child: SizedBox(
-                  width: 480,
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Nama Lengkap Admin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                        const SizedBox(height: 6),
-                        TextFormField(
-                          controller: namaController,
-                          validator: (val) => val == null || val.trim().isEmpty ? 'Nama wajib diisi' : null,
-                          decoration: InputDecoration(
-                            hintText: 'Contoh: Ahmad Subagja, S.Kom',
-                            hintStyle: const TextStyle(fontSize: 12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        const Text('Email Login Admin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                        const SizedBox(height: 6),
-                        TextFormField(
-                          controller: emailController,
-                          validator: (val) => val == null || !val.contains('@') ? 'Email tidak valid' : null,
-                          decoration: InputDecoration(
-                            hintText: 'admin.disdukcapil@sukabumi.go.id',
-                            hintStyle: const TextStyle(fontSize: 12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        const Text('NIP (Nomor Induk Pegawai)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                        const SizedBox(height: 6),
-                        TextFormField(
-                          controller: nipController,
-                          decoration: InputDecoration(
-                            hintText: '19920415 201801 1 005',
-                            hintStyle: const TextStyle(fontSize: 12),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        Row(
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox(
+                width: 650,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // DARK NAVY HEADER BANNER (EXACT MATCH SCREENSHOT 2)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        color: const Color(0xFF0A1E33),
+                        child: Row(
                           children: [
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('Instansi OPD *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                                  const SizedBox(height: 6),
-                                  DropdownButtonFormField<String>(
-                                    value: selectedInstansi,
-                                    items: instansiList
-                                        .map((inst) => DropdownMenuItem(value: inst, child: Text(inst, style: const TextStyle(fontSize: 12))))
-                                        .toList(),
-                                    onChanged: (val) {
-                                      if (val != null) setDialogState(() => selectedInstansi = val);
-                                    },
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  Text(
+                                    isEdit ? 'Edit Data Admin' : 'Registrasi Admin Baru',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Otoritas ini memiliki kendali penuh terhadap manajemen layanan pada instansi terkait.',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11.5,
+                                      fontFamily: 'Poppins',
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text('Jabatan Role *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                                  const SizedBox(height: 6),
-                                  DropdownButtonFormField<String>(
-                                    value: selectedRole,
-                                    items: roleList
-                                        .map((r) => DropdownMenuItem(value: r, child: Text(r, style: const TextStyle(fontSize: 12))))
-                                        .toList(),
-                                    onChanged: (val) {
-                                      if (val != null) setDialogState(() => selectedRole = val);
-                                    },
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                    ),
-                                  ),
-                                ],
+                            const SizedBox(width: 16),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E3A5F),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE8A33D).withOpacity(0.4)),
+                              ),
+                              child: const Icon(
+                                Icons.shield_rounded,
+                                color: Color(0xFFE8A33D),
+                                size: 24,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
-
-                        Row(
-                          children: [
-                            const Text('Status Akses Aktif:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
-                            const Spacer(),
-                            Switch(
-                              value: isActive,
-                              activeColor: const Color(0xFFE8A33D),
-                              onChanged: (val) => setDialogState(() => isActive = val),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (!formKey.currentState!.validate()) return;
-                    final newAdmin = AdminUserModel(
-                      id: isEdit ? adminToEdit.id : 'adm-${DateTime.now().millisecondsSinceEpoch}',
-                      nama: namaController.text.trim(),
-                      email: emailController.text.trim(),
-                      nip: nipController.text.trim(),
-                      instansi: selectedInstansi,
-                      role: selectedRole,
-                      isActive: isActive,
-                      createdAt: isEdit ? adminToEdit.createdAt : DateTime.now(),
-                    );
-
-                    if (isEdit) {
-                      _adminService.updateAdmin(newAdmin);
-                    } else {
-                      _adminService.addAdmin(newAdmin);
-                    }
-
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('✅ Admin "${newAdmin.nama}" berhasil ${isEdit ? "perbarui" : "ditambahkan"}!'),
-                        backgroundColor: const Color(0xFF0F2942),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F2942),
-                    foregroundColor: const Color(0xFFE8A33D),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+
+                      // FORM BODY CONTENT
+                      Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Form(
+                          key: formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // FIELD 1: NAMA LENGKAP & GELAR
+                              const Text(
+                                'NAMA LENGKAP & GELAR SESUAI SK',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0A1E33),
+                                  letterSpacing: 0.5,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: namaController,
+                                validator: (val) => val == null || val.trim().isEmpty ? 'Nama wajib diisi' : null,
+                                decoration: InputDecoration(
+                                  hintText: 'Contoh: Syarif Hidayatullah, M.Kom',
+                                  hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                  prefixIcon: const Icon(Icons.badge_outlined, color: Colors.grey, size: 20),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // FIELD 2: ID USERNAME
+                              const Text(
+                                'ID USERNAME',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0A1E33),
+                                  letterSpacing: 0.5,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: usernameController,
+                                validator: (val) => val == null || val.trim().isEmpty ? 'Username wajib diisi' : null,
+                                decoration: InputDecoration(
+                                  hintText: '@ admin_diskominfo',
+                                  hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                  prefixIcon: const Icon(Icons.alternate_email_rounded, color: Colors.grey, size: 18),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // FIELD 3: EMAIL KEDINASAN (WITH VERIFIKASI BUTTON)
+                              const Text(
+                                'EMAIL KEDINASAN (WAJIB VERIFIKASI)',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0A1E33),
+                                  letterSpacing: 0.5,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: emailController,
+                                      validator: (val) => val == null || !val.contains('@') ? 'Email tidak valid' : null,
+                                      decoration: InputDecoration(
+                                        hintText: 'official@sukabumikota.go.id',
+                                        hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                        prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey, size: 20),
+                                        filled: true,
+                                        fillColor: const Color(0xFFF8FAFC),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      if (emailController.text.trim().isNotEmpty) {
+                                        setDialogState(() => isVerified = true);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('✅ Email kedinasan terverifikasi! Detail operator terbuka.')),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Masukkan email kedinasan terlebih dahulu.')),
+                                        );
+                                      }
+                                    },
+                                    icon: Icon(
+                                      isVerified ? Icons.verified_user_rounded : Icons.security_rounded,
+                                      size: 16,
+                                    ),
+                                    label: Text(
+                                      isVerified ? 'TERVERIFIKASI' : 'VERIFIKASI',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: isVerified ? const Color(0xFF10B981) : const Color(0xFF0A1E33),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+
+                              // SECTION HEADER: DETAIL OPERATOR [🔒 TERKUNCI / TERVERIFIKASI]
+                              Row(
+                                children: [
+                                  const Text(
+                                    'DETAIL OPERATOR',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0A1E33),
+                                      letterSpacing: 0.8,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: isVerified ? const Color(0xFFE6F4EA) : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          isVerified ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                                          size: 12,
+                                          color: isVerified ? const Color(0xFF10B981) : Colors.grey,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          isVerified ? 'TERBUKA' : 'TERKUNCI',
+                                          style: TextStyle(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: isVerified ? const Color(0xFF10B981) : Colors.grey,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+
+                              // TWO COLUMN ROW: WHATSAPP & INSTANSI
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'NOMOR WHATSAPP AKTIF',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0A1E33),
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        TextFormField(
+                                          controller: whatsappController,
+                                          keyboardType: TextInputType.phone,
+                                          decoration: InputDecoration(
+                                            hintText: '812-345-678',
+                                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                            prefixIcon: const Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                                              child: Text('+62', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0A1E33), fontFamily: 'Poppins')),
+                                            ),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF8FAFC),
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'INSTANSI / UNIT KERJA',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0A1E33),
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        DropdownButtonFormField<String>(
+                                          value: selectedInstansi,
+                                          items: instansiList
+                                              .map((inst) => DropdownMenuItem(value: inst, child: Text(inst, style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'))))
+                                              .toList(),
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedInstansi = val);
+                                          },
+                                          decoration: InputDecoration(
+                                            prefixIcon: const Icon(Icons.business_rounded, color: Colors.grey, size: 20),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF8FAFC),
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+
+                              // TWO COLUMN ROW: KATA SANDI & KONFIRMASI SANDI
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'KATA SANDI',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0A1E33),
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        TextFormField(
+                                          controller: passwordController,
+                                          obscureText: obscurePassword,
+                                          decoration: InputDecoration(
+                                            hintText: '••••••••',
+                                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                            prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.grey, size: 18),
+                                            suffixIcon: IconButton(
+                                              icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18, color: Colors.grey),
+                                              onPressed: () => setDialogState(() => obscurePassword = !obscurePassword),
+                                            ),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF8FAFC),
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'KONFIRMASI SANDI',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0A1E33),
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        TextFormField(
+                                          controller: confirmPasswordController,
+                                          obscureText: obscureConfirm,
+                                          decoration: InputDecoration(
+                                            hintText: '••••••••',
+                                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                            prefixIcon: const Icon(Icons.security_outlined, color: Colors.grey, size: 18),
+                                            suffixIcon: IconButton(
+                                              icon: Icon(obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18, color: Colors.grey),
+                                              onPressed: () => setDialogState(() => obscureConfirm = !obscureConfirm),
+                                            ),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF8FAFC),
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 28),
+
+                              // BOTTOM FORM ACTIONS (BATALKAN & SIMPAN & BERI OTORITAS)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  OutlinedButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.grey.shade700,
+                                      side: BorderSide(color: Colors.grey.shade300),
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: const Text(
+                                      'Batalkan',
+                                      style: TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      if (!formKey.currentState!.validate()) return;
+                                      final newAdmin = AdminUserModel(
+                                        id: isEdit ? adminToEdit.id : 'adm-${DateTime.now().millisecondsSinceEpoch}',
+                                        nama: namaController.text.trim(),
+                                        username: usernameController.text.trim().replaceAll('@', '').trim(),
+                                        email: emailController.text.trim(),
+                                        nip: adminToEdit?.nip ?? '19950810 202203 1 001',
+                                        whatsapp: whatsappController.text.trim(),
+                                        instansi: selectedInstansi,
+                                        role: selectedRole,
+                                        isActive: true,
+                                        isOnline: isEdit ? adminToEdit.isOnline : false,
+                                        createdAt: isEdit ? adminToEdit.createdAt : DateTime.now(),
+                                      );
+
+                                      if (isEdit) {
+                                        _adminService.updateAdmin(newAdmin);
+                                      } else {
+                                        _adminService.addAdmin(newAdmin);
+                                      }
+
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('✅ Administrator "${newAdmin.nama}" berhasil ${isEdit ? "perbarui" : "didaftarkan"}!'),
+                                          backgroundColor: const Color(0xFF0A1E33),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF0A1E33),
+                                      foregroundColor: const Color(0xFFE8A33D),
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: Text(
+                                      isEdit ? 'SIMPAN PERUBAHAN' : 'SIMPAN & BERI OTORITAS',
+                                      style: const TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(isEdit ? 'Perbarui' : 'Simpan Admin', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
                 ),
-              ],
+              ),
             );
           },
         );
