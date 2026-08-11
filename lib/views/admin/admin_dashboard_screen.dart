@@ -9,9 +9,11 @@ import 'package:intl/intl.dart';
 import '../../models/instansi_model.dart';
 import '../../models/layanan_model.dart';
 import '../../models/sektor_model.dart';
+import '../../models/admin_user_model.dart';
 import '../../services/opd_service.dart';
 import '../../services/feedback_service.dart';
 import '../../services/admin_auth_service.dart';
+import '../../services/admin_management_service.dart';
 import '../../widgets/smart_image.dart';
 import 'admin_form_instansi_screen.dart';
 import 'admin_form_layanan_screen.dart';
@@ -45,6 +47,9 @@ class AdminDashboardScreen extends StatefulWidget {
         return 5;
       case 'profil':
         return 6;
+      case 'admin':
+      case 'kelola-admin':
+        return 7;
       case 'overview':
       default:
         return 0;
@@ -65,6 +70,8 @@ class AdminDashboardScreen extends StatefulWidget {
         return 'feedback';
       case 6:
         return 'profil';
+      case 7:
+        return 'admin';
       case 0:
       default:
         return 'overview';
@@ -77,6 +84,7 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final OpdService _opdService = OpdService();
+  final AdminManagementService _adminService = AdminManagementService();
   late int _selectedNavIndex;
   bool _isProfileMenuVisible = false;
 
@@ -84,10 +92,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final TextEditingController _instansiSearchController = TextEditingController();
   final TextEditingController _layananSearchController = TextEditingController();
   final TextEditingController _sektorSearchController = TextEditingController();
+  final TextEditingController _adminSearchController = TextEditingController();
 
   String _instansiSearchQuery = '';
   String _layananSearchQuery = '';
   String _sektorSearchQuery = '';
+  String _adminSearchQuery = '';
 
   @override
   void initState() {
@@ -98,6 +108,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       _selectedNavIndex = widget.initialNavIndex;
     }
     _opdService.addListener(_refresh);
+    _adminService.addListener(_refresh);
   }
 
   void _onTabSelected(int index) {
@@ -670,6 +681,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return 'Kritik & Saran Warga';
       case 6:
         return 'Profil Saya';
+      case 7:
+        return 'Kelola Administrator (SuperAdmin)';
       default:
         return 'Dashboard Admin';
     }
@@ -692,6 +705,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return _buildLaporanKritikSaranView(context, sidebarBg, accentGold);
       case 6:
         return _buildProfilSayaView(context, sidebarBg, accentGold);
+      case 7:
+        return _buildKelolaAdminView(context, sidebarBg, accentGold);
       default:
         return _buildDashboardOverviewView(context, sidebarBg, accentGold);
     }
@@ -826,6 +841,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             index: 5,
             icon: Icons.rate_review_rounded,
             label: 'Kritik & Saran Warga',
+            accentGold: accentGold,
+          ),
+
+          // NAV ITEM 7: KELOLA ADMIN (SUPERADMIN ONLY)
+          _buildSidebarNavItem(
+            index: 7,
+            icon: Icons.supervisor_account_rounded,
+            label: 'Kelola Admin (Super)',
             accentGold: accentGold,
           ),
 
@@ -2915,6 +2938,544 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 },
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // SUB-VIEW KELOLA ADMIN & SUPERADMIN MANAGEMENT
+  // ---------------------------------------------------------------------------
+  Widget _buildKelolaAdminView(BuildContext context, Color sidebarBg, Color accentGold) {
+    final allAdmins = _adminService.adminList;
+    final filteredAdmins = allAdmins.where((admin) {
+      final query = _adminSearchQuery.toLowerCase();
+      return admin.nama.toLowerCase().contains(query) ||
+          admin.email.toLowerCase().contains(query) ||
+          admin.nip.toLowerCase().contains(query) ||
+          admin.instansi.toLowerCase().contains(query) ||
+          admin.role.toLowerCase().contains(query);
+    }).toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 10, offset: Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Manajemen Administrator & SuperAdmin',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F2942),
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Total ${allAdmins.length} Administrator Terdaftar di Sistem SOA',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                    ),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _showFormTambahAdminDialog(context),
+                  icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+                  label: const Text(
+                    'Tambah Admin Baru',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F2942),
+                    foregroundColor: accentGold,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // SEARCH BAR ADMIN
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            child: TextField(
+              controller: _adminSearchController,
+              onChanged: (val) => setState(() => _adminSearchQuery = val),
+              decoration: InputDecoration(
+                hintText: 'Cari nama admin, email, NIP, atau instansi...',
+                hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                prefixIcon: const Icon(Icons.search_rounded, color: Colors.grey, size: 20),
+                suffixIcon: _adminSearchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        onPressed: () {
+                          _adminSearchController.clear();
+                          setState(() => _adminSearchQuery = '');
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: const Color(0xFFF8FAFC),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // TABLE HEADER
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            color: const Color(0xFFF1F5F9),
+            child: const Row(
+              children: [
+                Expanded(flex: 4, child: Text('Nama & Email Admin', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                Expanded(flex: 3, child: Text('NIP Pegawai', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins'))),
+                Expanded(flex: 2, child: Center(child: Text('Instansi OPD', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
+                Expanded(flex: 2, child: Center(child: Text('Jabatan Role', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
+                Expanded(flex: 2, child: Center(child: Text('Status Akses', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
+                SizedBox(width: 50, child: Center(child: Text('Aksi', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF5A6A85), fontFamily: 'Poppins')))),
+              ],
+            ),
+          ),
+
+          // TABLE BODY LIST
+          if (filteredAdmins.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(32.0),
+              child: Center(
+                child: Text('Tidak ada administrator yang cocok dengan pencarian.', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: filteredAdmins.length,
+              separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
+              itemBuilder: (context, index) {
+                final admin = filteredAdmins[index];
+                final isSuper = admin.role == 'Super Admin';
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  child: Row(
+                    children: [
+                      // NAMA & EMAIL ADMIN
+                      Expanded(
+                        flex: 4,
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: isSuper ? const Color(0xFF0F2942) : const Color(0xFFE8A33D),
+                              child: Icon(
+                                isSuper ? Icons.admin_panel_settings_rounded : Icons.person_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    admin.nama,
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0F2942),
+                                      fontFamily: 'Poppins',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    admin.email,
+                                    style: const TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // NIP PEGAWAI
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          admin.nip.isNotEmpty ? admin.nip : '-',
+                          style: const TextStyle(fontSize: 12, fontFamily: 'Poppins', color: Color(0xFF334155)),
+                        ),
+                      ),
+
+                      // INSTANSI OPD CHIP
+                      Expanded(
+                        flex: 2,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFCBD5E1)),
+                            ),
+                            child: Text(
+                              admin.instansi.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F2942),
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // ROLE BADGE
+                      Expanded(
+                        flex: 2,
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isSuper ? const Color(0xFFF3E8FF) : const Color(0xFFE0F2FE),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: isSuper ? const Color(0xFFC084FC) : const Color(0xFF38BDF8)),
+                            ),
+                            child: Text(
+                              admin.role,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                color: isSuper ? const Color(0xFF7E22CE) : const Color(0xFF0369A1),
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // STATUS SWITCH (AKSES AKTIF / NONAKTIF)
+                      Expanded(
+                        flex: 2,
+                        child: Center(
+                          child: Transform.scale(
+                            scale: 0.8,
+                            child: Switch(
+                              value: admin.isActive,
+                              activeColor: const Color(0xFFE8A33D),
+                              activeTrackColor: const Color(0xFF0F2942),
+                              onChanged: (val) {
+                                _adminService.toggleAdminStatus(admin.id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      val
+                                          ? '✅ Akses admin "${admin.nama}" diaktifkan!'
+                                          : '⚠️ Akses admin "${admin.nama}" dinonaktifkan!',
+                                    ),
+                                    backgroundColor: val ? const Color(0xFF0F2942) : Colors.orange.shade900,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // AKSI POPUP MENU
+                      SizedBox(
+                        width: 50,
+                        child: PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
+                          onSelected: (val) {
+                            if (val == 'edit') {
+                              _showFormTambahAdminDialog(context, adminToEdit: admin);
+                            } else if (val == 'hapus') {
+                              _konfirmasiHapusAdmin(context, admin);
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_rounded, size: 16, color: Color(0xFF0F2942)),
+                                  SizedBox(width: 8),
+                                  Text('Edit Admin', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem(
+                              value: 'hapus',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                                  SizedBox(width: 8),
+                                  Text('Hapus Admin', style: TextStyle(fontSize: 12, color: Colors.red, fontFamily: 'Poppins')),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+
+  void _showFormTambahAdminDialog(BuildContext context, {AdminUserModel? adminToEdit}) {
+    final isEdit = adminToEdit != null;
+    final formKey = GlobalKey<FormState>();
+    final namaController = TextEditingController(text: adminToEdit?.nama ?? '');
+    final emailController = TextEditingController(text: adminToEdit?.email ?? '');
+    final nipController = TextEditingController(text: adminToEdit?.nip ?? '');
+    String selectedInstansi = adminToEdit?.instansi ?? 'DISKOMINFO';
+    String selectedRole = adminToEdit?.role ?? 'Admin OPD';
+    bool isActive = adminToEdit?.isActive ?? true;
+
+    final instansiList = ['SUPERADMIN', 'DISDUKCAPIL', 'DISKOMINFO', 'DPMPTSP', 'BPKPD', 'DKP3'];
+    final roleList = ['Super Admin', 'Admin OPD'];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF0F2942), size: 24),
+                  const SizedBox(width: 10),
+                  Text(
+                    isEdit ? 'Edit Data Admin' : 'Tambah Admin Baru',
+                    style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  width: 480,
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Nama Lengkap Admin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: namaController,
+                          validator: (val) => val == null || val.trim().isEmpty ? 'Nama wajib diisi' : null,
+                          decoration: InputDecoration(
+                            hintText: 'Contoh: Ahmad Subagja, S.Kom',
+                            hintStyle: const TextStyle(fontSize: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        const Text('Email Login Admin *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: emailController,
+                          validator: (val) => val == null || !val.contains('@') ? 'Email tidak valid' : null,
+                          decoration: InputDecoration(
+                            hintText: 'admin.disdukcapil@sukabumi.go.id',
+                            hintStyle: const TextStyle(fontSize: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        const Text('NIP (Nomor Induk Pegawai)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: nipController,
+                          decoration: InputDecoration(
+                            hintText: '19920415 201801 1 005',
+                            hintStyle: const TextStyle(fontSize: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Instansi OPD *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                                  const SizedBox(height: 6),
+                                  DropdownButtonFormField<String>(
+                                    value: selectedInstansi,
+                                    items: instansiList
+                                        .map((inst) => DropdownMenuItem(value: inst, child: Text(inst, style: const TextStyle(fontSize: 12))))
+                                        .toList(),
+                                    onChanged: (val) {
+                                      if (val != null) setDialogState(() => selectedInstansi = val);
+                                    },
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Jabatan Role *', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                                  const SizedBox(height: 6),
+                                  DropdownButtonFormField<String>(
+                                    value: selectedRole,
+                                    items: roleList
+                                        .map((r) => DropdownMenuItem(value: r, child: Text(r, style: const TextStyle(fontSize: 12))))
+                                        .toList(),
+                                    onChanged: (val) {
+                                      if (val != null) setDialogState(() => selectedRole = val);
+                                    },
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        Row(
+                          children: [
+                            const Text('Status Akses Aktif:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                            const Spacer(),
+                            Switch(
+                              value: isActive,
+                              activeColor: const Color(0xFFE8A33D),
+                              onChanged: (val) => setDialogState(() => isActive = val),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (!formKey.currentState!.validate()) return;
+                    final newAdmin = AdminUserModel(
+                      id: isEdit ? adminToEdit.id : 'adm-${DateTime.now().millisecondsSinceEpoch}',
+                      nama: namaController.text.trim(),
+                      email: emailController.text.trim(),
+                      nip: nipController.text.trim(),
+                      instansi: selectedInstansi,
+                      role: selectedRole,
+                      isActive: isActive,
+                      createdAt: isEdit ? adminToEdit.createdAt : DateTime.now(),
+                    );
+
+                    if (isEdit) {
+                      _adminService.updateAdmin(newAdmin);
+                    } else {
+                      _adminService.addAdmin(newAdmin);
+                    }
+
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('✅ Admin "${newAdmin.nama}" berhasil ${isEdit ? "perbarui" : "ditambahkan"}!'),
+                        backgroundColor: const Color(0xFF0F2942),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F2942),
+                    foregroundColor: const Color(0xFFE8A33D),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: Text(isEdit ? 'Perbarui' : 'Simpan Admin', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _konfirmasiHapusAdmin(BuildContext context, AdminUserModel admin) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        title: const Text('Hapus Admin?', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+        content: Text('Apakah Anda yakin ingin menghapus administrator "${admin.nama}"?', style: const TextStyle(fontFamily: 'Poppins')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _adminService.deleteAdmin(admin.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Admin ${admin.nama} berhasil dihapus.')),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Hapus', style: TextStyle(fontFamily: 'Poppins')),
           ),
         ],
       ),
