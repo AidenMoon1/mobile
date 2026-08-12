@@ -5,14 +5,12 @@
 // =============================================================================
 
 import 'dart:convert';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 /// Kelas Helper Pengelola HTTP Communication ke Backend Server Laravel / Node.js
 class ApiService {
   // Alamat Server Tunneling Ngrok (Publik)
   static const String _ngrokUrl = 'https://nectar-refinish-console.ngrok-free.dev';
-  static const String _port = '8001';
 
   // FUNGSI 1: Resolver Otomatis Alamat Base URL (Ngrok untuk HP & Web Online)
   static String get baseUrl {

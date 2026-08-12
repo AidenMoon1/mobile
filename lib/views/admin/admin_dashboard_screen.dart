@@ -792,29 +792,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  String _getNavTitle() {
-    switch (_selectedNavIndex) {
-      case 1:
-        return 'Kelola Admin Dinas';
-      case 2:
-        return 'Kelola Layanan';
-      case 3:
-        return 'Kelola Sektor';
-      case 4:
-        return 'Live Chat Warga';
-      case 5:
-        return 'Kritik & Saran Warga';
-      case 6:
-        return 'Profil Saya';
-      case 7:
-        return 'Kelola Administrator (SuperAdmin)';
-      case 9:
-        return 'Profil Instansi';
-      default:
-        return 'Dashboard Admin';
-    }
-  }
-
   // ---------------------------------------------------------------------------
   // KONTEN SWITCHER DINAMIS (MEMAKSA TAMPILAN BERGANTI TOTAL SESUAI NAV)
   // ---------------------------------------------------------------------------
