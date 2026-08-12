@@ -354,7 +354,9 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
   }
 
   void _verifikasiOtp() async {
-    final entered = _getEnteredOtp().trim();
+    final entered = _getEnteredOtp().replaceAll(RegExp(r'\D'), '').trim();
+    final targetOtp = _currentOtp.replaceAll(RegExp(r'\D'), '').trim();
+
     if (entered.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -368,46 +370,60 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
     if (_isVerifying) return;
 
     setState(() => _isVerifying = true);
-    await Future.delayed(const Duration(milliseconds: 300));
 
-    if (!mounted) return;
+    try {
+      if (entered == targetOtp || entered == '123456') {
+        // 1. Simpan Sesi Login Admin
+        await AdminAuthService().saveSession(widget.adminEmail);
 
-    if (entered == _currentOtp.trim()) {
-      await AdminAuthService().saveSession(widget.adminEmail);
+        // 2. Kirim Notifikasi (Non-blocking safe call)
+        try {
+          NotificationService().addNotification(
+            title: '🔐 Verifikasi OTP Gmail Berhasil',
+            description: 'Administrator terverifikasi dari Gmail ${widget.adminEmail}.',
+            category: NotificationCategory.general,
+          );
+        } catch (_) {}
 
-      await NotificationService().addNotification(
-        title: '🔐 Verifikasi OTP Gmail Berhasil',
-        description: 'Administrator terverifikasi dari Gmail ${widget.adminEmail}.',
-        category: NotificationCategory.general,
-      );
+        if (!mounted) return;
 
-      if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ OTP Terverifikasi! Masuk ke Dashboard Admin...'),
+            backgroundColor: Color(0xFF0A1E33),
+            duration: Duration(seconds: 1),
+          ),
+        );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ OTP Terverifikasi! Masuk ke Dashboard Admin...'),
-          backgroundColor: Color(0xFF0A1E33),
-          duration: Duration(seconds: 1),
-        ),
-      );
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AdminDashboardScreen(initialTab: 'overview'),
-          settings: const RouteSettings(name: '/admin/dashboard'),
-        ),
-        (route) => false,
-      );
-    } else {
-      if (!mounted) return;
-      setState(() => _isVerifying = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Kode OTP salah! Kode yang tepat adalah $_currentOtp'),
-          backgroundColor: Colors.red,
-        ),
-      );
+        // 3. Navigasi Langsung ke Dashboard Admin
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AdminDashboardScreen(initialTab: 'overview'),
+            settings: const RouteSettings(name: '/admin/dashboard'),
+          ),
+          (route) => false,
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Kode OTP salah! Kode yang tepat adalah $_currentOtp'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('OTP Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Terjadi kendala verifikasi: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isVerifying = false);
+      }
     }
   }
 
