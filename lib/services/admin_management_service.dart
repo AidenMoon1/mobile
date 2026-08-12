@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import '../models/admin_user_model.dart';
+import 'api_service.dart';
 
 class AdminManagementService extends ChangeNotifier {
   static final AdminManagementService _instance = AdminManagementService._internal();
@@ -23,8 +24,8 @@ class AdminManagementService extends ChangeNotifier {
     _loadSavedAdminsLocal();
     _fetchCloudAdmins();
 
-    // Polling sync setiap 4 detik untuk update admin real-time
-    Timer.periodic(const Duration(seconds: 4), (_) {
+    // Polling sync setiap 10 detik untuk update admin real-time (lebih efisien)
+    Timer.periodic(const Duration(seconds: 10), (_) {
       _fetchCloudAdmins();
     });
   }
@@ -47,7 +48,7 @@ class AdminManagementService extends ChangeNotifier {
         instansi: 'SUPERADMIN',
         role: 'Super Admin',
         isActive: true,
-        isOnline: true,
+        isOnline: false,
         createdAt: DateTime(2026, 1, 1),
       ),
       AdminUserModel(
@@ -73,7 +74,7 @@ class AdminManagementService extends ChangeNotifier {
         instansi: 'DISKOMINFO',
         role: 'Super Admin',
         isActive: true,
-        isOnline: true,
+        isOnline: false,
         createdAt: DateTime(2026, 3, 15),
       ),
       AdminUserModel(
@@ -114,7 +115,7 @@ class AdminManagementService extends ChangeNotifier {
         instansi: 'Dinas Kependudukan dan Pencatatan Sipil',
         role: 'Admin OPD',
         isActive: true,
-        isOnline: true,
+        isOnline: false,
         createdAt: DateTime(2026, 5, 10),
       ),
       AdminUserModel(
@@ -202,6 +203,27 @@ class AdminManagementService extends ChangeNotifier {
     }
   }
 
+  Future<void> updateAdminOnlineStatus(String adminId, bool isOnline) async {
+    try {
+      final url = '$_rtdbBaseUrl/$adminId.json';
+      // Menggunakan PATCH untuk hanya mengupdate field isOnline saja
+      await http.patch(
+        Uri.parse(url),
+        body: json.encode({'isOnline': isOnline}),
+      );
+
+      // Update state lokal agar UI langsung bereaksi
+      int idx = _adminList.indexWhere((e) => e.id == adminId);
+      if (idx != -1) {
+        _adminList[idx] = _adminList[idx].copyWith(isOnline: isOnline);
+        _saveAdminsLocal();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Update online status error: $e');
+    }
+  }
+
   void addAdmin(AdminUserModel newAdmin) {
     _adminList.add(newAdmin);
     _saveAdminsLocal();
@@ -220,6 +242,11 @@ class AdminManagementService extends ChangeNotifier {
   }
 
   void deleteAdmin(String id) async {
+    // 1. Dapatkan data admin sebelum dihapus dari list (untuk ambil email)
+    final adminToDelete = _adminList.firstWhere((e) => e.id == id, orElse: () => AdminUserModel(id: '', nama: '', username: '', email: '', nip: '', instansi: '', role: '', createdAt: DateTime.now()));
+    final String targetEmail = adminToDelete.email;
+
+    // 2. Hapus dari List Lokal & Firebase RTDB
     _adminList.removeWhere((e) => e.id == id);
     _saveAdminsLocal();
     notifyListeners();
@@ -228,6 +255,11 @@ class AdminManagementService extends ChangeNotifier {
       final url = '$_rtdbBaseUrl/$id.json';
       await http.delete(Uri.parse(url));
       _db.collection('admin_users').doc(id).delete();
+
+      // 3. SINKRONISASI: Hapus dari Database MySQL (Laptop) via API Laravel
+      if (targetEmail.isNotEmpty) {
+        await ApiService.delete('admin/delete?email=$targetEmail');
+      }
     } catch (_) {}
   }
 

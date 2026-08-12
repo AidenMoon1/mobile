@@ -5,6 +5,9 @@ import 'package:mobile/models/notification_model.dart';
 import 'package:mobile/services/admin_auth_service.dart';
 import 'package:mobile/views/admin/admin_dashboard_screen.dart';
 
+import 'package:mobile/services/api_service.dart';
+import 'dart:convert';
+
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
 
@@ -34,35 +37,47 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       _isLoading = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 900));
-
-    if (!mounted) return;
-
     final email = _emailController.text.trim();
-    final random = Random();
-    final generatedOtp = (100000 + random.nextInt(900000)).toString(); // Dynamic 6-digit OTP
 
-    await NotificationService().addNotification(
-      title: '📩 Gmail OTP Received ($email)',
-      description: 'Kode verifikasi keamanan 2FA Admin Anda adalah: $generatedOtp',
-      category: NotificationCategory.general,
-    );
+    try {
+      // LAPIS 1: Minta Laravel Kirim OTP (Hanya jika role-nya admin/superadmin)
+      final response = await ApiService.post('auth/otp/email/send', {
+        'email': email,
+        'type': 'admin',
+      });
 
-    setState(() {
-      _isLoading = false;
-    });
+      setState(() {
+        _isLoading = false;
+      });
 
-    if (!mounted) return;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AdminOtpScreen(
-          adminEmail: email,
-          expectedOtp: generatedOtp,
-        ),
-      ),
-    );
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdminOtpScreen(
+              adminEmail: email,
+              expectedOtp: '', // Kode ada di Gmail asli
+            ),
+          ),
+        );
+      } else {
+        final error = jsonDecode(response.body);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ ' + (error['message'] ?? 'Gagal kirim OTP')),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Terjadi kendala koneksi: $e')),
+      );
+    }
   }
 
   @override
@@ -355,7 +370,6 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
 
   void _verifikasiOtp() async {
     final entered = _getEnteredOtp().replaceAll(RegExp(r'\D'), '').trim();
-    final targetOtp = _currentOtp.replaceAll(RegExp(r'\D'), '').trim();
 
     if (entered.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -372,18 +386,15 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
     setState(() => _isVerifying = true);
 
     try {
-      if (entered == targetOtp || entered == '123456') {
+      // LAPIS 2: Verifikasi Kode ke Laravel
+      final response = await ApiService.post('auth/otp/email/verify', {
+        'email': widget.adminEmail,
+        'otp': entered,
+      });
+
+      if (response.statusCode == 200) {
         // 1. Simpan Sesi Login Admin
         await AdminAuthService().saveSession(widget.adminEmail);
-
-        // 2. Kirim Notifikasi (Non-blocking safe call)
-        try {
-          NotificationService().addNotification(
-            title: '🔐 Verifikasi OTP Gmail Berhasil',
-            description: 'Administrator terverifikasi dari Gmail ${widget.adminEmail}.',
-            category: NotificationCategory.general,
-          );
-        } catch (_) {}
 
         if (!mounted) return;
 
@@ -395,7 +406,7 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
           ),
         );
 
-        // 3. Navigasi Langsung ke Dashboard Admin
+        // 2. Navigasi Langsung ke Dashboard Admin
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
@@ -407,8 +418,8 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
       } else {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Kode OTP salah! Kode yang tepat adalah $_currentOtp'),
+          const SnackBar(
+            content: Text('Kode OTP salah atau kedaluwarsa.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -428,27 +439,23 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
   }
 
   void _kirimUlangOtp() async {
-    final random = Random();
-    final newOtp = (100000 + random.nextInt(900000)).toString();
-
-    setState(() {
-      _currentOtp = newOtp;
+    setState(() => _isVerifying = true);
+    
+    final response = await ApiService.post('auth/otp/email/send', {
+      'email': widget.adminEmail,
+      'type': 'admin',
     });
 
-    await NotificationService().addNotification(
-      title: '📩 Kode OTP Gmail Baru',
-      description: 'Kode OTP keamanan 2FA Admin baru Anda adalah: $newOtp',
-      category: NotificationCategory.general,
-    );
+    if (mounted) setState(() => _isVerifying = false);
 
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Kode OTP baru ($newOtp) dikirim ke ${widget.adminEmail}'),
-        backgroundColor: const Color(0xFF0A1E33),
-      ),
-    );
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Kode OTP baru telah dikirim ke ${widget.adminEmail}'),
+          backgroundColor: const Color(0xFF0A1E33),
+        ),
+      );
+    }
   }
 
   @override
@@ -482,50 +489,6 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
             constraints: const BoxConstraints(maxWidth: 520),
             child: Column(
               children: [
-            // SIMULATED GMAIL NOTIFICATION BANNER
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEBF3FE),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF4285F4).withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.mark_email_read_rounded, color: Color(0xFF4285F4), size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          '📩 Gmail One Access (Simulasi)',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF0A1E33),
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Kode OTP Anda adalah: $_currentOtp',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF4285F4),
-                            fontFamily: 'Poppins',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
             // OTP FORM CONTAINER
             Container(
               padding: const EdgeInsets.all(24),

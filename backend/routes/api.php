@@ -6,6 +6,8 @@ use App\Models\KtpHilang;
 use App\Models\KtpRusak;
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Api\EmailOtpController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,6 +18,14 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+// EMAIL OTP (FREE 2-STEP VERIFICATION)
+Route::post('/auth/otp/email/send', [EmailOtpController::class, 'sendOtp']);
+Route::post('/auth/otp/email/verify', [EmailOtpController::class, 'verifyOtp']);
+
+// ADMIN MANAGEMENT (REAL DATABASE)
+Route::post('/admin/register', [\App\Http\Controllers\Api\AdminApiController::class, 'storeAdmin']);
+Route::delete('/admin/delete', [\App\Http\Controllers\Api\AdminApiController::class, 'destroyAdmin']);
 
 // Endpoint untuk berita (Mock Data untuk visualisasi)
 Route::get('/berita', function () {

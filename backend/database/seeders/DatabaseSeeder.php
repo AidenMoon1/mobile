@@ -15,11 +15,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
+        // 1. Akun Super Admin (Akses Penuh)
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Sakalangit Super Admin',
+            'username' => 'superadmin',
+            'email' => 'sakalangit112@gmail.com',
+            'phone' => '081234567891',
+            'role' => 'super_admin',
+            'password' => bcrypt('saka334'),
+        ]);
+
+        // 2. Akun Admin Dinas (Akses Terbatas)
+        User::factory()->create([
+            'name' => 'Admin Diskominfo',
+            'username' => 'admin_kominfo',
+            'email' => 'admin@sukabumi.go.id',
+            'phone' => '081234567890',
+            'role' => 'admin_dinas',
+            'password' => bcrypt('diskominfo224'),
         ]);
     }
 }

@@ -1,31 +1,35 @@
-# Rencana Perbaikan: Error Null Check di Google SSO Web
+# Rencana Implementasi: Status Presence Admin Real-Time
 
-Rencana ini menangani error "Null check operator used on a null value" yang terjadi saat mencoba login Google di platform Web. Kita akan beralih ke metode `signInWithPopup` yang lebih stabil untuk browser.
+Tujuan: Mengubah status "ONLINE/OFFLINE" pada daftar Manajemen Operator agar berfungsi secara otomatis dan instan menggunakan Firebase Presence System.
 
 ## User Review Required
 
-> [!TIP]
-> **Kenyamanan Web**: Dengan metode Popup, warga yang membuka link `web.app` akan melihat jendela kecil baru untuk login Google, sama seperti login di situs-situs besar lainnya. Metode ini tidak memerlukan konfigurasi SHA-1 tambahan.
+> [!IMPORTANT]
+> - **Otomatisasi**: Admin tidak perlu melakukan apa pun. Begitu membuka Dashboard, lampu akan berubah Hijau (ONLINE). Begitu menutup tab browser atau logout, lampu akan kembali Abu-abu (OFFLINE).
+> - **Teknologi**: Kita akan menggunakan fitur `onDisconnect` dari Firebase Realtime Database. Ini adalah cara tercanggih untuk mendeteksi user yang tiba-tiba menutup aplikasi/browser tanpa menekan tombol logout.
 
 ---
 
-## Langkah Perbaikan
+## Langkah-Langkah Teknis
 
-### 1. Modifikasi Logika Login (Platform Branching)
-Kita akan memisahkan alur login antara HP dan Web agar masing-masing menggunakan teknologi terbaiknya.
-- **[MODIFY] [user_service.dart](file:///C:/src/mobile/lib/services/user_service.dart)**:
-    - Jika `kIsWeb` true: Gunakan `_auth.signInWithPopup(GoogleAuthProvider())`.
-    - Jika `kIsWeb` false: Gunakan alur `google_sign_in` + `signInWithCredential`.
+### 1. Sinkronisasi Data (Service Layer)
+- **[MODIFY] [AdminManagementService.dart](file:///C:/src/mobile/lib/services/admin_management_service.dart)**:
+    - Menambah fungsi `listenToAdminsRealTime()`: Mengganti sistem "tanya-tanya tiap 4 detik" (polling) menjadi sistem "mendengarkan langsung" (Stream) dari Firebase.
+    - Menambah fungsi `updateMyPresence()`: Menggunakan logika `onDisconnect` agar saat koneksi internet putus atau tab ditutup, status otomatis berubah jadi OFFLINE di server.
 
-### 2. Deploy Ulang
-Setelah kodingan diperbaiki, kita harus melakukan build dan deploy ulang agar perubahan bisa dirasakan di link `web.app`.
+### 2. Integrasi Layanan (Auth & Dashboard)
+- **[MODIFY] [AdminDashboardScreen.dart](file:///C:/src/mobile/lib/views/admin/admin_dashboard_screen.dart)**:
+    - Memanggil fungsi kehadiran di `initState`.
+    - Memastikan UI daftar operator dibalut dengan `StreamBuilder` atau `AnimatedBuilder` agar lampu hijau menyala/mati secara halus tanpa perlu refresh.
+
+### 3. Pembersihan Data Dummy
+- Menghapus status "ONLINE" yang dipasang manual (hardcoded) agar tidak menipu hasil pengujian.
 
 ---
 
 ## Rencana Verifikasi
 
 ### Manual Verification
-1. **Akses Link**: Buka [https://sukabumi-one-access-app-c7f15.web.app/](https://sukabumi-one-access-app-c7f15.web.app/).
-2. **Uji Login**: Klik tombol "Masuk dengan Google".
-3. **Pastikan Popup Muncul**: Verifikasi bahwa tidak ada lagi error merah "Null check", melainkan muncul jendela login Google yang asli.
-4. **Cek Profil**: Pastikan Nama dan Foto profil terisi otomatis setelah login sukses.
+1. **Tes Mandiri**: Buka Dashboard Admin di laptop. Pastikan nama Kakak langsung muncul status ONLINE (Hijau).
+2. **Tes Tab Ganda**: Buka link web yang sama di tab baru (atau HP). Logout di salah satu tab, perhatikan tab satunya harus langsung mendeteksi status Kakak berubah jadi OFFLINE secara instan.
+3. **Tes Tutup Paksa**: Tutup browser secara mendadak (tanpa logout). Tunggu beberapa saat, pastikan di perangkat lain statusnya kembali menjadi OFFLINE.

@@ -15,6 +15,7 @@ import '../../services/feedback_service.dart';
 import '../../services/admin_auth_service.dart';
 import '../../services/admin_management_service.dart';
 import '../../widgets/smart_image.dart';
+import '../../services/api_service.dart';
 import 'admin_form_instansi_screen.dart';
 import 'admin_form_layanan_screen.dart';
 import 'admin_form_sektor_screen.dart';
@@ -87,6 +88,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final AdminManagementService _adminService = AdminManagementService();
   late int _selectedNavIndex;
   bool _isProfileMenuVisible = false;
+  String? _currentAdminId;
 
   // CONTROLLERS PENCARIAN PADA SUB-VIEW KELOLA
   final TextEditingController _instansiSearchController = TextEditingController();
@@ -109,6 +111,29 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
     _opdService.addListener(_refresh);
     _adminService.addListener(_refresh);
+
+    // Inisialisasi status kehadiran (Presence System)
+    _initPresence();
+  }
+
+  Future<void> _initPresence() async {
+    final email = await AdminAuthService().getAdminEmail();
+    
+    // Tunggu sebentar sampai list admin terisi jika sedang loading
+    if (_adminService.adminList.isEmpty) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
+    try {
+      final admin = _adminService.adminList.firstWhere(
+        (e) => e.email.toLowerCase() == email.toLowerCase(),
+      );
+      _currentAdminId = admin.id;
+      // Update status ke Online di Cloud (RTDB)
+      await _adminService.updateAdminOnlineStatus(admin.id, true);
+    } catch (_) {
+      // Jika admin tidak ditemukan di list lokal
+    }
   }
 
   void _onTabSelected(int index) {
@@ -275,6 +300,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     child: OutlinedButton(
                       onPressed: () async {
                         Navigator.pop(context);
+                        
+                        // Update status ke Offline sebelum logout (Check-in System)
+                        if (_currentAdminId != null) {
+                          await _adminService.updateAdminOnlineStatus(_currentAdminId!, false);
+                        }
+
                         await AdminAuthService().logout();
                         if (context.mounted) {
                           Navigator.pushNamedAndRemoveUntil(
@@ -1605,7 +1636,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           const SizedBox(height: 14),
 
           const Text(
-            'SOA',
+            'SUPER ADMIN',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -1621,7 +1652,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(
-              'Super Admin',
+              'Super Administrator',
               style: TextStyle(
                 color: Color(0xFFE8A33D),
                 fontSize: 10.5,
@@ -3855,36 +3886,63 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   ),
                                   const SizedBox(width: 14),
                                   ElevatedButton(
-                                    onPressed: () {
+                                    onPressed: isVerified ? () async {
                                       if (!formKey.currentState!.validate()) return;
-                                      final newAdmin = AdminUserModel(
-                                        id: isEdit ? adminToEdit.id : 'adm-${DateTime.now().millisecondsSinceEpoch}',
-                                        nama: namaController.text.trim(),
-                                        username: usernameController.text.trim().replaceAll('@', '').trim(),
-                                        email: emailController.text.trim(),
-                                        nip: adminToEdit?.nip ?? '19950810 202203 1 001',
-                                        whatsapp: whatsappController.text.trim(),
-                                        instansi: selectedInstansi,
-                                        role: selectedRole,
-                                        isActive: true,
-                                        isOnline: isEdit ? adminToEdit.isOnline : false,
-                                        createdAt: isEdit ? adminToEdit.createdAt : DateTime.now(),
-                                      );
+                                      
+                                      setDialogState(() => isVerified = false); // Use isVerified as loading trigger or add new bool
 
-                                      if (isEdit) {
-                                        _adminService.updateAdmin(newAdmin);
+                                      final String role = selectedInstansi == 'SUPERADMIN' ? 'super_admin' : 'admin_dinas';
+                                      
+                                      // SINKRONISASI KE DATABASE MYSQL (BACKEND)
+                                      final response = await ApiService.post('admin/register', {
+                                        'name': namaController.text.trim(),
+                                        'username': usernameController.text.trim().replaceAll('@', '').trim(),
+                                        'email': emailController.text.trim(),
+                                        'phone': whatsappController.text.trim(),
+                                        'password': passwordController.text.trim(),
+                                        'role': role,
+                                      });
+
+                                      if (response.statusCode == 201) {
+                                        final newAdmin = AdminUserModel(
+                                          id: isEdit ? adminToEdit.id : 'adm-${DateTime.now().millisecondsSinceEpoch}',
+                                          nama: namaController.text.trim(),
+                                          username: usernameController.text.trim().replaceAll('@', '').trim(),
+                                          email: emailController.text.trim(),
+                                          nip: adminToEdit?.nip ?? '19950810 202203 1 001',
+                                          whatsapp: whatsappController.text.trim(),
+                                          instansi: selectedInstansi,
+                                          role: selectedInstansi == 'SUPERADMIN' ? 'Super Admin' : 'Admin OPD',
+                                          isActive: true,
+                                          isOnline: isEdit ? adminToEdit.isOnline : false,
+                                          createdAt: isEdit ? adminToEdit.createdAt : DateTime.now(),
+                                        );
+
+                                        if (isEdit) {
+                                          _adminService.updateAdmin(newAdmin);
+                                        } else {
+                                          _adminService.addAdmin(newAdmin);
+                                        }
+
+                                        if (!context.mounted) return;
+                                        Navigator.pop(context);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('✅ Administrator "${newAdmin.nama}" berhasil ${isEdit ? "perbarui" : "didaftarkan"} di Cloud & Database!'),
+                                            backgroundColor: const Color(0xFF0A1E33),
+                                          ),
+                                        );
                                       } else {
-                                        _adminService.addAdmin(newAdmin);
+                                        if (!context.mounted) return;
+                                        setDialogState(() => isVerified = true);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('❌ Gagal sinkron database: ${response.body}'),
+                                            backgroundColor: Colors.redAccent,
+                                          ),
+                                        );
                                       }
-
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('✅ Administrator "${newAdmin.nama}" berhasil ${isEdit ? "perbarui" : "didaftarkan"}!'),
-                                          backgroundColor: const Color(0xFF0A1E33),
-                                        ),
-                                      );
-                                    },
+                                    } : null,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF0A1E33),
                                       foregroundColor: const Color(0xFFE8A33D),
@@ -4725,36 +4783,61 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                   ),
                                   const SizedBox(width: 14),
                                   ElevatedButton(
-                                    onPressed: () {
+                                    onPressed: isVerified ? () async {
                                       if (!formKey.currentState!.validate()) return;
-                                      final newAdmin = AdminUserModel(
-                                        id: isEdit ? adminToEdit.id : 'adm-dinas-${DateTime.now().millisecondsSinceEpoch}',
-                                        nama: namaController.text.trim(),
-                                        username: usernameController.text.trim().replaceAll('@', '').trim(),
-                                        email: emailController.text.trim(),
-                                        nip: adminToEdit?.nip ?? '19910325 201801 2 003',
-                                        whatsapp: whatsappController.text.trim(),
-                                        instansi: selectedInstansi,
-                                        role: 'Admin OPD',
-                                        isActive: true,
-                                        isOnline: isEdit ? adminToEdit.isOnline : false,
-                                        createdAt: isEdit ? adminToEdit.createdAt : DateTime.now(),
-                                      );
+                                      
+                                      setDialogState(() => isVerified = false);
 
-                                      if (isEdit) {
-                                        _adminService.updateAdmin(newAdmin);
+                                      // SINKRONISASI KE DATABASE MYSQL (BACKEND)
+                                      final response = await ApiService.post('admin/register', {
+                                        'name': namaController.text.trim(),
+                                        'username': usernameController.text.trim().replaceAll('@', '').trim(),
+                                        'email': emailController.text.trim(),
+                                        'phone': whatsappController.text.trim(),
+                                        'password': passwordController.text.trim(),
+                                        'role': 'admin_dinas',
+                                      });
+
+                                      if (response.statusCode == 201) {
+                                        final newAdmin = AdminUserModel(
+                                          id: isEdit ? adminToEdit.id : 'adm-dinas-${DateTime.now().millisecondsSinceEpoch}',
+                                          nama: namaController.text.trim(),
+                                          username: usernameController.text.trim().replaceAll('@', '').trim(),
+                                          email: emailController.text.trim(),
+                                          nip: adminToEdit?.nip ?? '19910325 201801 2 003',
+                                          whatsapp: whatsappController.text.trim(),
+                                          instansi: selectedInstansi,
+                                          role: 'Admin OPD',
+                                          isActive: true,
+                                          isOnline: isEdit ? adminToEdit.isOnline : false,
+                                          createdAt: isEdit ? adminToEdit.createdAt : DateTime.now(),
+                                        );
+
+                                        if (isEdit) {
+                                          _adminService.updateAdmin(newAdmin);
+                                        } else {
+                                          _adminService.addAdmin(newAdmin);
+                                        }
+
+                                        if (!context.mounted) return;
+                                        Navigator.pop(context);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('✅ Admin Dinas "${newAdmin.nama}" berhasil ${isEdit ? "perbarui" : "didaftarkan"} di Cloud & Database!'),
+                                            backgroundColor: const Color(0xFF0A1E33),
+                                          ),
+                                        );
                                       } else {
-                                        _adminService.addAdmin(newAdmin);
+                                        if (!context.mounted) return;
+                                        setDialogState(() => isVerified = true);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('❌ Gagal sinkron database: ${response.body}'),
+                                            backgroundColor: Colors.redAccent,
+                                          ),
+                                        );
                                       }
-
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text('✅ Admin Dinas "${newAdmin.nama}" berhasil ${isEdit ? "perbarui" : "didaftarkan"}!'),
-                                          backgroundColor: const Color(0xFF0A1E33),
-                                        ),
-                                      );
-                                    },
+                                    } : null,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF0A1E33),
                                       foregroundColor: const Color(0xFFE8A33D),

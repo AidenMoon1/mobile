@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
+use App\Models\User;
+use App\Mail\AdminOTPMail;
+use Illuminate\Support\Facades\Hash;
+
 class EmailOtpController extends Controller
 {
     /**
@@ -17,9 +21,22 @@ class EmailOtpController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
+            'type' => 'nullable|string', // 'admin' or 'user'
         ]);
 
         $email = $request->email;
+
+        // Cek Role jika ini adalah request dari Login Admin
+        if ($request->type === 'admin') {
+            $user = User::where('email', $email)->first();
+            if (!$user || !in_array($user->role, ['super_admin', 'admin_dinas'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Anda tidak memiliki otoritas akses administrator.'
+                ], 403);
+            }
+        }
+
         $otp = rand(100000, 999999);
 
         // Store OTP in cache for 5 minutes
@@ -28,10 +45,12 @@ class EmailOtpController extends Controller
         // Log the OTP
         Log::info("OTP Code for $email: $otp");
 
-        // Send real email
-        Mail::raw("Kode verifikasi Sukabumi One Access Anda adalah: $otp. Berlaku selama 5 menit.", function ($message) use ($email) {
-            $message->to($email)->subject('Kode Verifikasi Sukabumi One Access');
-        });
+        // Send real email using the styled template from web team
+        try {
+            Mail::to($email)->send(new AdminOTPMail($otp));
+        } catch (\Exception $e) {
+            Log::error("Failed to send OTP email: " . $e->getMessage());
+        }
 
         return response()->json([
             'status' => 'success',

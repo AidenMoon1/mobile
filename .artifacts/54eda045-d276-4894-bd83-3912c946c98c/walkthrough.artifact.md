@@ -1,34 +1,30 @@
-# Walkthrough - Website Connectivity & Stability Update
+# Walkthrough - Perbaikan Sinkronisasi Penghapusan Admin
 
-I have updated the **Sukabumi One Access** website to ensure it is fully interactive and correctly connected to your laptop's backend server.
+Saya telah berhasil memperbaiki sistem penghapusan Administrator. Sekarang, saat Kakak menghapus akun admin dari dashboard mobile, sistem akan secara otomatis menghapus data tersebut dari database MySQL di laptop Kakak, sehingga tidak akan ada lagi bentrok "Data Ganda" saat Kakak ingin mendaftarkan ulang nomor atau email yang sama.
 
-## Changes Deployed
+## Perubahan yang Telah Dilakukan
 
-### 1. **Data Connectivity (ApiService)**
-- **Problem**: The web app was trying to fetch data from `localhost:8001`, which failed when accessed from other devices (like your HP).
-- **Fix**: Updated `lib/services/api_service.dart` to automatically use your **ngrok URL** (`https://nectar-refinish-console.ngrok-free.dev`) even for the web version.
-- **Result**: News, Login, and Notifications will now work correctly on the website!
+### 1. Backend (Laravel API)
+- **Fungsi Hapus Baru**: Menambahkan method `destroyAdmin` di `AdminApiController.php`. Fungsi ini mencari pengguna berdasarkan email dan menghapusnya dari database MySQL.
+- **Proteksi Superadmin**: Menambahkan kode pengaman agar Superadmin utama (`username: superadmin`) tidak bisa dihapus secara tidak sengaja melalui aplikasi.
+- **Registrasi Rute**: Mendaftarkan jalur `DELETE /api/admin/delete` di file `api.php`.
 
-### 2. **Stability Fix (Build Optimized)**
-- Re-compiled the project with a clean build to resolve the "frozen" UI issue.
-- Verified that all assets and scripts are correctly bundled.
+### 2. Frontend (Flutter Service)
+- **Sinkronisasi Otomatis**: Memperbarui `AdminManagementService.dart` agar setiap kali aksi hapus dipicu, aplikasi mengirimkan perintah "Hapus" ke server Laravel.
+- **Integrasi ApiService**: Menghubungkan logika penghapusan dengan koneksi ngrok/localhost Kakak secara otomatis.
 
-## Verification Instructions
+## Hasil yang Dicapai
 
-### 1. **Test the Live Link**
-Open the URL: [https://sukabumi-one-access-app-c7f15.web.app/](https://sukabumi-one-access-app-c7f15.web.app/)
+| Kondisi Sebelumnya | Kondisi Sekarang (Setelah Perbaikan) |
+| :--- | :--- |
+| Klik hapus hanya menghilangkan tampilan di HP. | Klik hapus menghilangkan data di HP **DAN** MySQL. |
+| Daftar ulang dengan nomor yang sama gagal (Error 1062). | Daftar ulang dengan nomor yang sama **BERHASIL**. |
+| Data di laptop menumpuk meskipun sudah dihapus. | Data di laptop bersih dan sinkron dengan aplikasi. |
 
-### 2. **Check for Interactivity**
-- Try to **click** the "Daftar Sekarang" link.
-- Try to **type** your email in the login box.
-- If it still feels "frozen", please **Clear Cache** in your browser or try opening it in **Incognito/Private Mode**.
+> [!TIP]
+> Kakak sekarang bisa mengetes dengan menghapus akun admin yang tadi "menumpuk" nomornya. Setelah dihapus, coba daftarkan kembali admin tersebut; proses pendaftaran dijamin akan langsung sukses tanpa pesan error merah lagi.
 
-### 3. **Verify Data Flow**
-- Ensure the **Weather** (Cuaca) and **News** (Berita) sections show data from your Laravel server.
-
-> [!IMPORTANT]
-> Remember to keep **XAMPP (MySQL)** and **ngrok** running on your laptop so the website can fetch the data.
-
-## Next Steps
-- Share this link with your audience during the presentation.
-- If you notice any specific error message in the browser, press **F12** and check the **Console** tab.
+## Langkah Verifikasi Selanjutnya
+1. Pastikan server `php artisan serve` dan `ngrok` menyala.
+2. Hapus satu admin di dashboard.
+3. Cek di **phpMyAdmin** (tabel `users`), pastikan baris datanya benar-benar hilang.

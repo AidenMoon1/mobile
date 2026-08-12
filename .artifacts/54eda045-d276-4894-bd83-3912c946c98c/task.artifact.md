@@ -1,5 +1,7 @@
-- [/] Cleanup Login UI Duplication
-    - [ ] Remove second "Lupa Kata Sandi" block in `login_screen.dart`
-    - [ ] Adjust vertical spacing between elements
+- [x] Fix Admin Deletion Synchronization (MySQL Sync)
+    - [x] Add `destroyAdmin` method to `AdminApiController.php`
+    - [x] Register `DELETE /api/admin/delete` route in `api.php`
+    - [x] Update `AdminManagementService.deleteAdmin` in Flutter to call the new API
 - [ ] Verification
-    - [ ] Refresh app and verify single "Lupa Kata Sandi" button
+    - [ ] Delete an admin and verify it's gone from MySQL `users` table
+    - [ ] Re-register the same admin to verify no "Duplicate Entry" error

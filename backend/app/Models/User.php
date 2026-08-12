@@ -20,9 +20,10 @@ class User extends Authenticatable
         'username',
         'email',
         'phone',
-        'profile_photo', // Daftarkan di sini
-        'role',          // Daftarkan di sini
+        'profile_photo',
+        'role',
         'password',
+        'last_seen',
     ];
 
     /**
@@ -41,6 +42,23 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'last_seen' => 'datetime',
         ];
+    }
+
+    /**
+     * Helper untuk mengecek apakah user adalah Super Admin (Bisa Semua)
+     */
+    public function isSuperAdmin()
+    {
+        return $this->role === 'super_admin';
+    }
+
+    /**
+     * Helper untuk mengecek apakah user adalah Admin Dinas
+     */
+    public function isAdminDinas()
+    {
+        return $this->role === 'admin_dinas';
     }
 }
