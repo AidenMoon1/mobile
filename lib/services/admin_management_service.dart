@@ -36,6 +36,7 @@ class AdminManagementService extends ChangeNotifier {
 
   void _initDefaultAdmins() {
     _adminList.addAll([
+      // --- SUPERADMIN OPERATORS ---
       AdminUserModel(
         id: 'adm-001',
         nama: 'Muhammad Dzakwan (SuperAdmin)',
@@ -87,6 +88,47 @@ class AdminManagementService extends ChangeNotifier {
         isActive: true,
         isOnline: false,
         createdAt: DateTime(2026, 4, 20),
+      ),
+
+      // --- ADMIN DINAS OPERATORS (EXACT MATCH SCREENSHOT) ---
+      AdminUserModel(
+        id: 'adm-dinas-001',
+        nama: 'Admin Diskominfo',
+        username: 'adminkominfo',
+        email: 'admin_kominfo@soa.com',
+        nip: '19910325 201801 2 003',
+        whatsapp: '081234567899',
+        instansi: 'Dinas Komunikasi dan Informatika',
+        role: 'Admin OPD',
+        isActive: true,
+        isOnline: false,
+        createdAt: DateTime(2026, 5, 1),
+      ),
+      AdminUserModel(
+        id: 'adm-dinas-002',
+        nama: 'Admin Disdukcapil',
+        username: 'admindisdukcapil',
+        email: 'admin_disdukcapil@soa.com',
+        nip: '19880412 201502 1 004',
+        whatsapp: '081298765433',
+        instansi: 'Dinas Kependudukan dan Pencatatan Sipil',
+        role: 'Admin OPD',
+        isActive: true,
+        isOnline: true,
+        createdAt: DateTime(2026, 5, 10),
+      ),
+      AdminUserModel(
+        id: 'adm-dinas-003',
+        nama: 'Admin DPMPTSP',
+        username: 'admindpmptsp',
+        email: 'admin_dpmptsp@soa.com',
+        nip: '19871105 201204 1 008',
+        whatsapp: '081345678902',
+        instansi: 'Dinas Penanaman Modal dan PTSP',
+        role: 'Admin OPD',
+        isActive: true,
+        isOnline: false,
+        createdAt: DateTime(2026, 5, 15),
       ),
     ]);
   }

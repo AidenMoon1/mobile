@@ -586,6 +586,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       nowDateStr = DateFormat('EEEE, d MMMM yyyy').format(DateTime.now()).toUpperCase();
     }
 
+    String headerTitle = 'Otoritas Akses';
+    String headerSubtitle = 'Kelola akun & pantau aktivitas operator portal.';
+    IconData headerIcon = Icons.shield_outlined;
+
+    if (_selectedNavIndex == 1) {
+      headerTitle = 'Otoritas Instansi';
+      headerSubtitle = 'Kelola akun administrator tingkat dinas.';
+      headerIcon = Icons.person_outline_rounded;
+    } else if (_selectedNavIndex == 0) {
+      headerTitle = 'Dashboard Admin';
+      headerSubtitle = 'Portal Terpadu Pengelolaan Layanan Kota Sukabumi.';
+      headerIcon = Icons.space_dashboard_outlined;
+    }
+
     return Container(
       height: 76,
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -597,7 +611,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       ),
       child: Row(
         children: [
-          // OTORITAS AKSES HEADER BADGE
+          // DYNAMIC HEADER BADGE ICON & TITLE
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -605,30 +619,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFD0E2FF)),
             ),
-            child: const Icon(
-              Icons.shield_outlined,
-              color: Color(0xFF0A1E33),
+            child: Icon(
+              headerIcon,
+              color: const Color(0xFF0A1E33),
               size: 22,
             ),
           ),
           const SizedBox(width: 14),
-          const Column(
+          Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Otoritas Akses',
-                style: TextStyle(
+                headerTitle,
+                style: const TextStyle(
                   color: Color(0xFF0A1E33),
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Poppins',
                 ),
               ),
-              SizedBox(height: 2),
+              const SizedBox(height: 2),
               Text(
-                'Kelola akun & pantau aktivitas operator portal.',
-                style: TextStyle(
+                headerSubtitle,
+                style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 11.5,
                   fontFamily: 'Poppins',
@@ -750,7 +764,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   String _getNavTitle() {
     switch (_selectedNavIndex) {
       case 1:
-        return 'Kelola Instansi';
+        return 'Kelola Admin Dinas';
       case 2:
         return 'Kelola Layanan';
       case 3:
@@ -763,6 +777,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return 'Profil Saya';
       case 7:
         return 'Kelola Administrator (SuperAdmin)';
+      case 9:
+        return 'Profil Instansi';
       default:
         return 'Dashboard Admin';
     }
@@ -774,7 +790,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildActiveContentView(BuildContext context, Color sidebarBg, Color accentGold) {
     switch (_selectedNavIndex) {
       case 1:
-        return _buildKelolaInstansiView(context, sidebarBg, accentGold);
+        return _buildKelolaAdminDinasView(context, sidebarBg, accentGold);
       case 2:
         return _buildKelolaLayananView(context, sidebarBg, accentGold);
       case 3:
@@ -787,6 +803,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return _buildProfilSayaView(context, sidebarBg, accentGold);
       case 7:
         return _buildKelolaAdminView(context, sidebarBg, accentGold);
+      case 9:
+        return _buildKelolaInstansiView(context, sidebarBg, accentGold);
       default:
         return _buildDashboardOverviewView(context, sidebarBg, accentGold);
     }
@@ -3926,6 +3944,848 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // SUB-VIEW KELOLA ADMIN DINAS (EXACT MATCH USER SCREENSHOT 1, 2, 3)
+  // ---------------------------------------------------------------------------
+  Widget _buildKelolaAdminDinasView(BuildContext context, Color sidebarBg, Color accentGold) {
+    final allAdmins = _adminService.adminList.where((a) => a.role == 'Admin OPD').toList();
+    final filteredAdmins = allAdmins.where((admin) {
+      final query = _adminSearchQuery.toLowerCase();
+      return admin.nama.toLowerCase().contains(query) ||
+          admin.email.toLowerCase().contains(query) ||
+          admin.username.toLowerCase().contains(query) ||
+          admin.nip.toLowerCase().contains(query) ||
+          admin.instansi.toLowerCase().contains(query);
+    }).toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
+        boxShadow: const [BoxShadow(color: Color(0x06000000), blurRadius: 16, offset: Offset(0, 4))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // CARD TOP HEADER ROW
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Manajemen Admin Dinas',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0A1E33),
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${filteredAdmins.length} ADMINISTRATOR TERDAFTAR',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                        letterSpacing: 0.8,
+                        fontFamily: 'Poppins',
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+
+                // SEARCH INPUT BOX
+                SizedBox(
+                  width: 220,
+                  height: 42,
+                  child: TextField(
+                    controller: _adminSearchController,
+                    onChanged: (val) => setState(() => _adminSearchQuery = val),
+                    style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+                    decoration: InputDecoration(
+                      hintText: 'Cari admin...',
+                      hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                      prefixIcon: const Icon(Icons.search_rounded, color: Colors.grey, size: 18),
+                      filled: true,
+                      fillColor: const Color(0xFFF1F5F9),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+
+                // + TAMBAH ADMIN BUTTON (EXACT MATCH SCREENSHOT 1)
+                ElevatedButton.icon(
+                  onPressed: () => _showFormTambahAdminDinasDialog(context),
+                  icon: const Icon(Icons.person_add_rounded, size: 16),
+                  label: const Text(
+                    '+ TAMBAH ADMIN',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A1E33),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const Divider(height: 1, color: Color(0xFFF1F5F9)),
+
+          // LIST ADMIN DINAS CARDS (EXACT MATCH SCREENSHOT 1)
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: filteredAdmins.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text(
+                        'Tidak ada admin dinas yang cocok dengan pencarian.',
+                        style: TextStyle(color: Colors.grey, fontFamily: 'Poppins'),
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filteredAdmins.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 14),
+                    itemBuilder: (context, index) {
+                      final admin = filteredAdmins[index];
+
+                      return Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFAFAFA),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFEFEFEF)),
+                        ),
+                        child: Row(
+                          children: [
+                            // CIRCLE AVATAR WITH INITIALS
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF0A1E33),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  admin.initials,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+
+                            // COLUMN 1: NAME & HANDLE TAG
+                            Expanded(
+                              flex: 4,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    admin.nama,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0A1E33),
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    admin.handleTag,
+                                    style: const TextStyle(
+                                      fontSize: 9.5,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.3,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // COLUMN 2: INSTANSI UTAMA
+                            Expanded(
+                              flex: 4,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'INSTANSI UTAMA',
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey,
+                                      letterSpacing: 0.5,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    admin.instansi,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF334155),
+                                      fontFamily: 'Poppins',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // COLUMN 3: STATUS BADGE (ONLINE / OFFLINE)
+                            Expanded(
+                              flex: 3,
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 3.5,
+                                    backgroundColor: admin.isOnline ? const Color(0xFF10B981) : Colors.grey.shade400,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        admin.isOnline ? 'ONLINE' : 'OFFLINE',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: admin.isOnline ? const Color(0xFF10B981) : Colors.grey.shade600,
+                                          letterSpacing: 0.5,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                      if (!admin.isOnline)
+                                        const Text(
+                                          'BELUM LOGIN',
+                                          style: TextStyle(
+                                            fontSize: 8.5,
+                                            color: Colors.grey,
+                                            fontWeight: FontWeight.w500,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // COLUMN 4: ACTION BUTTONS (EDIT & HAPUS)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_rounded, color: Color(0xFF0A1E33), size: 18),
+                                  onPressed: () => _showFormTambahAdminDinasDialog(context, adminToEdit: admin),
+                                  tooltip: 'Edit Admin Dinas',
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 18),
+                                  onPressed: () => _konfirmasiHapusAdmin(context, admin),
+                                  tooltip: 'Hapus Admin Dinas',
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          const SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // FORM REGISTRASI ADMIN DINAS DIALOG (EXACT MATCH SCREENSHOT 2 & 3)
+  // ---------------------------------------------------------------------------
+  void _showFormTambahAdminDinasDialog(BuildContext context, {AdminUserModel? adminToEdit}) {
+    final isEdit = adminToEdit != null;
+    final formKey = GlobalKey<FormState>();
+    final namaController = TextEditingController(text: adminToEdit?.nama ?? '');
+    final usernameController = TextEditingController(text: adminToEdit?.username ?? '');
+    final emailController = TextEditingController(text: adminToEdit?.email ?? '');
+    final whatsappController = TextEditingController(text: adminToEdit?.whatsapp ?? '');
+    final passwordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+
+    String selectedInstansi = adminToEdit?.instansi ?? 'Dinas Komunikasi dan Informatika';
+    bool isVerified = isEdit;
+    bool obscurePassword = true;
+    bool obscureConfirm = true;
+
+    final instansiDinasList = [
+      'Dinas Komunikasi dan Informatika',
+      'Dinas Kependudukan dan Pencatatan Sipil',
+      'Dinas Penanaman Modal dan PTSP',
+      'Dinas Kesehatan',
+      'Dinas Pendidikan',
+      'Dinas Pekerjaan Umum dan Penataan Ruang',
+      'Dinas Perhubungan',
+      'Dinas Lingkungan Hidup',
+      'Badan Pengelolaan Keuangan dan Pendapatan Daerah',
+    ];
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              clipBehavior: Clip.antiAlias,
+              child: SizedBox(
+                width: 650,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // DARK NAVY HEADER BANNER (EXACT MATCH SCREENSHOT 2 & 3)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        color: const Color(0xFF0A1E33),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    isEdit ? 'Edit Data Admin Dinas' : 'Registrasi Admin Baru',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Otoritas ini memiliki kendali penuh terhadap manajemen layanan pada instansi terkait.',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11.5,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E3A5F),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE8A33D).withOpacity(0.4)),
+                              ),
+                              child: const Icon(
+                                Icons.shield_rounded,
+                                color: Color(0xFFE8A33D),
+                                size: 24,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // FORM BODY CONTENT
+                      Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Form(
+                          key: formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // FIELD 1: NAMA LENGKAP & GELAR
+                              const Text(
+                                'NAMA LENGKAP & GELAR SESUAI SK',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0A1E33),
+                                  letterSpacing: 0.5,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: namaController,
+                                validator: (val) => val == null || val.trim().isEmpty ? 'Nama wajib diisi' : null,
+                                decoration: InputDecoration(
+                                  hintText: 'Contoh: Syarif Hidayatullah, M.Kom',
+                                  hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                  prefixIcon: const Icon(Icons.badge_outlined, color: Colors.grey, size: 20),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // FIELD 2: ID USERNAME
+                              const Text(
+                                'ID USERNAME',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0A1E33),
+                                  letterSpacing: 0.5,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              TextFormField(
+                                controller: usernameController,
+                                validator: (val) => val == null || val.trim().isEmpty ? 'Username wajib diisi' : null,
+                                decoration: InputDecoration(
+                                  hintText: '@ admin_diskominfo',
+                                  hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                  prefixIcon: const Icon(Icons.alternate_email_rounded, color: Colors.grey, size: 18),
+                                  filled: true,
+                                  fillColor: const Color(0xFFF8FAFC),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+
+                              // FIELD 3: EMAIL KEDINASAN (WITH VERIFIKASI BUTTON)
+                              const Text(
+                                'EMAIL KEDINASAN (WAJIB VERIFIKASI)',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF0A1E33),
+                                  letterSpacing: 0.5,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: emailController,
+                                      validator: (val) => val == null || !val.contains('@') ? 'Email tidak valid' : null,
+                                      decoration: InputDecoration(
+                                        hintText: 'official@sukabumikota.go.id',
+                                        hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                        prefixIcon: const Icon(Icons.email_outlined, color: Colors.grey, size: 20),
+                                        filled: true,
+                                        fillColor: const Color(0xFFF8FAFC),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  ElevatedButton.icon(
+                                    onPressed: () {
+                                      if (emailController.text.trim().isNotEmpty) {
+                                        setDialogState(() => isVerified = true);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('✅ Email kedinasan terverifikasi! Detail admin dinas terbuka.')),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Masukkan email kedinasan terlebih dahulu.')),
+                                        );
+                                      }
+                                    },
+                                    icon: Icon(
+                                      isVerified ? Icons.verified_user_rounded : Icons.security_rounded,
+                                      size: 16,
+                                    ),
+                                    label: Text(
+                                      isVerified ? 'TERVERIFIKASI' : 'VERIFIKASI',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: isVerified ? const Color(0xFF10B981) : const Color(0xFF0A1E33),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+
+                              // SECTION HEADER: DETAIL ADMIN DINAS [🔒 TERKUNCI / 🔓 TERVERIFIKASI]
+                              Row(
+                                children: [
+                                  const Text(
+                                    'DETAIL ADMIN DINAS',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0A1E33),
+                                      letterSpacing: 0.8,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: isVerified ? const Color(0xFFE6F4EA) : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          isVerified ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
+                                          size: 12,
+                                          color: isVerified ? const Color(0xFF10B981) : Colors.grey,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          isVerified ? 'TERBUKA' : 'TERKUNCI',
+                                          style: TextStyle(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: isVerified ? const Color(0xFF10B981) : Colors.grey,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+
+                              // TWO COLUMN ROW: WHATSAPP & INSTANSI
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'NOMOR WHATSAPP AKTIF',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0A1E33),
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        TextFormField(
+                                          controller: whatsappController,
+                                          keyboardType: TextInputType.phone,
+                                          decoration: InputDecoration(
+                                            hintText: '812-345-678',
+                                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                            prefixIcon: const Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                                              child: Text('+62', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0A1E33), fontFamily: 'Poppins')),
+                                            ),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF8FAFC),
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'INSTANSI / UNIT KERJA',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0A1E33),
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        DropdownButtonFormField<String>(
+                                          value: instansiDinasList.contains(selectedInstansi) ? selectedInstansi : instansiDinasList.first,
+                                          items: instansiDinasList
+                                              .map((inst) => DropdownMenuItem(value: inst, child: Text(inst, style: const TextStyle(fontSize: 11.5, fontFamily: 'Poppins'), overflow: TextOverflow.ellipsis)))
+                                              .toList(),
+                                          onChanged: (val) {
+                                            if (val != null) setDialogState(() => selectedInstansi = val);
+                                          },
+                                          decoration: InputDecoration(
+                                            prefixIcon: const Icon(Icons.business_rounded, color: Colors.grey, size: 20),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF8FAFC),
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+
+                              // TWO COLUMN ROW: KATA SANDI & KONFIRMASI SANDI
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'KATA SANDI',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0A1E33),
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        TextFormField(
+                                          controller: passwordController,
+                                          obscureText: obscurePassword,
+                                          decoration: InputDecoration(
+                                            hintText: '••••••••',
+                                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                            prefixIcon: const Icon(Icons.lock_outline_rounded, color: Colors.grey, size: 18),
+                                            suffixIcon: IconButton(
+                                              icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18, color: Colors.grey),
+                                              onPressed: () => setDialogState(() => obscurePassword = !obscurePassword),
+                                            ),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF8FAFC),
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'KONFIRMASI SANDI',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF0A1E33),
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        TextFormField(
+                                          controller: confirmPasswordController,
+                                          obscureText: obscureConfirm,
+                                          decoration: InputDecoration(
+                                            hintText: '••••••••',
+                                            hintStyle: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                                            prefixIcon: const Icon(Icons.security_outlined, color: Colors.grey, size: 18),
+                                            suffixIcon: IconButton(
+                                              icon: Icon(obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 18, color: Colors.grey),
+                                              onPressed: () => setDialogState(() => obscureConfirm = !obscureConfirm),
+                                            ),
+                                            filled: true,
+                                            fillColor: const Color(0xFFF8FAFC),
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(12),
+                                              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 28),
+
+                              // BOTTOM FORM ACTIONS (BATALKAN & SIMPAN & BERI OTORITAS)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  OutlinedButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.grey.shade700,
+                                      side: BorderSide(color: Colors.grey.shade300),
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: const Text(
+                                      'Batalkan',
+                                      style: TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      if (!formKey.currentState!.validate()) return;
+                                      final newAdmin = AdminUserModel(
+                                        id: isEdit ? adminToEdit.id : 'adm-dinas-${DateTime.now().millisecondsSinceEpoch}',
+                                        nama: namaController.text.trim(),
+                                        username: usernameController.text.trim().replaceAll('@', '').trim(),
+                                        email: emailController.text.trim(),
+                                        nip: adminToEdit?.nip ?? '19910325 201801 2 003',
+                                        whatsapp: whatsappController.text.trim(),
+                                        instansi: selectedInstansi,
+                                        role: 'Admin OPD',
+                                        isActive: true,
+                                        isOnline: isEdit ? adminToEdit.isOnline : false,
+                                        createdAt: isEdit ? adminToEdit.createdAt : DateTime.now(),
+                                      );
+
+                                      if (isEdit) {
+                                        _adminService.updateAdmin(newAdmin);
+                                      } else {
+                                        _adminService.addAdmin(newAdmin);
+                                      }
+
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('✅ Admin Dinas "${newAdmin.nama}" berhasil ${isEdit ? "perbarui" : "didaftarkan"}!'),
+                                          backgroundColor: const Color(0xFF0A1E33),
+                                        ),
+                                      );
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF0A1E33),
+                                      foregroundColor: const Color(0xFFE8A33D),
+                                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: Text(
+                                      isEdit ? 'SIMPAN PERUBAHAN' : 'SIMPAN & BERI OTORITAS',
+                                      style: const TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.5,
+                                        fontFamily: 'Poppins',
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

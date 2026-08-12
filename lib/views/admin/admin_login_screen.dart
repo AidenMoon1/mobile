@@ -354,7 +354,7 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
   }
 
   void _verifikasiOtp() async {
-    final entered = _getEnteredOtp();
+    final entered = _getEnteredOtp().trim();
     if (entered.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -365,14 +365,14 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
       return;
     }
 
+    if (_isVerifying) return;
+
     setState(() => _isVerifying = true);
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 300));
 
     if (!mounted) return;
 
-    setState(() => _isVerifying = false);
-
-    if (entered == _currentOtp) {
+    if (entered == _currentOtp.trim()) {
       await AdminAuthService().saveSession(widget.adminEmail);
 
       await NotificationService().addNotification(
@@ -385,17 +385,23 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('OTP Terverifikasi! Masuk ke Dashboard Admin...'),
+          content: Text('✅ OTP Terverifikasi! Masuk ke Dashboard Admin...'),
           backgroundColor: Color(0xFF0A1E33),
+          duration: Duration(seconds: 1),
         ),
       );
 
-      Navigator.pushNamedAndRemoveUntil(
+      Navigator.pushAndRemoveUntil(
         context,
-        '/admin/dashboard',
+        MaterialPageRoute(
+          builder: (context) => const AdminDashboardScreen(initialTab: 'overview'),
+          settings: const RouteSettings(name: '/admin/dashboard'),
+        ),
         (route) => false,
       );
     } else {
+      if (!mounted) return;
+      setState(() => _isVerifying = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Kode OTP salah! Kode yang tepat adalah $_currentOtp'),
