@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:mobile/services/api_service.dart';
-import 'package:mobile/main.dart';
 
 class EmailOtpScreen extends StatefulWidget {
   final String email;

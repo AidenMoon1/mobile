@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/services/user_service.dart';
-import 'package:mobile/services/notification_service.dart';
-import 'package:mobile/models/notification_model.dart';
 import 'package:mobile/main.dart';
-
 import 'package:mobile/views/profile/email_otp_screen.dart'; // Import layar OTP
 
 class RegisterScreen extends StatefulWidget {
