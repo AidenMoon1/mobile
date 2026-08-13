@@ -35,13 +35,15 @@ void main() async {
     await initializeDateFormatting('id_ID', null);
   } catch (_) {}
 
-  // Try-catch safe initializations agar Web tidak blank jika ada plugin gagal
+  // Safe initializations agar Web tidak blank jika ada plugin gagal
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
   } catch (e) {
-    // Graceful fallback jika Firebase Web mengalami kendala opsi
+    debugPrint('Firebase Web init fallback: $e');
   }
   
   try {
@@ -49,7 +51,7 @@ void main() async {
     await NotificationService().init();
     await FeedbackService().init();
   } catch (e) {
-    // Graceful fallback jika SQLite lokal tidak didukung di browser
+    debugPrint('Local Services init fallback: $e');
   }
   
   runApp(const MyApp());

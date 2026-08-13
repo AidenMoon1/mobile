@@ -121,22 +121,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   }
 
   Future<void> _initPresence() async {
-    final email = await AdminAuthService().getAdminEmail();
-    
-    // Tunggu sebentar sampai list admin terisi jika sedang loading
-    if (_adminService.adminList.isEmpty) {
-      await Future.delayed(const Duration(milliseconds: 500));
-    }
-
     try {
+      final email = await AdminAuthService().getAdminEmail();
+      
+      // Tunggu sebentar sampai list admin terisi jika sedang loading
+      if (_adminService.adminList.isEmpty) {
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+
       final admin = _adminService.adminList.firstWhere(
         (e) => e.email.toLowerCase() == email.toLowerCase(),
       );
       _currentAdminId = admin.id;
       // Update status ke Online di Cloud (RTDB)
       await _adminService.updateAdminOnlineStatus(admin.id, true);
-    } catch (_) {
-      // Jika admin tidak ditemukan di list lokal
+    } catch (e) {
+      debugPrint('Presence init safe fallback: $e');
     }
   }
 
