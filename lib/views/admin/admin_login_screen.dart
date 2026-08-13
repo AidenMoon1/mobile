@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
-import 'package:mobile/services/notification_service.dart';
-import 'package:mobile/models/notification_model.dart';
 import 'package:mobile/services/admin_auth_service.dart';
 import 'package:mobile/views/admin/admin_dashboard_screen.dart';
-
 import 'package:mobile/services/api_service.dart';
 import 'dart:convert';
 
@@ -345,13 +341,6 @@ class _AdminOtpScreenState extends State<AdminOtpScreen> {
   final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   bool _isVerifying = false;
-  late String _currentOtp;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentOtp = widget.expectedOtp;
-  }
 
   @override
   void dispose() {

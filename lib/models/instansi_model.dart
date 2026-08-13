@@ -17,6 +17,7 @@ class InstansiModel {
   final String deskripsi;       // Deskripsi profil instansi
   final String mapsQuery;       // Query pencarian lokasi di Google Maps
   final List<String> tugasFungsi;// Daftar rincian tugas & fungsi OPD
+  final String iframeUrl;       // Tautan URL iFrame / Webview portal resmi OPD
   final bool isActive;          // Status Layanan OPD: true (Aktif), false (Pemeliharaan / Maintenance)
 
   InstansiModel({
@@ -31,6 +32,7 @@ class InstansiModel {
     required this.deskripsi,
     required this.mapsQuery,
     required this.tugasFungsi,
+    this.iframeUrl = '',
     this.isActive = true,
   });
 
@@ -48,6 +50,7 @@ class InstansiModel {
       'deskripsi': deskripsi,
       'mapsQuery': mapsQuery,
       'tugasFungsiJson': tugasFungsi.join('|||'),
+      'iframeUrl': iframeUrl,
       'isActive': isActive ? 1 : 0,
     };
   }
@@ -70,6 +73,7 @@ class InstansiModel {
       deskripsi: map['deskripsi'] ?? '',
       mapsQuery: map['mapsQuery'] ?? '',
       tugasFungsi: tfList,
+      iframeUrl: map['iframeUrl'] ?? '',
       isActive: (map['isActive'] ?? 1) == 1,
     );
   }
@@ -87,6 +91,7 @@ class InstansiModel {
     String? deskripsi,
     String? mapsQuery,
     List<String>? tugasFungsi,
+    String? iframeUrl,
     bool? isActive,
   }) {
     return InstansiModel(
@@ -101,6 +106,7 @@ class InstansiModel {
       deskripsi: deskripsi ?? this.deskripsi,
       mapsQuery: mapsQuery ?? this.mapsQuery,
       tugasFungsi: tugasFungsi ?? this.tugasFungsi,
+      iframeUrl: iframeUrl ?? this.iframeUrl,
       isActive: isActive ?? this.isActive,
     );
   }

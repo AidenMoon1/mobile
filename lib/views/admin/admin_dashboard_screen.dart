@@ -3389,7 +3389,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final confirmPasswordController = TextEditingController();
 
     String selectedInstansi = adminToEdit?.instansi ?? 'DISKOMINFO';
-    String selectedRole = adminToEdit?.role ?? 'Super Admin';
     bool isVerified = isEdit;
     bool obscurePassword = true;
     bool obscureConfirm = true;

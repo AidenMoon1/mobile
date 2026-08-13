@@ -241,7 +241,7 @@ class OpdService extends ChangeNotifier {
       ),
     ]);
 
-    // 2. Seed 5 Instansi Utama Pemkot Sukabumi
+    // 2. Seed 10 Instansi Utama Pemkot Sukabumi (Lengkap dengan iFrame Webview Portal)
     _instansiList.addAll([
       InstansiModel(
         id: '1',
@@ -252,6 +252,7 @@ class OpdService extends ChangeNotifier {
         jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
         kontak: '(0266) 221122 / WA: 0811-2233-4455',
         logoPath: 'assets/images/disduk.png',
+        iframeUrl: 'https://disdukcapil.sukabumikota.go.id',
         deskripsi:
             'Dinas Kependudukan dan Pencatatan Sipil Kota Sukabumi bertanggung jawab dalam menyelenggarakan urusan pemerintahan bidang kependudukan dan pencatatan sipil secara tertib, efisien, transparan, dan berbasis teknologi digital.',
         mapsQuery: 'Disdukcapil Kota Sukabumi',
@@ -271,6 +272,7 @@ class OpdService extends ChangeNotifier {
         jamOperasional: 'Senin - Jumat | 08.00 - 16.00 WIB',
         kontak: '(0266) 221888 / diskominfo@sukabumikota.go.id',
         logoPath: 'assets/images/diskominfo.png',
+        iframeUrl: 'https://diskominfo.sukabumikota.go.id',
         deskripsi:
             'Dinas Komunikasi dan Informatika Kota Sukabumi mengelola infrastruktur teknologi informasi, komunikasi publik, sistem pemerintahan berbasis elektronik (SPBE), serta pusat tanggap darurat dan keamanan informasi daerah.',
         mapsQuery: 'Diskominfo Kota Sukabumi',
@@ -290,6 +292,7 @@ class OpdService extends ChangeNotifier {
         jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
         kontak: '(0266) 222555 / dpmptsp@sukabumikota.go.id',
         logoPath: 'assets/images/dpmptsp.png',
+        iframeUrl: 'https://dpmptsp.sukabumikota.go.id',
         deskripsi:
             'DPMPTSP Kota Sukabumi menyelenggarakan pelayanan perizinan dan non-perizinan secara terpadu satu pintu serta memfasilitasi investasi dan kemudahan berusaha bagi UMKM hingga pelaku usaha besar.',
         mapsQuery: 'DPMPTSP Kota Sukabumi',
@@ -309,6 +312,7 @@ class OpdService extends ChangeNotifier {
         jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
         kontak: '(0266) 211999 / bpkpd@sukabumikota.go.id',
         logoPath: 'assets/images/bpkpd.png',
+        iframeUrl: 'https://bpkpd.sukabumikota.go.id',
         deskripsi:
             'BPKPD Kota Sukabumi bertugas mengelola pendapatan daerah, Pajak Bumi dan Bangunan (PBB-P2), BPHTB, serta akuntansi dan perbendaharaan keuangan daerah secara akuntabel.',
         mapsQuery: 'BPKPD Kota Sukabumi',
@@ -328,6 +332,7 @@ class OpdService extends ChangeNotifier {
         jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
         kontak: '(0266) 234567 / dkp3@sukabumikota.go.id',
         logoPath: 'assets/images/dkp3.png',
+        iframeUrl: 'https://dkp3.sukabumikota.go.id',
         deskripsi:
             'DKP3 Kota Sukabumi bertanggung jawab dalam menjaga ketahanan pangan masyarakat, pelayanan kesehatan hewan/vets, bimbingan kelompok tani & pembudidaya ikan daerah.',
         mapsQuery: 'DKP3 Kota Sukabumi',
@@ -336,6 +341,96 @@ class OpdService extends ChangeNotifier {
           'Pemeriksaan keamanan pangan dan pembinaan kelompok tani.',
           'Fasilitasi bantuan bibit pertanian dan perikanan darat.',
           'Pengawasan ketersediaan dan harga pangan strategis.',
+        ],
+      ),
+      InstansiModel(
+        id: '6',
+        kodeInstansi: 'dinkes',
+        namaSingkat: 'DINKES',
+        namaLengkap: 'Dinas Kesehatan Kota Sukabumi',
+        alamat: 'Jl. Pelabuhan II No. 64, Cikondang, Kota Sukabumi, Jawa Barat 43142',
+        jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
+        kontak: '(0266) 225312 / dinkes@sukabumikota.go.id',
+        logoPath: 'assets/images/dinkes.png',
+        iframeUrl: 'https://dinkes.sukabumikota.go.id',
+        deskripsi: 'Dinas Kesehatan Kota Sukabumi mengelola jaminan kesehatan masyarakat, fasilitas kesehatan Puskesmas & RSUD, serta imunisasi anak daerah.',
+        mapsQuery: 'Dinas Kesehatan Kota Sukabumi',
+        tugasFungsi: [
+          'Pengelolaan izin tenaga kesehatan dan apotek.',
+          'Fasilitasi BPJS Kesehatan PBI APBD Kota Sukabumi.',
+          'Penyelenggaraan pemeriksaan kesehatan & imunisasi berkala.',
+        ],
+      ),
+      InstansiModel(
+        id: '7',
+        kodeInstansi: 'disdik',
+        namaSingkat: 'DISDIK',
+        namaLengkap: 'Dinas Pendidikan dan Kebudayaan',
+        alamat: 'Jl. Subang Jaya No. 12, Kota Sukabumi, Jawa Barat 43116',
+        jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
+        kontak: '(0266) 211234 / disdik@sukabumikota.go.id',
+        logoPath: 'assets/images/disdik.png',
+        iframeUrl: 'https://disdik.sukabumikota.go.id',
+        deskripsi: 'Dinas Pendidikan dan Kebudayaan Kota Sukabumi menyelenggarakan penerimaan peserta didik baru (PPDB), beasiswa daerah, dan pelestarian cagar budaya.',
+        mapsQuery: 'Dinas Pendidikan Kota Sukabumi',
+        tugasFungsi: [
+          'Penyelenggaraan Sistem PPDB Online SD & SMP.',
+          'Fasilitasi bantuan beasiswa dan ijazah sekolah.',
+          'Pengawasan mutu kurikulum dan fasilitasi guru.',
+        ],
+      ),
+      InstansiModel(
+        id: '8',
+        kodeInstansi: 'disnaker',
+        namaSingkat: 'DISNAKER',
+        namaLengkap: 'Dinas Tenaga Kerja Kota Sukabumi',
+        alamat: 'Jl. Taman Bahagia No. 2, Kota Sukabumi, Jawa Barat 43132',
+        jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
+        kontak: '(0266) 223456 / disnaker@sukabumikota.go.id',
+        logoPath: 'assets/images/disnaker.png',
+        iframeUrl: 'https://disnaker.sukabumikota.go.id',
+        deskripsi: 'Dinas Tenaga Kerja Kota Sukabumi melayani pembuatan Kartu Kuning (AK-1), informasi bursa kerja (Job Fair), serta pelatihan vokasi kerja.',
+        mapsQuery: 'Disnaker Kota Sukabumi',
+        tugasFungsi: [
+          'Penerbitan Kartu Pencari Kerja (AK-1 / Kartu Kuning).',
+          'Penyelenggaraan pelatihan keterampilan di BLK.',
+          'Penyelesaian perselisihan hubungan industrial.',
+        ],
+      ),
+      InstansiModel(
+        id: '9',
+        kodeInstansi: 'dishub',
+        namaSingkat: 'DISHUB',
+        namaLengkap: 'Dinas Perhubungan Kota Sukabumi',
+        alamat: 'Jl. Pemuda No. 1, Tiwul, Kota Sukabumi, Jawa Barat 43141',
+        jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
+        kontak: '(0266) 224567 / dishub@sukabumikota.go.id',
+        logoPath: 'assets/images/dishub.png',
+        iframeUrl: 'https://dishub.sukabumikota.go.id',
+        deskripsi: 'Dinas Perhubungan Kota Sukabumi melayani pendaftaran Uji Berkala Kendaraan Bermotor (KIR), izin trayek angkutan kota, dan rekayasa lalu lintas.',
+        mapsQuery: 'Dishub Kota Sukabumi',
+        tugasFungsi: [
+          'Pelaksanaan Uji Berkala Kendaraan Bermotor (Uji KIR).',
+          'Penerbitan izin operasional trayek angkutan umum.',
+          'Pengelolaan fasilitas parkir dan penerangan jalan umum (PJU).',
+        ],
+      ),
+      InstansiModel(
+        id: '10',
+        kodeInstansi: 'dlh',
+        namaSingkat: 'DLH',
+        namaLengkap: 'Dinas Lingkungan Hidup Kota Sukabumi',
+        alamat: 'Jl. K.H. Ahmad Sanusi No. 4, Kota Sukabumi, Jawa Barat 43131',
+        jamOperasional: 'Senin - Jumat | 08.00 - 15.30 WIB',
+        kontak: '(0266) 226789 / dlh@sukabumikota.go.id',
+        logoPath: 'assets/images/dlh.png',
+        iframeUrl: 'https://dlh.sukabumikota.go.id',
+        deskripsi: 'Dinas Lingkungan Hidup Kota Sukabumi melayani perizinan lingkungan (AMDAL / UKL-UPL), pengangkutan sampah, serta pengawasan kualitas udara & air.',
+        mapsQuery: 'DLH Kota Sukabumi',
+        tugasFungsi: [
+          'Rekomendasi persetujuan lingkungan AMDAL & UKL-UPL.',
+          'Pelayanan pengangkutan dan kebersihan sampah lingkungan.',
+          'Pemantauan indeks kualitas lingkungan hidup (IKLH).',
         ],
       ),
     ]);
