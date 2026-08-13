@@ -1,7 +1,6 @@
-- [x] Fix Admin Deletion Synchronization (MySQL Sync)
-    - [x] Add `destroyAdmin` method to `AdminApiController.php`
-    - [x] Register `DELETE /api/admin/delete` route in `api.php`
-    - [x] Update `AdminManagementService.deleteAdmin` in Flutter to call the new API
+- [/] Fix Admin Dashboard Gray Screen
+    - [/] Register Sakalangit in `admin_management_service.dart`
+    - [ ] Sanitize `AdminDashboardScreen` for Null Safety
+    - [ ] Build & Deploy to Firebase Hosting
 - [ ] Verification
-    - [ ] Delete an admin and verify it's gone from MySQL `users` table
-    - [ ] Re-register the same admin to verify no "Duplicate Entry" error
+    - [ ] Successful login and dashboard access

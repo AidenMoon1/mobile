@@ -2710,14 +2710,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final allWarga = UserService().getRegisteredWarga();
     final filteredWarga = allWarga.where((item) {
       final q = _penggunaSearchQuery.toLowerCase();
-      return item['nama']!.toLowerCase().contains(q) ||
-          item['email']!.toLowerCase().contains(q) ||
-          item['phone']!.toLowerCase().contains(q) ||
+      return (item['nama'] ?? '').toLowerCase().contains(q) ||
+          (item['email'] ?? '').toLowerCase().contains(q) ||
+          (item['phone'] ?? '').toLowerCase().contains(q) ||
           (item['nik'] ?? '').toLowerCase().contains(q);
     }).toList();
 
     final totalTerdaftar = allWarga.length;
-    final totalTerverifikasi = allWarga.where((e) => e['status'] == 'ACTIVE' || e['status']!.contains('IKD') || e['status']!.contains('SSO')).length;
+    final totalTerverifikasi = allWarga.where((e) {
+      final status = e['status'] ?? '';
+      return status == 'ACTIVE' || status.contains('IKD') || status.contains('SSO');
+    }).length;
     const totalDitangguhkan = 0;
 
     const int itemsPerPage = 5;

@@ -39,11 +39,24 @@ class AdminManagementService extends ChangeNotifier {
     _adminList.addAll([
       // --- SUPERADMIN OPERATORS ---
       AdminUserModel(
+        id: 'adm-saka',
+        nama: 'Sakalangit Super Admin',
+        username: 'superadmin',
+        email: 'sakalangit112@gmail.com',
+        nip: '19950810 202203 1 001',
+        whatsapp: '081234567891',
+        instansi: 'SUPERADMIN',
+        role: 'Super Admin',
+        isActive: true,
+        isOnline: false,
+        createdAt: DateTime(2026, 8, 12),
+      ),
+      AdminUserModel(
         id: 'adm-001',
-        nama: 'Muhammad Dzakwan (SuperAdmin)',
+        nama: 'Muhammad Dzakwan',
         username: 'dzakwan',
         email: 'dzakwanmuh304@gmail.com',
-        nip: '19950810 202203 1 001',
+        nip: '19950810 202203 1 002',
         whatsapp: '081234567890',
         instansi: 'SUPERADMIN',
         role: 'Super Admin',

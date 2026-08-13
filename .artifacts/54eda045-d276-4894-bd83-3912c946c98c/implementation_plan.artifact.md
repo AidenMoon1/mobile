@@ -1,35 +1,34 @@
-# Rencana Implementasi: Status Presence Admin Real-Time
+# Rencana Perbaikan: Dashboard Admin Gray Screen (Post-Merge Fix)
 
-Tujuan: Mengubah status "ONLINE/OFFLINE" pada daftar Manajemen Operator agar berfungsi secara otomatis dan instan menggunakan Firebase Presence System.
+Tujuan: Memperbaiki crash (layar abu-abu) pada Dashboard Admin yang terjadi setelah proses pull, dengan meningkatkan keamanan null-safety dan sinkronisasi identitas admin.
 
 ## User Review Required
 
-> [!IMPORTANT]
-> - **Otomatisasi**: Admin tidak perlu melakukan apa pun. Begitu membuka Dashboard, lampu akan berubah Hijau (ONLINE). Begitu menutup tab browser atau logout, lampu akan kembali Abu-abu (OFFLINE).
-> - **Teknologi**: Kita akan menggunakan fitur `onDisconnect` dari Firebase Realtime Database. Ini adalah cara tercanggih untuk mendeteksi user yang tiba-tiba menutup aplikasi/browser tanpa menekan tombol logout.
+> [!CRITICAL]
+> **Identitas Admin**: Saya akan menambahkan email Kakak (`sakalangit112@gmail.com`) ke dalam daftar operator permanen di kodingan. Ini kunci utama agar aplikasi mengenali siapa yang sedang login.
 
 ---
 
-## Langkah-Langkah Teknis
+## Langkah Perbaikan
 
-### 1. Sinkronisasi Data (Service Layer)
-- **[MODIFY] [AdminManagementService.dart](file:///C:/src/mobile/lib/services/admin_management_service.dart)**:
-    - Menambah fungsi `listenToAdminsRealTime()`: Mengganti sistem "tanya-tanya tiap 4 detik" (polling) menjadi sistem "mendengarkan langsung" (Stream) dari Firebase.
-    - Menambah fungsi `updateMyPresence()`: Menggunakan logika `onDisconnect` agar saat koneksi internet putus atau tab ditutup, status otomatis berubah jadi OFFLINE di server.
+### 1. Sinkronisasi Identitas Admin (Service Layer)
+- **[MODIFY] [admin_management_service.dart](file:///C:/src/mobile/lib/services/admin_management_service.dart)**:
+    - Mendaftarkan email Kakak di daftar `_initDefaultAdmins`.
+    - Menghapus paksaan `isOnline: true` yang bisa bikin crash saat database cloud belum siap.
 
-### 2. Integrasi Layanan (Auth & Dashboard)
-- **[MODIFY] [AdminDashboardScreen.dart](file:///C:/src/mobile/lib/views/admin/admin_dashboard_screen.dart)**:
-    - Memanggil fungsi kehadiran di `initState`.
-    - Memastikan UI daftar operator dibalut dengan `StreamBuilder` atau `AnimatedBuilder` agar lampu hijau menyala/mati secara halus tanpa perlu refresh.
+### 2. Penguatan Null-Safety (Frontend)
+- **[MODIFY] [admin_dashboard_screen.dart](file:///C:/src/mobile/lib/views/admin/admin_dashboard_screen.dart)**:
+    - Memberikan nilai default (`?? '-'`) pada data-data yang ditarik dari database agar tidak terjadi error "Null check operator".
+    - Membungkus proses inisialisasi kehadiran dengan penanganan error yang lebih baik.
 
-### 3. Pembersihan Data Dummy
-- Menghapus status "ONLINE" yang dipasang manual (hardcoded) agar tidak menipu hasil pengujian.
+### 3. Deploy Update
+Setelah kodingan diperbaiki, kita lakukan build web dan deploy ulang ke Firebase Hosting.
 
 ---
 
 ## Rencana Verifikasi
 
 ### Manual Verification
-1. **Tes Mandiri**: Buka Dashboard Admin di laptop. Pastikan nama Kakak langsung muncul status ONLINE (Hijau).
-2. **Tes Tab Ganda**: Buka link web yang sama di tab baru (atau HP). Logout di salah satu tab, perhatikan tab satunya harus langsung mendeteksi status Kakak berubah jadi OFFLINE secara instan.
-3. **Tes Tutup Paksa**: Tutup browser secara mendadak (tanpa logout). Tunggu beberapa saat, pastikan di perangkat lain statusnya kembali menjadi OFFLINE.
+1. **Login Ulang**: Masuk sebagai Admin pakai email Kakak.
+2. **Cek Dashboard**: Pastikan tidak ada lagi layar abu-abu, melainkan muncul statistik "Total Instansi" dan "Total Layanan".
+3. **Cek Menu**: Klik menu "Kelola Pengguna", pastikan daftar warga muncul tanpa error.
