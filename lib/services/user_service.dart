@@ -382,4 +382,73 @@ class UserService {
     _currentUser = _currentUser.copyWith(profileImagePath: '');
     await _saveToLocal(_currentUser);
   }
+
+  // Master List Warga Terdaftar (Data Pengguna App)
+  List<Map<String, String>> getRegisteredWarga() {
+    return [
+      {
+        'nik': '3272011203980001',
+        'nama': 'Muhammad Dzakwan',
+        'email': 'dzakwanmuh304@gmail.com',
+        'phone': '081298765432',
+        'status': 'Terverifikasi (IKD Kemendagri)',
+        'tglDaftar': '12 Ags 2026',
+        'kecamatan': 'Cikole',
+      },
+      {
+        'nik': '3272021508950003',
+        'nama': 'Siti Nurhaliza',
+        'email': 'siti.nurhaliza@gmail.com',
+        'phone': '085712345678',
+        'status': 'Terverifikasi (SSO Pemkot)',
+        'tglDaftar': '10 Ags 2026',
+        'kecamatan': 'Citamiang',
+      },
+      {
+        'nik': '3272032001990005',
+        'nama': 'Budi Santoso',
+        'email': 'budi.santoso@yahoo.com',
+        'phone': '081388776655',
+        'status': 'Terverifikasi (IKD Kemendagri)',
+        'tglDaftar': '08 Ags 2026',
+        'kecamatan': 'Gunungpuyuh',
+      },
+      {
+        'nik': '3272040511970002',
+        'nama': 'Rina Anggraini',
+        'email': 'rina.anggraini@gmail.com',
+        'phone': '087811223344',
+        'status': 'Terverifikasi (SSO Pemkot)',
+        'tglDaftar': '05 Ags 2026',
+        'kecamatan': 'Lembursitu',
+      },
+      {
+        'nik': '3272051006000004',
+        'nama': 'Ahmad Fauzi',
+        'email': 'ahmad.fauzi@outlook.com',
+        'phone': '089655443322',
+        'status': 'Terverifikasi (IKD Kemendagri)',
+        'tglDaftar': '02 Ags 2026',
+        'kecamatan': 'Baros',
+      },
+      {
+        'nik': '3272062209960007',
+        'nama': 'Dewi Lestari',
+        'email': 'dewi.lestari@gmail.com',
+        'phone': '081233445566',
+        'status': 'Terverifikasi (SSO Pemkot)',
+        'tglDaftar': '28 Jul 2026',
+        'kecamatan': 'Cibeureum',
+      },
+      {
+        'nik': '3272071804980009',
+        'nama': 'Reza Pratama',
+        'email': 'reza.pratama@gmail.com',
+        'phone': '085699887766',
+        'status': 'Terverifikasi (IKD Kemendagri)',
+        'tglDaftar': '25 Jul 2026',
+        'kecamatan': 'Warudoyong',
+      },
+    ];
+  }
 }

@@ -6,8 +6,9 @@ import '../berita_dan_fitur/mitra_webview_screen.dart';
 
 class AdminFormLayananScreen extends StatefulWidget {
   final LayananModel? layanan;
+  final bool isIframeMode;
 
-  const AdminFormLayananScreen({super.key, this.layanan});
+  const AdminFormLayananScreen({super.key, this.layanan, this.isIframeMode = false});
 
   @override
   State<AdminFormLayananScreen> createState() => _AdminFormLayananScreenState();
@@ -64,7 +65,7 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
       text: item?.urlPortal ?? 'https://disdukcapil.sukabumikota.go.id',
     );
 
-    _isIframeMode = item?.isIframeMode ?? false;
+    _isIframeMode = widget.isIframeMode || (item?.isIframeMode ?? false);
     _iframeUrlController = TextEditingController(
       text: item?.iframeUrl.isNotEmpty == true
           ? item!.iframeUrl

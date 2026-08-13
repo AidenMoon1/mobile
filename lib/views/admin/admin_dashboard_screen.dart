@@ -11,6 +11,7 @@ import '../../models/layanan_model.dart';
 import '../../models/sektor_model.dart';
 import '../../models/admin_user_model.dart';
 import '../../services/opd_service.dart';
+import '../../services/user_service.dart';
 import '../../services/feedback_service.dart';
 import '../../services/admin_auth_service.dart';
 import '../../services/admin_management_service.dart';
@@ -95,11 +96,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final TextEditingController _layananSearchController = TextEditingController();
   final TextEditingController _sektorSearchController = TextEditingController();
   final TextEditingController _adminSearchController = TextEditingController();
+  final TextEditingController _penggunaSearchController = TextEditingController();
 
   String _instansiSearchQuery = '';
   String _layananSearchQuery = '';
   String _sektorSearchQuery = '';
   String _adminSearchQuery = '';
+  String _penggunaSearchQuery = '';
+  int _penggunaCurrentPage = 1;
 
   @override
   void initState() {
@@ -155,6 +159,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     _instansiSearchController.dispose();
     _layananSearchController.dispose();
     _sektorSearchController.dispose();
+    _adminSearchController.dispose();
+    _penggunaSearchController.dispose();
     super.dispose();
   }
 
@@ -784,11 +790,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildMainContentWrapper(BuildContext context, Color sidebarBg, Color accentGold) {
     if (_selectedNavIndex == 4) {
-      return _buildActiveContentView(context, sidebarBg, accentGold);
+      return ListenableBuilder(
+        listenable: _opdService,
+        builder: (context, _) => _buildActiveContentView(context, sidebarBg, accentGold),
+      );
     }
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
-      child: _buildActiveContentView(context, sidebarBg, accentGold),
+      child: ListenableBuilder(
+        listenable: _opdService,
+        builder: (context, _) => _buildActiveContentView(context, sidebarBg, accentGold),
+      ),
     );
   }
 
@@ -802,7 +814,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       case 2:
         return _buildKelolaLayananView(context, sidebarBg, accentGold);
       case 3:
-        return _buildKelolaSektorView(context, sidebarBg, accentGold);
+        return _buildKelolaPenggunaView(context, sidebarBg, accentGold);
       case 4:
         return _buildLiveChatInboxView(context, sidebarBg, accentGold);
       case 5:
@@ -811,6 +823,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         return _buildProfilSayaView(context, sidebarBg, accentGold);
       case 7:
         return _buildKelolaAdminView(context, sidebarBg, accentGold);
+      case 8:
+        return _buildKelolaSektorView(context, sidebarBg, accentGold);
       case 9:
         return _buildKelolaInstansiView(context, sidebarBg, accentGold);
       default:
@@ -941,6 +955,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     index: 2,
                     icon: Icons.link_outlined,
                     label: 'Daftar Layanan',
+                    accentGold: accentGold,
+                  ),
+                  _buildSidebarNavItem(
+                    index: 8,
+                    icon: Icons.grid_view_rounded,
+                    label: 'Kelola Sektor',
                     accentGold: accentGold,
                   ),
 
@@ -1931,9 +1951,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.push(
+                        _showPilihanModeIntegrasiDialog(
                           context,
-                          MaterialPageRoute(builder: (context) => const AdminFormInstansiScreen()),
+                          title: 'Instansi OPD',
+                          onModeSelected: (mode) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AdminFormInstansiScreen(
+                                  isIframeMode: mode == 'iframe',
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                       icon: const Icon(Icons.add_rounded, size: 18),
@@ -2040,7 +2070,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
                               onSelected: (val) {
                                 if (val == 'edit') {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminFormInstansiScreen(instansi: instansi)));
+                                  _showPilihanModeIntegrasiDialog(
+                                    context,
+                                    title: 'Instansi OPD (${instansi.namaSingkat})',
+                                    onModeSelected: (mode) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AdminFormInstansiScreen(
+                                            instansi: instansi,
+                                            isIframeMode: mode == 'iframe',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
                                 } else if (val == 'toggle') {
                                   _opdService.toggleInstansiStatus(instansi.id);
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -2183,9 +2227,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                     ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.push(
+                        _showPilihanModeIntegrasiDialog(
                           context,
-                          MaterialPageRoute(builder: (context) => const AdminFormLayananScreen()),
+                          title: 'Layanan Publik',
+                          onModeSelected: (mode) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AdminFormLayananScreen(
+                                  isIframeMode: mode == 'iframe',
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                       icon: const Icon(Icons.add_rounded, size: 18),
@@ -2305,7 +2359,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               icon: const Icon(Icons.more_vert_rounded, color: Colors.grey, size: 20),
                               onSelected: (val) {
                                 if (val == 'edit') {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => AdminFormLayananScreen(layanan: layanan)));
+                                  _showPilihanModeIntegrasiDialog(
+                                    context,
+                                    title: 'Layanan (${layanan.rawTitle})',
+                                    onModeSelected: (mode) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AdminFormLayananScreen(
+                                            layanan: layanan,
+                                            isIframeMode: mode == 'iframe',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
                                 } else if (val == 'toggle') {
                                   _opdService.toggleLayananStatus(layanan.id);
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -2378,6 +2446,778 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // MODAL PILIHAN MODE INTEGRASI (IFRAME VS FORM MANUAL)
+  // ---------------------------------------------------------------------------
+  void _showPilihanModeIntegrasiDialog(
+    BuildContext context, {
+    required String title,
+    required Function(String chosenMode) onModeSelected,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            width: 520,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8A33D).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.settings_suggest_rounded, color: Color(0xFFE8A33D), size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pilih Mode Integrasi $title',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0A1E33), fontFamily: 'Poppins'),
+                          ),
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Tentukan metode integrasi sistem sebelum membuka formulir.',
+                            style: TextStyle(fontSize: 11.5, color: Colors.grey, fontFamily: 'Poppins'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+
+                // CATATAN KHUSUS DINAS BELUM MEMILIKI IFRAME
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFFE082)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline_rounded, color: Color(0xFFE65100), size: 20),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'CATATAN: Apabila dinas/instansi BELUM mempunyai website portal iFrame resmi, silakan pilih Opsi 2: "Form Manual Digital".',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFFE65100), fontFamily: 'Poppins', height: 1.3),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // CARD OPSI 1: IFRAME WEB PORTAL
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                    onModeSelected('iframe');
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF4F7FC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFD0E2FF)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: const Color(0xFF0F2942), borderRadius: BorderRadius.circular(10)),
+                          child: const Icon(Icons.language_rounded, color: Colors.white, size: 22),
+                        ),
+                        const SizedBox(width: 14),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Opsi 1: Web Portal iFrame (Webview OPD)',
+                                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: Color(0xFF0A1E33), fontFamily: 'Poppins'),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Gunakan tautan iFrame jika OPD sudah memiliki website portal resmi online.',
+                                style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded, color: Color(0xFF0F2942)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // CARD OPSI 2: FORM MANUAL DIGITAL
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(context);
+                    onModeSelected('manual');
+                  },
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF4F7FC),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFE8A33D)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: const Color(0xFFE8A33D), borderRadius: BorderRadius.circular(10)),
+                          child: const Icon(Icons.dynamic_form_rounded, color: Colors.white, size: 22),
+                        ),
+                        const SizedBox(width: 14),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Opsi 2: Form Manual Digital (Form Builder)',
+                                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: Color(0xFF0A1E33), fontFamily: 'Poppins'),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Buat formulir digital langsung di aplikasi SOA jika OPD belum ada website.',
+                                style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_rounded, color: Color(0xFFE8A33D)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // WIDGET STEPPER PAGINATION CONTROL [ - ] [ 2 ] [ + ] (DESAIN EXACT GAMBAR 2)
+  // ---------------------------------------------------------------------------
+  Widget _buildPaginationStepper(int currentPage, int totalPages, Function(int newPage) onPageChanged) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFF4338CA), width: 2),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Minus Button [ - ]
+              InkWell(
+                onTap: currentPage > 1 ? () => onPageChanged(currentPage - 1) : null,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  alignment: Alignment.center,
+                  child: const Text(
+                    '-',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFFEF4444),
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ),
+              ),
+              Container(width: 2, height: 38, color: const Color(0xFF4338CA)),
+              // Current Page Display [ 2 ]
+              Container(
+                width: 44,
+                height: 38,
+                alignment: Alignment.center,
+                child: Text(
+                  '$currentPage',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFEF4444),
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+              Container(width: 2, height: 38, color: const Color(0xFF4338CA)),
+              // Plus Button [ + ]
+              InkWell(
+                onTap: currentPage < totalPages ? () => onPageChanged(currentPage + 1) : null,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  alignment: Alignment.center,
+                  child: const Text(
+                    '+',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFFEF4444),
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===========================================================================
+  // VIEW: KELOLA PENGGUNA (PUSAT IDENTITAS WARGA - EXACT MATCH SCREENSHOT)
+  // ===========================================================================
+  Widget _buildKelolaPenggunaView(BuildContext context, Color sidebarBg, Color accentGold) {
+    final allWarga = UserService().getRegisteredWarga();
+    final filteredWarga = allWarga.where((item) {
+      final q = _penggunaSearchQuery.toLowerCase();
+      return item['nama']!.toLowerCase().contains(q) ||
+          item['email']!.toLowerCase().contains(q) ||
+          item['phone']!.toLowerCase().contains(q) ||
+          (item['nik'] ?? '').toLowerCase().contains(q);
+    }).toList();
+
+    final totalTerdaftar = allWarga.length;
+    final totalTerverifikasi = allWarga.where((e) => e['status'] == 'ACTIVE' || e['status']!.contains('IKD') || e['status']!.contains('SSO')).length;
+    const totalDitangguhkan = 0;
+
+    const int itemsPerPage = 5;
+    final totalPages = (filteredWarga.length / itemsPerPage).ceil().clamp(1, 99);
+    final startIndex = (_penggunaCurrentPage - 1) * itemsPerPage;
+    final pageItems = filteredWarga.skip(startIndex).take(itemsPerPage).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // TOP STATS BANNER (DARK NAVY CARD WITH GOLD BORDER - EXACT MATCH SCREENSHOT)
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 22),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0A1E33),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: accentGold.withOpacity(0.5), width: 1.5),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1F000000),
+                blurRadius: 16,
+                offset: Offset(0, 6),
+              )
+            ],
+          ),
+          child: Row(
+            children: [
+              // STAT 1: POPULASI TERDAFTAR
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: accentGold.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.people_rounded, color: Color(0xFFE8A33D), size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'POPULASI TERDAFTAR',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white60, letterSpacing: 0.8, fontFamily: 'Poppins'),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$totalTerdaftar',
+                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Poppins'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Container(width: 1, height: 40, color: Colors.white12),
+
+              // STAT 2: IDENTITAS TERVERIFIKASI
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE2F7E2).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.verified_rounded, color: Color(0xFF81C784), size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'IDENTITAS TERVERIFIKASI',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white60, letterSpacing: 0.8, fontFamily: 'Poppins'),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$totalTerverifikasi',
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Poppins'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Container(width: 1, height: 40, color: Colors.white12),
+
+              // STAT 3: AKUN DITANGGUHKAN
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 20.0),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFCE8E6).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.cancel_rounded, color: Color(0xFFEF5350), size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'AKUN DITANGGUHKAN',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white60, letterSpacing: 0.8, fontFamily: 'Poppins'),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '$totalDitangguhkan',
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'Poppins'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // MASTER RECORD INDEX BAR WITH SEARCH INPUT
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(width: 4, height: 20, decoration: BoxDecoration(color: accentGold, borderRadius: BorderRadius.circular(2))),
+                const SizedBox(width: 10),
+                const Text(
+                  'MASTER RECORD INDEX',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), letterSpacing: 0.8, fontFamily: 'Poppins'),
+                ),
+              ],
+            ),
+            SizedBox(
+              width: 320,
+              height: 40,
+              child: TextFormField(
+                controller: _penggunaSearchController,
+                onChanged: (val) => setState(() {
+                  _penggunaSearchQuery = val;
+                  _penggunaCurrentPage = 1;
+                }),
+                style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
+                decoration: InputDecoration(
+                  hintText: 'Cari Nama, Email, atau Nomor WhatsApp...',
+                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12, fontFamily: 'Poppins'),
+                  prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400, size: 18),
+                  fillColor: Colors.white,
+                  filled: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.grey.shade200)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: Color(0xFF0F2942))),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // USER CARDS LISTING (FLOATING WHITE CARD WITH GREEN LEFT ACCENT BORDER)
+        if (filteredWarga.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: const Center(
+              child: Text('Tidak ada data warga yang sesuai pencarian.', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+            ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: pageItems.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final item = pageItems[index];
+              final String id = item['id'] ?? 'SOA-${1000 + index}';
+              final String nama = item['nama'] ?? 'Warga';
+              final String email = item['email'] ?? 'warga@gmail.com';
+              final String phone = item['phone'] ?? '628222222222';
+              final String status = item['status'] ?? 'ACTIVE';
+
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: const Border(
+                    left: BorderSide(color: Color(0xFF00C853), width: 4),
+                  ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x06000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // AVATAR BADGE CONTAINER (EXACT MATCH SCREENSHOT)
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4F7FC),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Center(
+                        child: Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF00C853), width: 1.5),
+                          ),
+                          child: const Icon(Icons.badge_outlined, color: Color(0xFF0F2942), size: 14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+
+                    // COLUMN 1: NAMA PENDUDUK & ID
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'NAMA PENDUDUK',
+                            style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 0.5, fontFamily: 'Poppins'),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            nama,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins'),
+                          ),
+                          Text(
+                            'ID: $id',
+                            style: const TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // COLUMN 2: KONTAK RESMI (EMAIL & WHATSAPP)
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'KONTAK RESMI',
+                            style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 0.5, fontFamily: 'Poppins'),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(Icons.mail_outline_rounded, size: 13, color: Colors.grey),
+                              const SizedBox(width: 6),
+                              Text(
+                                email,
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F2942), fontFamily: 'Poppins'),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              const Icon(Icons.chat_outlined, size: 13, color: Color(0xFF25D366)),
+                              const SizedBox(width: 6),
+                              Text(
+                                phone,
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // COLUMN 3: STATUS AKUN BADGE
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'STATUS AKUN',
+                            style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 0.5, fontFamily: 'Poppins'),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE2F7E2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF81C784)),
+                            ),
+                            child: Text(
+                              status,
+                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32), fontFamily: 'Poppins'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // COLUMN 4: ACTION BUTTONS (INFO, SUSPEND, DELETE)
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(8)),
+                            child: const Icon(Icons.info_outline_rounded, color: Color(0xFF0F2942), size: 16),
+                          ),
+                          onPressed: () {
+                            _showDetailWargaDialog(context, nama, id, email, phone, status);
+                          },
+                          tooltip: 'Detail Akun',
+                        ),
+                        IconButton(
+                          icon: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(color: const Color(0xFFFFF3CD), borderRadius: BorderRadius.circular(8)),
+                            child: const Icon(Icons.block_rounded, color: Colors.orange, size: 16),
+                          ),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Akun $nama berhasil ditangguhkan sementara.')),
+                            );
+                          },
+                          tooltip: 'Tangguhkan Akun',
+                        ),
+                        IconButton(
+                          icon: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(color: const Color(0xFFFCE8E6), borderRadius: BorderRadius.circular(8)),
+                            child: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 16),
+                          ),
+                          onPressed: () {
+                            _konfirmasiHapusWarga(context, nama);
+                          },
+                          tooltip: 'Hapus Akun Warga',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+        const SizedBox(height: 24),
+
+        // STEPPER PAGINATION CONTROL [ - ] [ 2 ] [ + ] (DESAIN EXACT GAMBAR 2)
+        _buildPaginationStepper(
+          _penggunaCurrentPage,
+          totalPages,
+          (newPage) => setState(() => _penggunaCurrentPage = newPage),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  void _showDetailWargaDialog(BuildContext context, String nama, String id, String email, String phone, String status) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          width: 440,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Color(0xFF0F2942),
+                    child: Icon(Icons.person_rounded, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(nama, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+                      Text('ID: $id | Status: $status', style: const TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins')),
+                    ],
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(height: 24),
+              _buildDetailInfoItem('Email Resmi', email, Icons.email_outlined),
+              const SizedBox(height: 10),
+              _buildDetailInfoItem('Nomor WhatsApp', phone, Icons.chat_outlined),
+              const SizedBox(height: 10),
+              _buildDetailInfoItem('Tipe Otentikasi', 'Single Sign-On (SSO) & IKD', Icons.verified_user_outlined),
+              const SizedBox(height: 10),
+              _buildDetailInfoItem('Wilayah', 'Kota Sukabumi, Jawa Barat', Icons.location_city_outlined),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F2942),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('Tutup', style: TextStyle(color: Colors.white, fontFamily: 'Poppins')),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailInfoItem(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: Colors.grey),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontFamily: 'Poppins')),
+            Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _konfirmasiHapusWarga(BuildContext context, String nama) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Hapus Akun Warga?', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+          ],
+        ),
+        content: Text('Apakah Anda yakin ingin menghapus akun "$nama"? Tindakan ini tidak dapat dibatalkan.', style: const TextStyle(fontSize: 13, fontFamily: 'Poppins')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Akun $nama telah dihapus.')),
+              );
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Hapus', style: TextStyle(color: Colors.white, fontFamily: 'Poppins')),
+          ),
+        ],
+      ),
     );
   }
 

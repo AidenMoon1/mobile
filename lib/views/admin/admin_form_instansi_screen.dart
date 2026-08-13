@@ -5,8 +5,9 @@ import 'package:mobile/widgets/admin_image_picker.dart';
 
 class AdminFormInstansiScreen extends StatefulWidget {
   final InstansiModel? instansi;
+  final bool isIframeMode;
 
-  const AdminFormInstansiScreen({super.key, this.instansi});
+  const AdminFormInstansiScreen({super.key, this.instansi, this.isIframeMode = false});
 
   @override
   State<AdminFormInstansiScreen> createState() => _AdminFormInstansiScreenState();
@@ -25,6 +26,7 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
   late TextEditingController _logoPathController;
   late TextEditingController _deskripsiController;
   late TextEditingController _tugasFungsiController;
+  late TextEditingController _iframeUrlController;
 
   bool get isEdit => widget.instansi != null;
 
@@ -47,6 +49,7 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
     _tugasFungsiController = TextEditingController(
       text: item?.tugasFungsi.join('\n') ?? '',
     );
+    _iframeUrlController = TextEditingController(text: item?.iframeUrl ?? '');
   }
 
   @override
@@ -60,6 +63,7 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
     _logoPathController.dispose();
     _deskripsiController.dispose();
     _tugasFungsiController.dispose();
+    _iframeUrlController.dispose();
     super.dispose();
   }
 
@@ -83,6 +87,7 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
         deskripsi: _deskripsiController.text.trim(),
         mapsQuery: '${_namaLengkapController.text.trim()} Kota Sukabumi',
         tugasFungsi: tfList,
+        iframeUrl: _iframeUrlController.text.trim(),
       );
 
       if (isEdit) {
@@ -199,6 +204,17 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
                     _logoPathController.text = path;
                   });
                 },
+              ),
+              _buildSectionHeader('Integrasi iFrame / Web Portal Resmi'),
+              const SizedBox(height: 12),
+
+              _buildInputField(
+                controller: _iframeUrlController,
+                label: 'URL Tautan iFrame Portal Resmi OPD (Opsional)',
+                hint: 'Contoh: https://disdukcapil.sukabumikota.go.id',
+                validator: widget.isIframeMode
+                    ? (val) => (val == null || val.isEmpty) ? 'URL iFrame portal wajib diisi untuk Mode iFrame' : null
+                    : null,
               ),
               const SizedBox(height: 16),
 
