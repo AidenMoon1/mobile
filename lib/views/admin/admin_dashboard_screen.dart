@@ -146,11 +146,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       _selectedNavIndex = index;
       _isProfileMenuVisible = false;
     });
-    final tabName = AdminDashboardScreen.indexToTabName(index);
-    Navigator.pushReplacementNamed(
-      context,
-      '/admin/dashboard?tab=$tabName',
-    );
   }
 
   @override
