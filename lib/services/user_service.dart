@@ -111,11 +111,15 @@ class UserService {
     final pass = password.trim();
 
     final found = _registeredUsers.firstWhere(
-      (user) =>
-          (user['usernameOrEmail']!.toLowerCase() == input ||
-           user['email']!.toLowerCase() == input ||
-           user['nikOrPhone'] == input) &&
-          user['password'] == pass,
+      (user) {
+        final uname = user['usernameOrEmail'] ?? '';
+        final email = user['email'] ?? '';
+        final nikPhone = user['nikOrPhone'] ?? '';
+        return (uname.toLowerCase() == input ||
+                email.toLowerCase() == input ||
+                nikPhone == input) &&
+               user['password'] == pass;
+      },
       orElse: () => {},
     );
 

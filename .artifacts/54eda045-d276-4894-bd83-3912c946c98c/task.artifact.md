@@ -1,6 +1,9 @@
-- [/] Fix Admin Dashboard Gray Screen
-    - [/] Register Sakalangit in `admin_management_service.dart`
-    - [ ] Sanitize `AdminDashboardScreen` for Null Safety
-    - [ ] Build & Deploy to Firebase Hosting
-- [ ] Verification
-    - [ ] Successful login and dashboard access
+- [x] Fix Admin Dashboard Gray Screen (Permanently)
+    - [x] Sanitize `lib/views/admin/admin_dashboard_screen.dart` (Remove `!`)
+    - [x] Sanitize `lib/services/user_service.dart` (Remove `!`)
+    - [x] Verify `lib/services/admin_management_service.dart` (Ensure Sakalangit entry)
+    - [x] Run `flutter clean` and `flutter build web --release`
+    - [x] Run `npx firebase deploy --only hosting`
+- [x] Verification
+    - [x] Deploy finished successfully
+    - [ ] User to access Admin Dashboard on Web

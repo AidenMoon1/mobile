@@ -304,7 +304,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         
                         // Update status ke Offline sebelum logout (Check-in System)
                         if (_currentAdminId != null) {
-                          await _adminService.updateAdminOnlineStatus(_currentAdminId!, false);
+                          await _adminService.updateAdminOnlineStatus(_currentAdminId ?? '', false);
                         }
 
                         await AdminAuthService().logout();
@@ -2705,10 +2705,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final allWarga = UserService().getRegisteredWarga();
     final filteredWarga = allWarga.where((item) {
       final q = _penggunaSearchQuery.toLowerCase();
-      return (item['nama'] ?? '').toLowerCase().contains(q) ||
-          (item['email'] ?? '').toLowerCase().contains(q) ||
-          (item['phone'] ?? '').toLowerCase().contains(q) ||
-          (item['nik'] ?? '').toLowerCase().contains(q);
+      final nama = item['nama'] ?? '';
+      final email = item['email'] ?? '';
+      final phone = item['phone'] ?? '';
+      final nik = item['nik'] ?? '';
+      return nama.toLowerCase().contains(q) ||
+          email.toLowerCase().contains(q) ||
+          phone.toLowerCase().contains(q) ||
+          nik.toLowerCase().contains(q);
     }).toList();
 
     final totalTerdaftar = allWarga.length;
