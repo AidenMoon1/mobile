@@ -34,11 +34,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     });
 
     final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
     try {
-      // LAPIS 1: Minta Laravel Kirim OTP (Hanya jika role-nya admin/superadmin)
+      // LAPIS 1: Minta Laravel Kirim OTP (Hanya jika kredensial & role-nya valid)
       final response = await ApiService.post('auth/otp/email/send', {
         'email': email,
+        'password': password,
         'type': 'admin',
       });
 

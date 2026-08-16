@@ -376,319 +376,324 @@ class _FormPengajuanScreenState extends State<FormPengajuanScreen> {
     const Color primaryColor = Color(0xFF123457);
     const Color accentColor = Color(0xFFE8A33D);
 
-    final allLayanan = OpdService().getLayananList();
-    final matchedLayanan = allLayanan.firstWhere(
-      (l) => l.judulLayanan.toLowerCase().contains(widget.judulLayanan.toLowerCase()) ||
-             widget.judulLayanan.toLowerCase().contains(l.judulLayanan.toLowerCase()) ||
-             l.rawTitle.toLowerCase().contains(widget.judulLayanan.toLowerCase()) ||
-             widget.judulLayanan.toLowerCase().contains(l.rawTitle.toLowerCase()),
-      orElse: () => LayananModel(id: '', kodeInstansi: '', sektor: '', judulLayanan: widget.judulLayanan, rawTitle: widget.judulLayanan, subjudul: '', deskripsi: '', persyaratan: [], urlPortal: '', iconName: ''),
-    );
+    return ListenableBuilder(
+      listenable: OpdService(),
+      builder: (context, _) {
+        final allLayanan = OpdService().getLayananList();
+        final matchedLayanan = allLayanan.firstWhere(
+          (l) => l.judulLayanan.toLowerCase().contains(widget.judulLayanan.toLowerCase()) ||
+                 widget.judulLayanan.toLowerCase().contains(l.judulLayanan.toLowerCase()) ||
+                 l.rawTitle.toLowerCase().contains(widget.judulLayanan.toLowerCase()) ||
+                 widget.judulLayanan.toLowerCase().contains(l.rawTitle.toLowerCase()),
+          orElse: () => LayananModel(id: '', kodeInstansi: '', sektor: '', judulLayanan: widget.judulLayanan, rawTitle: widget.judulLayanan, subjudul: '', deskripsi: '', persyaratan: [], urlPortal: '', iconName: ''),
+        );
 
-    if (matchedLayanan.id.isNotEmpty && !matchedLayanan.isActive) {
-      return MaintenanceScreen(
-        title: widget.judulLayanan,
-        category: 'Layanan Publik',
-      );
-    }
+        if (matchedLayanan.id.isNotEmpty && !matchedLayanan.isActive) {
+          return MaintenanceScreen(
+            title: widget.judulLayanan,
+            category: 'Layanan Publik',
+          );
+        }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F9),
-      appBar: AppBar(
-        backgroundColor: primaryColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Formulir Permohonan',
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: 'Poppins',
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+        return Scaffold(
+          backgroundColor: const Color(0xFFF4F6F9),
+          appBar: AppBar(
+            backgroundColor: primaryColor,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Text(
+              'Formulir Permohonan',
+              style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // HEADER HERO FORUM
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(18),
-              color: primaryColor,
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(widget.icon, color: primaryColor, size: 36),
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                // HEADER HERO FORUM
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  color: primaryColor,
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(widget.icon, color: primaryColor, size: 36),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.judulLayanan,
+                              style: const TextStyle(
+                                color: accentColor,
+                                fontSize: 16.5,
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.deskripsi,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                                fontFamily: 'Poppins',
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
+                ),
+
+                // FORM ISIAN DATA
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.judulLayanan,
-                          style: const TextStyle(
-                            color: accentColor,
-                            fontSize: 16.5,
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.deskripsi,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                            fontFamily: 'Poppins',
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // FORM ISIAN DATA
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Data Pemohon',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Pastikan data diri yang Anda masukkan sudah sesuai dengan data KTP/KK resmi.',
-                      style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // INPUT NIK
-                    _buildTextField(
-                      controller: _nikController,
-                      label: 'NIK Pemohon (16 Digit)',
-                      hint: 'Masukkan 16 angka NIK',
-                      icon: Icons.badge_outlined,
-                      keyboardType: TextInputType.number,
-                      validator: (val) {
-                        if (val == null || val.isEmpty) return 'NIK wajib diisi';
-                        if (val.length < 16) return 'NIK harus 16 digit';
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    // INPUT NAMA LENGKAP
-                    _buildTextField(
-                      controller: _namaController,
-                      label: 'Nama Lengkap',
-                      hint: 'Sesuai KTP / Akta',
-                      icon: Icons.person_outline_rounded,
-                      validator: (val) => (val == null || val.isEmpty) ? 'Nama lengkap wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // INPUT NO KK
-                    _buildTextField(
-                      controller: _noKkController,
-                      label: 'Nomor Kartu Keluarga (KK)',
-                      hint: 'Masukkan 16 angka No. KK',
-                      icon: Icons.family_restroom_outlined,
-                      keyboardType: TextInputType.number,
-                      validator: (val) => (val == null || val.isEmpty) ? 'Nomor KK wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // INPUT NO HP / WA
-                    _buildTextField(
-                      controller: _noHpController,
-                      label: 'Nomor WhatsApp / HP',
-                      hint: 'Contoh: 081234567890',
-                      icon: Icons.phone_android_rounded,
-                      keyboardType: TextInputType.phone,
-                      validator: (val) => (val == null || val.isEmpty) ? 'Nomor HP wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 14),
-
-                    // INPUT ALASAN / KETERANGAN
-                    _buildTextField(
-                      controller: _keteranganController,
-                      label: 'Keterangan / Alasan Permohonan',
-                      hint: 'Jelaskan keperluan permohonan Anda...',
-                      icon: Icons.notes_rounded,
-                      maxLines: 3,
-                      validator: (val) => (val == null || val.isEmpty) ? 'Keterangan wajib diisi' : null,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // SEKSI UPLOAD DOKUMEN (HANYA SUPPORT JPG, PNG, JPEG)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
                         const Text(
-                          'Unggah Dokumen Syarat',
+                          'Data Pemohon',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: primaryColor,
                             fontFamily: 'Poppins',
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: accentColor.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'JPG, PNG, JPEG',
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Poppins',
-                            ),
-                          ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Pastikan data diri yang Anda masukkan sudah sesuai dengan data KTP/KK resmi.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Hanya mendukung 3 format file gambar: .JPG, .PNG, .JPEG (Maks 2MB)',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: Colors.grey.shade600,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
+                        const SizedBox(height: 16),
 
-                    GestureDetector(
-                      onTap: _bukaModalPilihDokumen,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: _fileTerunggah ? const Color(0xFFE8F5E9) : Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: _fileTerunggah ? Colors.green : primaryColor.withOpacity(0.3),
-                            width: 1.5,
-                          ),
+                        // INPUT NIK
+                        _buildTextField(
+                          controller: _nikController,
+                          label: 'NIK Pemohon (16 Digit)',
+                          hint: 'Masukkan 16 angka NIK',
+                          icon: Icons.badge_outlined,
+                          keyboardType: TextInputType.number,
+                          validator: (val) {
+                            if (val == null || val.isEmpty) return 'NIK wajib diisi';
+                            if (val.length < 16) return 'NIK harus 16 digit';
+                            return null;
+                          },
                         ),
-                        child: Row(
+                        const SizedBox(height: 14),
+
+                        // INPUT NAMA LENGKAP
+                        _buildTextField(
+                          controller: _namaController,
+                          label: 'Nama Lengkap',
+                          hint: 'Sesuai KTP / Akta',
+                          icon: Icons.person_outline_rounded,
+                          validator: (val) => (val == null || val.isEmpty) ? 'Nama lengkap wajib diisi' : null,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // INPUT NO KK
+                        _buildTextField(
+                          controller: _noKkController,
+                          label: 'Nomor Kartu Keluarga (KK)',
+                          hint: 'Masukkan 16 angka No. KK',
+                          icon: Icons.family_restroom_outlined,
+                          keyboardType: TextInputType.number,
+                          validator: (val) => (val == null || val.isEmpty) ? 'Nomor KK wajib diisi' : null,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // INPUT NO HP / WA
+                        _buildTextField(
+                          controller: _noHpController,
+                          label: 'Nomor WhatsApp / HP',
+                          hint: 'Contoh: 081234567890',
+                          icon: Icons.phone_android_rounded,
+                          keyboardType: TextInputType.phone,
+                          validator: (val) => (val == null || val.isEmpty) ? 'Nomor HP wajib diisi' : null,
+                        ),
+                        const SizedBox(height: 14),
+
+                        // INPUT ALASAN / KETERANGAN
+                        _buildTextField(
+                          controller: _keteranganController,
+                          label: 'Keterangan / Alasan Permohonan',
+                          hint: 'Jelaskan keperluan permohonan Anda...',
+                          icon: Icons.notes_rounded,
+                          maxLines: 3,
+                          validator: (val) => (val == null || val.isEmpty) ? 'Keterangan wajib diisi' : null,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // SEKSI UPLOAD DOKUMEN (HANYA SUPPORT JPG, PNG, JPEG)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Icon(
-                              _fileTerunggah ? Icons.check_circle_rounded : Icons.cloud_upload_rounded,
-                              color: _fileTerunggah ? Colors.green : primaryColor,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _fileTerunggah ? (_selectedFileName ?? 'Dokumen Terunggah') : 'Pilih File Dokumen Syarat',
-                                    style: TextStyle(
-                                      color: _fileTerunggah ? Colors.green.shade900 : primaryColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    _fileTerunggah
-                                        ? 'Format .${_selectedFileExtension?.toUpperCase()} (Valid)'
-                                        : 'Klik untuk memilih file (.jpg, .png, .jpeg)',
-                                    style: TextStyle(
-                                      color: _fileTerunggah ? Colors.green.shade700 : Colors.grey,
-                                      fontSize: 11,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ],
+                            const Text(
+                              'Unggah Dokumen Syarat',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                                fontFamily: 'Poppins',
                               ),
                             ),
-                            if (_fileTerunggah)
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-                                onPressed: _hapusDokumen,
-                                tooltip: 'Hapus Dokumen',
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: accentColor.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(6),
                               ),
+                              child: const Text(
+                                'JPG, PNG, JPEG',
+                                style: TextStyle(
+                                  color: primaryColor,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // TOMBOL SUBMIT FORUM
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isSubmitting ? null : _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primaryColor,
-                          foregroundColor: accentColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Hanya mendukung 3 format file gambar: .JPG, .PNG, .JPEG (Maks 2MB)',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: Colors.grey.shade600,
+                            fontFamily: 'Poppins',
                           ),
-                          elevation: 2,
                         ),
-                        child: _isSubmitting
-                            ? const CircularProgressIndicator(color: accentColor)
-                            : const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.send_rounded, size: 20),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Kirim Permohonan Digital',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ],
+                        const SizedBox(height: 10),
+
+                        GestureDetector(
+                          onTap: _bukaModalPilihDokumen,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: _fileTerunggah ? const Color(0xFFE8F5E9) : Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: _fileTerunggah ? Colors.green : primaryColor.withOpacity(0.3),
+                                width: 1.5,
                               ),
-                      ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _fileTerunggah ? Icons.check_circle_rounded : Icons.cloud_upload_rounded,
+                                  color: _fileTerunggah ? Colors.green : primaryColor,
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _fileTerunggah ? (_selectedFileName ?? 'Dokumen Terunggah') : 'Pilih File Dokumen Syarat',
+                                        style: TextStyle(
+                                          color: _fileTerunggah ? Colors.green.shade900 : primaryColor,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        _fileTerunggah
+                                            ? 'Format .${_selectedFileExtension?.toUpperCase()} (Valid)'
+                                            : 'Klik untuk memilih file (.jpg, .png, .jpeg)',
+                                        style: TextStyle(
+                                          color: _fileTerunggah ? Colors.green.shade700 : Colors.grey,
+                                          fontSize: 11,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (_fileTerunggah)
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                                    onPressed: _hapusDokumen,
+                                    tooltip: 'Hapus Dokumen',
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 28),
+
+                        // TOMBOL SUBMIT FORUM
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _isSubmitting ? null : _submitForm,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: accentColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
+                            ),
+                            child: _isSubmitting
+                                ? const CircularProgressIndicator(color: accentColor)
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.send_rounded, size: 20),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Kirim Permohonan Digital',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                      ],
                     ),
-                    const SizedBox(height: 30),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

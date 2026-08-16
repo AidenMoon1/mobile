@@ -46,38 +46,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final password = _passwordController.text.trim();
       final nikOrPhone = _nikOrPhoneController.text.trim();
 
-      // LAPIS 1: PENDAFTARAN FIREBASE
-      final bool success = await UserService().registerAccount(
-        name: fullName,
-        email: email,
-        password: password,
-        nikOrPhone: nikOrPhone,
-      );
+      // LAPIS 1: MINTA OTP DULU (TANPA BUAT AKUN)
+      final bool success = await UserService().sendRegistrationOtp(email);
 
       if (!mounted) return;
       setState(() => _isLoading = false);
 
       if (success) {
-        // PINDAH KE LAPIS 2: VERIFIKASI OTP EMAIL
+        // PINDAH KE LAPIS 2: VERIFIKASI OTP EMAIL DULU
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => EmailOtpScreen(
               email: email,
               onVerified: () async {
-                await UserService().finalizeLogin();
-                if (!mounted) return;
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Registrasi & Verifikasi Berhasil!')),
+                // TAHAP AKHIR: BARU BUAT AKUN FIREBASE SETELAH OTP OK
+                final regSuccess = await UserService().registerAccount(
+                  name: fullName,
+                  email: email,
+                  password: password,
+                  nikOrPhone: nikOrPhone,
                 );
 
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
-                );
+                if (!mounted) return;
+                
+                if (regSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Registrasi Berhasil! Selamat Datang.')),
+                  );
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+                  );
+                }
               },
             ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ Gagal mengirim kode OTP. Mungkin email sudah terdaftar atau gangguan server.'),
+            backgroundColor: Colors.redAccent,
           ),
         );
       }

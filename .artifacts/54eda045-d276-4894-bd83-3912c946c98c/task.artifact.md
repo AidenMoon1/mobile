@@ -1,9 +1,8 @@
-- [x] Fix Admin Dashboard Gray Screen (Permanently)
-    - [x] Sanitize `lib/views/admin/admin_dashboard_screen.dart` (Remove `!`)
-    - [x] Sanitize `lib/services/user_service.dart` (Remove `!`)
-    - [x] Verify `lib/services/admin_management_service.dart` (Ensure Sakalangit entry)
-    - [x] Run `flutter clean` and `flutter build web --release`
-    - [x] Run `npx firebase deploy --only hosting`
-- [x] Verification
-    - [x] Deploy finished successfully
-    - [ ] User to access Admin Dashboard on Web
+- [x] Implement Real-Time Maintenance for Sektor Fase Kehidupan
+- [/] Implement Real-Time Maintenance for Instansi OPD
+    - [/] Update `_buildInstansiItem` in `dashboard_screen.dart` with maintenance UI
+    - [ ] Make Instansi Row dynamic and real-time using `ListenableBuilder`
+    - [ ] Add maintenance visual markers in `instansi_screen.dart`
+    - [ ] Build & Deploy to Firebase Hosting
+- [ ] Verification
+    - [ ] Toggle instansi maintenance in Admin and see changes in User App instantly

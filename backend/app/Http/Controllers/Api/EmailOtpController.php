@@ -21,15 +21,26 @@ class EmailOtpController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
+            'password' => 'nullable|string', // Required for admin type
             'type' => 'nullable|string', // 'admin' or 'user'
         ]);
 
         $email = $request->email;
 
-        // Cek Role jika ini adalah request dari Login Admin
+        // Cek Role & Password jika ini adalah request dari Login Admin
         if ($request->type === 'admin') {
             $user = User::where('email', $email)->first();
-            if (!$user || !in_array($user->role, ['super_admin', 'admin_dinas'])) {
+
+            // 1. Cek keberadaan user & password
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Kredensial tidak valid.'
+                ], 401);
+            }
+
+            // 2. Cek Role (Hanya Super Admin & Admin Dinas)
+            if (!in_array($user->role, ['super_admin', 'admin_dinas'])) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Anda tidak memiliki otoritas akses administrator.'
@@ -37,7 +48,30 @@ class EmailOtpController extends Controller
             }
         }
 
+        // Cek ketersediaan email jika ini adalah request pendaftaran baru
+        if ($request->type === 'registration') {
+            $existingUser = User::where('email', $email)->first();
+            if ($existingUser) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Alamat email ini sudah terdaftar. Silakan gunakan menu Masuk.'
+                ], 409);
+            }
+        }
+
         $otp = rand(100000, 999999);
+
+        // Tentukan Judul dan Isi Pesan Email berdasarkan tipe
+        $title = 'Verifikasi Akun Warga';
+        $messageBody = 'Silakan masukkan kode OTP berikut untuk melanjutkan akses ke Portal Layanan Publik.';
+
+        if ($request->type === 'admin') {
+            $title = 'Verifikasi Administrator';
+            $messageBody = 'Silakan gunakan kode OTP di bawah ini untuk memverifikasi identitas Anda dan melanjutkan akses ke Command Center.';
+        } elseif ($request->type === 'registration') {
+            $title = 'Aktivasi Akun Warga';
+            $messageBody = 'Permintaan pendaftaran akun baru telah diterima. Silakan masukkan kode OTP berikut untuk mengaktifkan identitas digital Anda.';
+        }
 
         // Store OTP in cache for 5 minutes
         Cache::put('otp_' . $email, $otp, 300);
@@ -45,9 +79,9 @@ class EmailOtpController extends Controller
         // Log the OTP
         Log::info("OTP Code for $email: $otp");
 
-        // Send real email using the styled template from web team
+        // Send real email using the fancy template
         try {
-            Mail::to($email)->send(new AdminOTPMail($otp));
+            Mail::to($email)->send(new AdminOTPMail($otp, $title, $messageBody));
         } catch (\Exception $e) {
             Log::error("Failed to send OTP email: " . $e->getMessage());
         }

@@ -93,102 +93,129 @@ class LayananUsahaScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: GridView.builder(
-          itemCount: _subLayananUsaha.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.15,
-          ),
-          itemBuilder: (context, index) {
-            final item = _subLayananUsaha[index];
-
-            return GestureDetector(
-              onTap: () {
-                final titleStr = item['title'] as String;
-                final sektor = OpdService().getSektorList().firstWhere(
-                      (s) => s.title.toLowerCase().contains('usaha'),
-                      orElse: () => SektorModel(id: '', title: '', imagePath: '', desc: '', iconName: ''),
-                    );
-                final instansi = OpdService().getInstansiByKode('dpmptsp');
-                final allLayanan = OpdService().getLayananList();
-                final matchedLayanan = allLayanan.firstWhere(
-                  (l) => l.rawTitle.toLowerCase().contains(titleStr.toLowerCase()) || titleStr.toLowerCase().contains(l.rawTitle.toLowerCase()),
-                  orElse: () => LayananModel(id: '', kodeInstansi: 'dpmptsp', sektor: 'Usaha', judulLayanan: titleStr, rawTitle: titleStr, subjudul: '', deskripsi: '', persyaratan: [], urlPortal: '', iconName: ''),
+        child: ListenableBuilder(
+          listenable: OpdService(),
+          builder: (context, _) {
+            final allLayanan = OpdService().getLayananBySektor('Usaha');
+            final instansi = OpdService().getInstansiByKode('dpmptsp');
+            final sektor = OpdService().getSektorList().firstWhere(
+                  (s) => s.title.toLowerCase().contains('usaha'),
+                  orElse: () => SektorModel(id: '', title: '', imagePath: '', desc: '', iconName: ''),
                 );
 
-                if ((sektor.id.isNotEmpty && !sektor.isActive) || (instansi != null && !instansi.isActive) || (matchedLayanan.id.isNotEmpty && !matchedLayanan.isActive)) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MaintenanceScreen(
-                        title: titleStr,
-                        category: 'Sektor Usaha & DPMPTSP',
-                      ),
-                    ),
-                  );
-                  return;
-                }
+            if (allLayanan.isEmpty) {
+              return const Center(child: Text('Belum ada layanan tersedia di sektor ini.'));
+            }
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DetailLayananUsahaScreen(
-                      judulLayanan: item['title'] as String,
-                      subjudul: item['subjudul'] as String,
-                      deskripsiTentang: item['deskripsiTentang'] as String,
-                      persyaratan: List<String>.from(item['persyaratan'] as List),
-                      urlMitra: item['urlPortal'] as String,
+            return GridView.builder(
+              itemCount: allLayanan.length,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.15,
+              ),
+              itemBuilder: (context, index) {
+                final item = allLayanan[index];
+                final bool isMaintenance = (sektor.id.isNotEmpty && !sektor.isActive) || (instansi != null && !instansi.isActive) || !item.isActive;
+
+                // Map icon name string to IconData
+                IconData displayIcon = Icons.storefront_rounded;
+                if (item.iconName == 'store_rounded') displayIcon = Icons.storefront_rounded;
+                if (item.iconName == 'assignment_outlined') displayIcon = Icons.assignment_turned_in_rounded;
+                if (item.iconName == 'pets_outlined') displayIcon = Icons.pets_rounded;
+                if (item.iconName == 'grass_outlined') displayIcon = Icons.grass_rounded;
+
+                return GestureDetector(
+                  onTap: () {
+                    if (isMaintenance) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MaintenanceScreen(
+                            title: item.rawTitle,
+                            category: 'Sektor Usaha & DPMPTSP',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetailLayananUsahaScreen(
+                          judulLayanan: item.rawTitle,
+                          subjudul: item.subjudul,
+                          deskripsiTentang: item.deskripsi,
+                          persyaratan: item.persyaratan,
+                          urlMitra: item.urlPortal,
+                        ),
+                      ),
+                    );
+                  },
+                  child: ColorFiltered(
+                    colorFilter: isMaintenance 
+                      ? const ColorFilter.mode(Colors.grey, BlendMode.saturation) 
+                      : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: primaryColor.withOpacity(0.12), width: 1.2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x10000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          )
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  displayIcon,
+                                  color: primaryColor,
+                                  size: 26,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  item.rawTitle,
+                                  style: const TextStyle(
+                                    color: primaryColor,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (isMaintenance)
+                            Positioned(
+                              top: -5,
+                              right: -5,
+                              child: Icon(Icons.build_circle_rounded, color: Colors.red.shade700, size: 16),
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 );
               },
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: primaryColor.withOpacity(0.12), width: 1.2),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x10000000),
-                      blurRadius: 6,
-                      offset: Offset(0, 3),
-                    )
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        item['icon'] as IconData,
-                        color: primaryColor,
-                        size: 26,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        item['title'] as String,
-                        style: const TextStyle(
-                          color: primaryColor,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             );
           },
         ),

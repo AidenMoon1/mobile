@@ -100,9 +100,9 @@
                     <!-- Body Content -->
                     <tr>
                         <td class="body-content">
-                            <h2 style="color: #0B1E33; font-size: 22px; font-weight: 800; margin: 0 0 15px;">Verifikasi Administrator</h2>
+                            <h2 style="color: #0B1E33; font-size: 22px; font-weight: 800; margin: 0 0 15px;">{{ $title }}</h2>
                             <p style="color: #64748B; font-size: 15px; line-height: 1.6; margin: 0;">
-                                Silakan gunakan kode OTP di bawah ini untuk memverifikasi identitas Anda dan melanjutkan akses ke <strong>Command Center</strong>.
+                                {{ $messageBody }}
                             </p>
 
                             <!-- OTP Box -->

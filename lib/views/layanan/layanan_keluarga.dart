@@ -294,133 +294,180 @@ class LayananKeluargaScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
 
-                  // GRID SUB-LAYANAN KELUARGA (2-PART CARD DESIGN DENGAN SEJAJAR 64PX)
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _subLayanan.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.88,
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = _subLayanan[index];
+                  // GRID SUB-LAYANAN KELUARGA (DYNAMIC & REAL-TIME)
+                  ListenableBuilder(
+                    listenable: OpdService(),
+                    builder: (context, _) {
+                      final allLayanan = OpdService().getLayananBySektor('Keluarga');
+                      final instansi = OpdService().getInstansiByKode('disdukcapil');
+                      
+                      if (allLayanan.isEmpty) {
+                        return const Center(child: Text('Belum ada layanan tersedia di sektor ini.'));
+                      }
 
-                      return GestureDetector(
-                        onTap: () {
-                          GuestGatekeeper.checkAccess(
-                            context,
-                            onGranted: () {
-                              final titleStr = item['title'] as String;
-                              final instansi = OpdService().getInstansiByKode('disdukcapil');
-                              final allLayanan = OpdService().getLayananList();
-                              final matchedLayanan = allLayanan.firstWhere(
-                                (l) => l.rawTitle.toLowerCase().contains(titleStr.toLowerCase()) || titleStr.toLowerCase().contains(l.rawTitle.toLowerCase()),
-                                orElse: () => LayananModel(id: '', kodeInstansi: 'disdukcapil', sektor: 'Keluarga', judulLayanan: titleStr, rawTitle: titleStr, subjudul: '', deskripsi: '', persyaratan: [], urlPortal: '', iconName: ''),
-                              );
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: allLayanan.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.88,
+                        ),
+                        itemBuilder: (context, index) {
+                          final item = allLayanan[index];
+                          final bool isMaintenance = (instansi != null && !instansi.isActive) || !item.isActive;
 
-                              if ((instansi != null && !instansi.isActive) || (matchedLayanan.id.isNotEmpty && !matchedLayanan.isActive)) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MaintenanceScreen(
-                                      title: titleStr,
-                                      category: 'Layanan Kependudukan (Disdukcapil)',
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
+                          // Map icon name string to IconData
+                          IconData displayIcon = Icons.help_outline_rounded;
+                          if (item.iconName == 'badge_outlined') displayIcon = Icons.badge_rounded;
+                          if (item.iconName == 'family_restroom_outlined') displayIcon = Icons.family_restroom_rounded;
+                          if (item.iconName == 'child_care_outlined') displayIcon = Icons.child_care_rounded;
+                          if (item.iconName == 'child_friendly_outlined') displayIcon = Icons.child_friendly_rounded;
+                          if (item.iconName == 'description_outlined') displayIcon = Icons.description_rounded;
+                          if (item.iconName == 'move_to_inbox_outlined') displayIcon = Icons.move_to_inbox_rounded;
 
-                              _tampilkanDialogRedireksi(
+                          return GestureDetector(
+                            onTap: () {
+                              GuestGatekeeper.checkAccess(
                                 context,
-                                item['title'] as String,
-                                item['urlPortal'] as String,
+                                onGranted: () {
+                                  if (isMaintenance) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => MaintenanceScreen(
+                                          title: item.rawTitle,
+                                          category: 'Layanan Kependudukan (Disdukcapil)',
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  _tampilkanDialogRedireksi(
+                                    context,
+                                    item.rawTitle,
+                                    item.urlPortal,
+                                  );
+                                },
                               );
                             },
-                          );
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF123457), width: 1.5),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x20000000),
-                                blurRadius: 5,
-                                offset: Offset(0, 3),
-                              )
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              // BAGIAN ATAS (NAVY DENGAN IKON EMAS)
-                              Expanded(
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF123457),
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(10),
-                                      topRight: Radius.circular(10),
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      item['icon'] as IconData,
-                                      color: const Color(0xFFE8A33D),
-                                      size: 58,
-                                    ),
-                                  ),
+                            child: ColorFiltered(
+                              colorFilter: isMaintenance 
+                                ? const ColorFilter.mode(Colors.grey, BlendMode.saturation) 
+                                : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFF123457), width: 1.5),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x20000000),
+                                      blurRadius: 5,
+                                      offset: Offset(0, 3),
+                                    )
+                                  ],
                                 ),
-                              ),
-
-                              // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 68PX)
-                              Container(
-                                width: double.infinity,
-                                height: 68,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFD9D9D9),
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(10),
-                                    bottomRight: Radius.circular(10),
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                child: Stack(
                                   children: [
-                                    Text(
-                                      item['title'] as String,
-                                      style: const TextStyle(
-                                        color: Color(0xFF123457),
-                                        fontSize: 14.5,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                    Column(
+                                      children: [
+                                        // BAGIAN ATAS (NAVY DENGAN IKON EMAS)
+                                        Expanded(
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFF123457),
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: Icon(
+                                                displayIcon,
+                                                color: const Color(0xFFE8A33D),
+                                                size: 58,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                        // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 68PX)
+                                        Container(
+                                          width: double.infinity,
+                                          height: 68,
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFD9D9D9),
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(10),
+                                              bottomRight: Radius.circular(10),
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                item.rawTitle,
+                                                style: const TextStyle(
+                                                  color: Color(0xFF123457),
+                                                  fontSize: 13.5,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontFamily: 'Poppins',
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                item.subjudul,
+                                                style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 9.5,
+                                                  fontFamily: 'Poppins',
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      item['desc'] as String,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 10,
-                                        fontFamily: 'Poppins',
+                                    
+                                    // OVERLAY LABEL MAINTENANCE
+                                    if (isMaintenance)
+                                      Positioned(
+                                        top: 10,
+                                        right: 10,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade700,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: const Row(
+                                            children: [
+                                              Icon(Icons.build_rounded, color: Colors.white, size: 10),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                'MAINTENANCE',
+                                                style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
+                            ),
+                          );
+                        },
                       );
                     },
                   ),

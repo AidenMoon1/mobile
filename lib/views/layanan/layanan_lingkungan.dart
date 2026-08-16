@@ -149,139 +149,166 @@ class LayananLingkunganScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
 
-                  // GRID SUB-LAYANAN LINGKUNGAN (2-PART CARD DESIGN)
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _subLayananLingkungan.length,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.88,
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = _subLayananLingkungan[index];
-
-                      return GestureDetector(
-                        onTap: () {
-                          final titleStr = item['title'] as String;
-                          final sektor = OpdService().getSektorList().firstWhere(
-                                (s) => s.title.toLowerCase().contains('lingkungan'),
-                                orElse: () => SektorModel(id: '', title: '', imagePath: '', desc: '', iconName: ''),
-                              );
-                          final instansi = OpdService().getInstansiByKode('bpkpd');
-                          final allLayanan = OpdService().getLayananList();
-                          final matchedLayanan = allLayanan.firstWhere(
-                            (l) => l.rawTitle.toLowerCase().contains(titleStr.toLowerCase()) || titleStr.toLowerCase().contains(l.rawTitle.toLowerCase()),
-                            orElse: () => LayananModel(id: '', kodeInstansi: 'bpkpd', sektor: 'Lingkungan', judulLayanan: titleStr, rawTitle: titleStr, subjudul: '', deskripsi: '', persyaratan: [], urlPortal: '', iconName: ''),
+                  // GRID SUB-LAYANAN LINGKUNGAN (DYNAMIC & REAL-TIME)
+                  ListenableBuilder(
+                    listenable: OpdService(),
+                    builder: (context, _) {
+                      final allLayanan = OpdService().getLayananBySektor('Lingkungan & Tempat Tinggal');
+                      final instansi = OpdService().getInstansiByKode('bpkpd');
+                      final sektor = OpdService().getSektorList().firstWhere(
+                            (s) => s.title.toLowerCase().contains('lingkungan'),
+                            orElse: () => SektorModel(id: '', title: '', imagePath: '', desc: '', iconName: ''),
                           );
 
-                          if ((sektor.id.isNotEmpty && !sektor.isActive) || (instansi != null && !instansi.isActive) || (matchedLayanan.id.isNotEmpty && !matchedLayanan.isActive)) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MaintenanceScreen(
-                                  title: titleStr,
-                                  category: 'Sektor Lingkungan & BPKPD',
-                                ),
-                              ),
-                            );
-                            return;
-                          }
+                      if (allLayanan.isEmpty) {
+                        return const Center(child: Text('Belum ada layanan tersedia di sektor ini.'));
+                      }
 
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DetailLayananLingkunganScreen(
-                                judulLayanan: item['title'] as String,
-                                subjudul: item['subjudul'] as String,
-                                deskripsiTentang: item['deskripsiTentang'] as String,
-                                persyaratan: List<String>.from(item['persyaratan'] as List),
-                                urlMitra: item['urlPortal'] as String,
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: allLayanan.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.88,
+                        ),
+                        itemBuilder: (context, index) {
+                          final item = allLayanan[index];
+                          final bool isMaintenance = (sektor.id.isNotEmpty && !sektor.isActive) || (instansi != null && !instansi.isActive) || !item.isActive;
+
+                          // Map icon name string to IconData
+                          IconData displayIcon = Icons.home_work_rounded;
+                          if (item.iconName == 'receipt_long_outlined') displayIcon = Icons.receipt_long_rounded;
+                          if (item.iconName == 'real_estate_agent_outlined') displayIcon = Icons.real_estate_agent_rounded;
+                          if (item.iconName == 'home_work_outlined') displayIcon = Icons.home_work_rounded;
+                          if (item.iconName == 'print_outlined') displayIcon = Icons.print_rounded;
+
+                          return GestureDetector(
+                            onTap: () {
+                              if (isMaintenance) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MaintenanceScreen(
+                                      title: item.rawTitle,
+                                      category: 'Sektor Lingkungan & BPKPD',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => DetailLayananLingkunganScreen(
+                                    judulLayanan: item.rawTitle,
+                                    subjudul: item.subjudul,
+                                    deskripsiTentang: item.deskripsi,
+                                    persyaratan: item.persyaratan,
+                                    urlMitra: item.urlPortal,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: ColorFiltered(
+                              colorFilter: isMaintenance 
+                                ? const ColorFilter.mode(Colors.grey, BlendMode.saturation) 
+                                : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFF123457), width: 1.5),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x20000000),
+                                      blurRadius: 5,
+                                      offset: Offset(0, 3),
+                                    )
+                                  ],
+                                ),
+                                child: Stack(
+                                  children: [
+                                    Column(
+                                      children: [
+                                        // BAGIAN ATAS (NAVY DENGAN IKON EMAS)
+                                        Expanded(
+                                          child: Container(
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFF123457),
+                                              borderRadius: BorderRadius.only(
+                                                topLeft: Radius.circular(10),
+                                                topRight: Radius.circular(10),
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: Icon(
+                                                displayIcon,
+                                                color: const Color(0xFFE8A33D),
+                                                size: 44,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+
+                                        // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 64PX)
+                                        Container(
+                                          width: double.infinity,
+                                          height: 64,
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFD9D9D9),
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(10),
+                                              bottomRight: Radius.circular(10),
+                                            ),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                item.rawTitle,
+                                                style: const TextStyle(
+                                                  color: Color(0xFF123457),
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontFamily: 'Poppins',
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                item.subjudul,
+                                                style: const TextStyle(
+                                                  color: Colors.black87,
+                                                  fontSize: 10,
+                                                  fontFamily: 'Poppins',
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (isMaintenance)
+                                      Positioned(
+                                        top: 5,
+                                        right: 5,
+                                        child: Icon(Icons.build_circle_rounded, color: Colors.red.shade700, size: 16),
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           );
                         },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFF123457), width: 1.5),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Color(0x20000000),
-                                blurRadius: 5,
-                                offset: Offset(0, 3),
-                              )
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              // BAGIAN ATAS (NAVY DENGAN IKON EMAS)
-                              Expanded(
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF123457),
-                                    borderRadius: BorderRadius.only(
-                                      topLeft: Radius.circular(10),
-                                      topRight: Radius.circular(10),
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      item['icon'] as IconData,
-                                      color: const Color(0xFFE8A33D),
-                                      size: 44,
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // BAGIAN BAWAH (ABU-ABU SILVER DENGAN TINGGI PRESISI 64PX AGAR SEJAJAR 100%)
-                              Container(
-                                width: double.infinity,
-                                height: 64,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFFD9D9D9),
-                                  borderRadius: BorderRadius.only(
-                                    bottomLeft: Radius.circular(10),
-                                    bottomRight: Radius.circular(10),
-                                  ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      item['title'] as String,
-                                      style: const TextStyle(
-                                        color: Color(0xFF123457),
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      item['desc'] as String,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 10,
-                                        fontFamily: 'Poppins',
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       );
                     },
                   ),

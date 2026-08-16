@@ -146,7 +146,21 @@ class UserService {
     return false;
   }
 
-  // REGISTRASI USER BARU (REAL FIREBASE)
+  // TAHAP 1: KIRIM OTP UNTUK PENDAFTARAN (TANPA BUAT AKUN DULU)
+  Future<bool> sendRegistrationOtp(String email) async {
+    try {
+      final response = await ApiService.post('auth/otp/email/send', {
+        'email': email,
+        'type': 'registration',
+      });
+      return response.statusCode == 200;
+    } catch (e) {
+      print("Send OTP error: $e");
+      return false;
+    }
+  }
+
+  // TAHAP 2: REGISTRASI USER BARU (REAL FIREBASE) SETELAH OTP SUKSES
   Future<bool> registerAccount({
     required String name,
     required String email,
@@ -173,16 +187,13 @@ class UserService {
           email: email.trim().toLowerCase(),
           username: (nikOrPhone ?? email).split('@').first,
           phoneNumber: nikOrPhone ?? '-',
-          status: 'Menunggu Verifikasi OTP',
+          status: 'Terverifikasi Akun Warga',
           joinedDate: dateStr,
           id: _generateUniqueId(),
           profileImagePath: '',
         );
 
         await _saveToLocal(_currentUser);
-
-        // 2. Trigger OTP sending via Laravel
-        await ApiService.post('auth/otp/email/send', {'email': email});
         
         return true;
       }

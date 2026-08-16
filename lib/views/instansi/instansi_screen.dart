@@ -121,7 +121,7 @@ class _InstansiScreenState extends State<InstansiScreen> {
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: primaryColor,
+                      color: item.isActive ? primaryColor : Colors.grey.shade400,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: const [
                         BoxShadow(
@@ -141,29 +141,51 @@ class _InstansiScreenState extends State<InstansiScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: SmartImage(
-                          imagePath: item.logoPath,
-                          width: 44,
-                          height: 44,
-                          fit: BoxFit.contain,
-                          fallbackIcon: Icons.account_balance_rounded,
+                        child: ColorFiltered(
+                          colorFilter: item.isActive 
+                            ? const ColorFilter.mode(Colors.transparent, BlendMode.multiply)
+                            : const ColorFilter.mode(Colors.grey, BlendMode.saturation),
+                          child: SmartImage(
+                            imagePath: item.logoPath,
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.contain,
+                            fallbackIcon: Icons.account_balance_rounded,
+                          ),
                         ),
                       ),
-                      title: Text(
-                        item.namaSingkat,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16.5,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Poppins',
-                        ),
+                      title: Row(
+                        children: [
+                          Text(
+                            item.namaSingkat,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                          if (!item.isActive)
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade700,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'MAINTENANCE',
+                                style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                              ),
+                            ),
+                        ],
                       ),
                       subtitle: Padding(
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
                           item.namaLengkap,
-                          style: const TextStyle(
-                            color: Colors.white70,
+                          style: TextStyle(
+                            color: item.isActive ? Colors.white70 : Colors.white.withOpacity(0.5),
                             fontSize: 12,
                             fontFamily: 'Poppins',
                           ),
@@ -171,10 +193,10 @@ class _InstansiScreenState extends State<InstansiScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      trailing: const Icon(
-                        Icons.arrow_forward_ios_rounded,
+                      trailing: Icon(
+                        item.isActive ? Icons.arrow_forward_ios_rounded : Icons.build_circle_rounded,
                         size: 18,
-                        color: accentColor,
+                        color: item.isActive ? accentColor : Colors.white60,
                       ),
                       onTap: () {
                         GuestGatekeeper.checkAccess(

@@ -13,6 +13,8 @@ import 'package:mobile/views/layanan/layanan_usaha.dart';
 import 'package:mobile/views/layanan/layanan_lingkungan.dart';
 import 'package:mobile/views/berita_dan_fitur/detail_berita_screen.dart';
 import 'package:mobile/views/informasi/help_center_screen.dart';
+import 'package:mobile/services/opd_service.dart';
+import 'package:mobile/views/informasi/maintenance_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mobile/widgets/guest_gatekeeper.dart';
 
@@ -820,108 +822,68 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
 
-                        // GRID 7 KARTU FASE KEHIDUPAN (MATCH SCREENSHOT 2)
+                        // GRID FASE KEHIDUPAN (DYNAMIC & REAL-TIME MAINTENANCE)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                          child: GridView.count(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 12,
-                            childAspectRatio: 0.92,
-                            children: [
-                              _buildLifePhaseCard(
-                                context: context,
-                                title: 'Keluarga',
-                                imagePath: 'assets/icon/keluarga.png',
-                                fallbackIcon: Icons.family_restroom_rounded,
-                                onTap: () {
-                                  GuestGatekeeper.checkAccess(
-                                    context,
-                                    onGranted: () {
-                                      _trackSectorUsage('keluarga');
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananKeluargaScreen()));
+                          child: ListenableBuilder(
+                            listenable: OpdService(),
+                            builder: (context, _) {
+                              final allSektor = OpdService().getSektorList();
+                              final displaySektor = allSektor.take(6).toList(); // Show first 6
+
+                              return GridView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: displaySektor.length,
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 12,
+                                  childAspectRatio: 0.92,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final sektor = displaySektor[index];
+                                  
+                                  // Map Icon Name to IconData
+                                  IconData displayIcon = Icons.help_outline_rounded;
+                                  if (sektor.iconName == 'family_restroom_rounded') displayIcon = Icons.family_restroom_rounded;
+                                  if (sektor.iconName == 'school_rounded') displayIcon = Icons.school_rounded;
+                                  if (sektor.iconName == 'store_rounded') displayIcon = Icons.storefront_rounded;
+                                  if (sektor.iconName == 'home_work_rounded') displayIcon = Icons.home_work_rounded;
+                                  if (sektor.iconName == 'directions_car_rounded') displayIcon = Icons.directions_car_rounded;
+                                  if (sektor.iconName == 'local_hospital_rounded') displayIcon = Icons.local_hospital_rounded;
+
+                                  return _buildLifePhaseCard(
+                                    context: context,
+                                    title: sektor.title,
+                                    imagePath: sektor.imagePath,
+                                    fallbackIcon: displayIcon,
+                                    isMaintenance: !sektor.isActive,
+                                    onTap: () {
+                                      GuestGatekeeper.checkAccess(
+                                        context,
+                                        onGranted: () {
+                                          if (!sektor.isActive) {
+                                            Navigator.push(context, MaterialPageRoute(builder: (_) => MaintenanceScreen(title: sektor.title, category: 'Sektor Fase Kehidupan')));
+                                            return;
+                                          }
+
+                                          _trackSectorUsage(sektor.title.toLowerCase());
+                                          
+                                          // Navigate to appropriate screen based on title
+                                          Widget targetScreen = const LayananScreen();
+                                          if (sektor.title.toLowerCase().contains('keluarga')) targetScreen = const LayananKeluargaScreen();
+                                          if (sektor.title.toLowerCase().contains('usaha')) targetScreen = const LayananUsahaScreen();
+                                          if (sektor.title.toLowerCase().contains('lingkungan')) targetScreen = const LayananLingkunganScreen();
+                                          
+                                          Navigator.push(context, MaterialPageRoute(builder: (_) => targetScreen));
+                                        },
+                                      );
                                     },
                                   );
                                 },
-                              ),
-                              _buildLifePhaseCard(
-                                context: context,
-                                title: 'Pendidikan',
-                                imagePath: 'assets/icon/pendidikan.png',
-                                fallbackIcon: Icons.school_rounded,
-                                onTap: () {
-                                  GuestGatekeeper.checkAccess(
-                                    context,
-                                    onGranted: () {
-                                      _trackSectorUsage('pendidikan');
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
-                                    },
-                                  );
-                                },
-                              ),
-                              _buildLifePhaseCard(
-                                context: context,
-                                title: 'Usaha',
-                                imagePath: 'assets/icon/usaha.png',
-                                fallbackIcon: Icons.storefront_rounded,
-                                onTap: () {
-                                  GuestGatekeeper.checkAccess(
-                                    context,
-                                    onGranted: () {
-                                      _trackSectorUsage('usaha');
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananUsahaScreen()));
-                                    },
-                                  );
-                                },
-                              ),
-                              _buildLifePhaseCard(
-                                context: context,
-                                title: 'Lingkungan & Tempat ...',
-                                imagePath: 'assets/icon/lingkungan.png',
-                                fallbackIcon: Icons.home_work_rounded,
-                                onTap: () {
-                                  GuestGatekeeper.checkAccess(
-                                    context,
-                                    onGranted: () {
-                                      _trackSectorUsage('lingkungan');
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananLingkunganScreen()));
-                                    },
-                                  );
-                                },
-                              ),
-                              _buildLifePhaseCard(
-                                context: context,
-                                title: 'Kendaraan',
-                                imagePath: 'assets/icon/kendaraan.png',
-                                fallbackIcon: Icons.directions_car_rounded,
-                                onTap: () {
-                                  GuestGatekeeper.checkAccess(
-                                    context,
-                                    onGranted: () {
-                                      _trackSectorUsage('kendaraan');
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
-                                    },
-                                  );
-                                },
-                              ),
-                              _buildLifePhaseCard(
-                                context: context,
-                                title: 'Kesehatan',
-                                imagePath: 'assets/icon/kesehatan.png',
-                                fallbackIcon: Icons.local_hospital_rounded,
-                                onTap: () {
-                                  GuestGatekeeper.checkAccess(
-                                    context,
-                                    onGranted: () {
-                                      _trackSectorUsage('kesehatan');
-                                      Navigator.push(context, MaterialPageRoute(builder: (_) => const LayananScreen()));
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
+                              );
+                            },
                           ),
                         ),
 
@@ -991,70 +953,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      _buildInstansiItem(
-                        context: context,
-                        title: 'Diskominfo',
-                        imagePath: 'assets/images/diskominfo.png',
-                        fallbackIcon: Icons.computer_rounded,
-                        onTap: () {
-                          GuestGatekeeper.checkAccess(
-                            context,
-                            onGranted: () {
+                  child: ListenableBuilder(
+                    listenable: OpdService(),
+                    builder: (context, _) {
+                      final diskominfo = OpdService().getInstansiByKode('diskominfo');
+                      final dpmptsp = OpdService().getInstansiByKode('dpmpstp');
+                      final dkp3 = OpdService().getInstansiByKode('dkp3');
+
+                      return Row(
+                        children: [
+                          _buildInstansiItem(
+                            context: context,
+                            title: 'Diskominfo',
+                            imagePath: 'assets/images/diskominfo.png',
+                            fallbackIcon: Icons.computer_rounded,
+                            isMaintenance: diskominfo != null && !diskominfo.isActive,
+                            onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDiskominfo()));
                             },
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 16),
-                      _buildInstansiItem(
-                        context: context,
-                        title: 'DPMPTSP',
-                        imagePath: 'assets/images/dpmptsp.png',
-                        fallbackIcon: Icons.store_rounded,
-                        onTap: () {
-                          GuestGatekeeper.checkAccess(
-                            context,
-                            onGranted: () {
+                          ),
+                          const SizedBox(width: 16),
+                          _buildInstansiItem(
+                            context: context,
+                            title: 'DPMPTSP',
+                            imagePath: 'assets/images/dpmptsp.png',
+                            fallbackIcon: Icons.store_rounded,
+                            isMaintenance: dpmptsp != null && !dpmptsp.isActive,
+                            onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDpmpstp()));
                             },
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 16),
-                      _buildInstansiItem(
-                        context: context,
-                        title: 'DKP3',
-                        imagePath: 'assets/images/dkp3.png',
-                        fallbackIcon: Icons.grass_rounded,
-                        onTap: () {
-                          GuestGatekeeper.checkAccess(
-                            context,
-                            onGranted: () {
+                          ),
+                          const SizedBox(width: 16),
+                          _buildInstansiItem(
+                            context: context,
+                            title: 'DKP3',
+                            imagePath: 'assets/images/dkp3.png',
+                            fallbackIcon: Icons.grass_rounded,
+                            isMaintenance: dkp3 != null && !dkp3.isActive,
+                            onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const InfoDkp3()));
                             },
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 6),
-                      _buildInstansiItem(
-                        context: context,
-                        title: 'Lainnya',
-                        fallbackIcon: Icons.grid_view_rounded,
-                        width: 54,
-                        height: 38,
-                        isExpanded: false,
-                        onTap: () {
-                          GuestGatekeeper.checkAccess(
-                            context,
-                            onGranted: () {
+                          ),
+                          const SizedBox(width: 6),
+                          _buildInstansiItem(
+                            context: context,
+                            title: 'Lainnya',
+                            fallbackIcon: Icons.grid_view_rounded,
+                            width: 54,
+                            height: 38,
+                            isExpanded: false,
+                            onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (_) => const InstansiScreen()));
                             },
-                          );
-                        },
-                      ),
-                    ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
 
@@ -1384,76 +1338,104 @@ class _DashboardScreenState extends State<DashboardScreen> {
     String? imagePath,
     required IconData fallbackIcon,
     required VoidCallback onTap,
+    bool isMaintenance = false,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Column(
-          children: [
-            Expanded(
-              child: Center(
-                child: imagePath != null
-                    ? Image.asset(
-                        imagePath,
-                        width: 68,
-                        height: 68,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Icon(
-                          fallbackIcon,
-                          color: const Color(0xFF0A1E33),
-                          size: 68,
-                        ),
-                      )
-                    : Icon(
-                        fallbackIcon,
-                        color: const Color(0xFF0A1E33),
-                        size: 68,
-                      ),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF123457).withOpacity(0.12),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(10),
-                  bottomRight: Radius.circular(10),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ColorFiltered(
+        colorFilter: isMaintenance 
+          ? const ColorFilter.mode(Colors.grey, BlendMode.saturation) 
+          : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Stack(
+            children: [
+              Column(
                 children: [
                   Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Poppins',
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    child: Center(
+                      child: imagePath != null
+                          ? Image.asset(
+                              imagePath,
+                              width: 68,
+                              height: 68,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                fallbackIcon,
+                                color: const Color(0xFF0A1E33),
+                                size: 68,
+                              ),
+                            )
+                          : Icon(
+                              fallbackIcon,
+                              color: const Color(0xFF0A1E33),
+                              size: 68,
+                            ),
                     ),
                   ),
                   Container(
-                    width: 18,
-                    height: 18,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE8A33D),
-                      shape: BoxShape.circle,
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF123457).withOpacity(0.12),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(10),
+                      ),
                     ),
-                    child: const Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins',
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFE8A33D),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 10),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
-          ],
+              
+              // MAINTENANCE OVERLAY LABEL
+              if (isMaintenance)
+                Positioned(
+                  top: 5,
+                  right: 5,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade700,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'MT',
+                      style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -1468,45 +1450,81 @@ class _DashboardScreenState extends State<DashboardScreen> {
     double? width,
     double? height,
     bool isExpanded = true,
+    bool isMaintenance = false,
   }) {
     final Widget content = GestureDetector(
       onTap: () {
-        GuestGatekeeper.checkAccess(context, onGranted: onTap);
+        GuestGatekeeper.checkAccess(
+          context, 
+          onGranted: () {
+            if (isMaintenance) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MaintenanceScreen(
+                    title: title,
+                    category: 'Instansi OPD',
+                  ),
+                ),
+              );
+              return;
+            }
+            onTap();
+          },
+        );
       },
       child: Column(
         children: [
-          Container(
-            width: width,
-            height: height ?? 85,
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF0A1E33), width: 1.2),
-            ),
-            child: Center(
-              child: imagePath != null
-                  ? Image.asset(
-                      imagePath,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                        fallbackIcon,
-                        color: const Color(0xFF0A1E33),
-                        size: height != null ? (height * 0.65) : 32,
-                      ),
-                    )
-                  : Icon(
-                      fallbackIcon,
-                      color: const Color(0xFF0A1E33),
-                      size: height != null ? (height * 0.65) : 32,
+          ColorFiltered(
+            colorFilter: isMaintenance 
+              ? const ColorFilter.mode(Colors.grey, BlendMode.saturation) 
+              : const ColorFilter.mode(Colors.transparent, BlendMode.multiply),
+            child: Container(
+              width: width,
+              height: height ?? 85,
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isMaintenance ? Colors.grey : const Color(0xFF0A1E33), 
+                  width: 1.2
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: imagePath != null
+                        ? Image.asset(
+                            imagePath,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                              fallbackIcon,
+                              color: const Color(0xFF0A1E33),
+                              size: height != null ? (height * 0.65) : 32,
+                            ),
+                          )
+                        : Icon(
+                            fallbackIcon,
+                            color: const Color(0xFF0A1E33),
+                            size: height != null ? (height * 0.65) : 32,
+                          ),
+                  ),
+                  if (isMaintenance)
+                    Positioned(
+                      top: 2,
+                      right: 2,
+                      child: Icon(Icons.build_circle_rounded, color: Colors.red.shade700, size: 12),
                     ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.black87,
+            style: TextStyle(
+              color: isMaintenance ? Colors.grey : Colors.black87,
               fontSize: 10,
               fontWeight: FontWeight.bold,
               fontFamily: 'Poppins',

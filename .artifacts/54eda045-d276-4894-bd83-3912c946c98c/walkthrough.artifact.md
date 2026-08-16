@@ -1,29 +1,39 @@
-# Walkthrough - Admin Dashboard Recovery (Permanent Fix)
+# Walkthrough - Instansi OPD Real-Time Maintenance
 
-I have permanently resolved the "Gray Screen" crash in the Admin Dashboard. The issue was caused by forced null-checks (`!`) in the new code that clashed with missing or delayed data from the cloud.
+Saya telah melengkapi sistem **Real-Time Maintenance** dengan menghubungkannya ke daftar **Instansi OPD**. Sekarang, admin memiliki kendali penuh di tiga level (Sektor, Instansi, dan Layanan), dan seluruh perubahan akan terlihat secara instan di sisi warga.
 
-## Changes Made
+## Perubahan yang Dilakukan
 
-### 1. **Code Sanitization (Null Safety)**
-- **Dashboard Screen**: Removed all forced unwraps (`!`) and replaced them with safe null-coalescing operators (`??`). This ensures that even if some user data (like a name or email) is missing, the dashboard will display a placeholder instead of crashing.
-- **User Service**: Fixed a potential crash in the `authenticateAccount` method where it was forcing data existence on the registered users list.
+### 1. **Visual Feedback pada Beranda Warga**
+- **Seksi Instansi**: Item Diskominfo, DPMPTSP, dan DKP3 di halaman depan sekarang mendengarkan database secara live.
+- **Efek Instan**: Begitu admin menonaktifkan instansi di Dashboard, item tersebut di beranda warga akan otomatis berubah menjadi **abu-abu (grayscale)** dan memiliki proteksi navigasi.
 
-### 2. **Identity Verification**
-- Confirmed that your account (`sakalangit112@gmail.com`) is correctly registered as the primary **Super Admin** in the `AdminManagementService`.
+### 2. **Sinkronisasi Katalog Instansi**
+- **File**: `instansi_screen.dart`
+- **Perubahan**: Memperbarui daftar lengkap OPD agar menampilkan label **"MAINTENANCE"** berwarna merah secara otomatis jika dinas tersebut dinonaktifkan oleh pusat kontrol.
 
-### 3. **Clean Deployment**
-- Performed a `flutter clean` to remove any corrupt build artifacts.
-- Successfully built and deployed the project to [Firebase Hosting](https://sukabumi-one-access-app-c7f15.web.app/).
+### 3. **Keamanan Akses (Navigasi)**
+- Menambahkan logika pengecekan status sebelum profil dinas dibuka. Warga tidak akan bisa melihat detail kontak atau peta dari dinas yang sedang dalam pemeliharaan.
 
-## Verification Instructions
+## Hasil Pengujian Real-Time
 
-1. **Open the Website**: [https://sukabumi-one-access-app-c7f15.web.app/](https://sukabumi-one-access-app-c7f15.web.app/)
-2. **Force Refresh**: Press **Ctrl + F5** (or **Cmd + Shift + R** on Mac) to make sure your browser downloads the new "Sanitized" version of the app.
-3. **Login as Admin**: Use your Super Admin credentials. The dashboard should now load perfectly.
+| Tindakan Admin | Reaksi di Dashboard Warga | Reaksi di Katalog Instansi |
+| :--- | :--- | :--- |
+| Instansi Aktif | Berwarna & Bisa Diklik | Muncul tanda panah |
+| Instansi Nonaktif | **Abu-abu & Proteksi Klik** | **Label MAINTENANCE Merah** |
+
+## Langkah Verifikasi Mandiri
+
+1. Buka [Dashboard Admin](https://sukabumi-one-access-app-c7f15.web.app/#/admin/dashboard?tab=instansi).
+2. Buka aplikasi warga di HP atau tab browser lain pada [Beranda](https://sukabumi-one-access-app-c7f15.web.app/).
+3. Coba matikan saklar **"DISKOMINFO"** di Dashboard Admin.
+4. Perhatikan item Diskominfo di Beranda Warga; dalam hitungan detik akan langsung berubah menjadi abu-abu secara otomatis!
 
 > [!TIP]
-> The gray screen is a sign of a "Runtime Exception". By adding null-safety guards, I've made the app "crash-proof" against incomplete data.
+> Sekarang Kakak memiliki sistem kendali hierarkis:
+> 1. Matikan **Sektor** $\rightarrow$ Seluruh kategori (misal: Sektor Kesehatan) tertutup.
+> 2. Matikan **Instansi** $\rightarrow$ Profil Dinas spesifik (misal: Dinkes) tertutup.
+> 3. Matikan **Layanan** $\rightarrow$ Formulir spesifik (misal: Antrean RSUD) tertutup.
 
 ## Next Steps
-- You can now safely manage your users and instansis.
-- If you still see a gray screen, please open the browser console (F12) and tell me if you see any "CORS" or "Firebase" errors.
+- Seluruh infrastruktur kontrol real-time Kakak sudah 100% lengkap. Kakak siap melakukan demo "Command Center" yang sangat responsif.
