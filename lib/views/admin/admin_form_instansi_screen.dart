@@ -114,6 +114,152 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
   @override
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF123457);
+    final bool isDesktop = MediaQuery.of(context).size.width >= 900;
+
+    Widget formContent = Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader('Identitas Instansi'),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _kodeController,
+            label: 'Kode Instansi (Unik, e.g. disdukcapil, disnaker)',
+            hint: 'Contoh: disdukcapil',
+            validator: (val) => (val == null || val.isEmpty) ? 'Kode instansi wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _namaSingkatController,
+            label: 'Nama Singkat (Akronim)',
+            hint: 'Contoh: DISDUKCAPIL',
+            onChanged: (val) => setState(() {}),
+            validator: (val) => (val == null || val.isEmpty) ? 'Nama singkat wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _namaLengkapController,
+            label: 'Nama Lengkap Instansi / Dinas',
+            hint: 'Contoh: Dinas Kependudukan dan Pencatatan Sipil',
+            validator: (val) => (val == null || val.isEmpty) ? 'Nama lengkap wajib diisi' : null,
+          ),
+          const SizedBox(height: 16),
+
+          _buildSectionHeader('Kontak & Operasional'),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _alamatController,
+            label: 'Alamat Kantor',
+            hint: 'Jl. Bhayangkara No. 202, Kota Sukabumi',
+            maxLines: 2,
+            validator: (val) => (val == null || val.isEmpty) ? 'Alamat wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _jamOperasionalController,
+            label: 'Jam Operasional Pelayanan',
+            hint: 'Senin - Jumat | 08.00 - 15.30 WIB',
+            validator: (val) => (val == null || val.isEmpty) ? 'Jam operasional wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _kontakController,
+            label: 'Kontak / WhatsApp / Email Resmi',
+            hint: '(0266) 221122 / WA: 081122334455',
+            validator: (val) => (val == null || val.isEmpty) ? 'Kontak wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          AdminImagePicker(
+            label: 'Logo / Foto Instansi OPD',
+            currentImagePath: _logoPathController.text,
+            onImageSelected: (path) {
+              setState(() {
+                _logoPathController.text = path;
+              });
+            },
+          ),
+          _buildSectionHeader('Integrasi iFrame / Web Portal Resmi'),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _iframeUrlController,
+            label: 'URL Tautan iFrame Portal Resmi OPD (Opsional)',
+            hint: 'Contoh: https://disdukcapil.sukabumikota.go.id',
+            onChanged: (val) => setState(() {}),
+            validator: widget.isIframeMode
+                ? (val) => (val == null || val.isEmpty) ? 'URL iFrame portal wajib diisi untuk Mode iFrame' : null
+                : null,
+          ),
+          const SizedBox(height: 14),
+
+          if (!isDesktop) ...[
+            IframePreviewWidget(
+              url: _iframeUrlController.text,
+              title: _namaSingkatController.text.isNotEmpty
+                  ? 'Tampilan iFrame Live: ${_namaSingkatController.text}'
+                  : 'Pratinjau iFrame Web Portal Instansi',
+              height: 520,
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          _buildSectionHeader('Deskripsi & Tugas Fungsi'),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _deskripsiController,
+            label: 'Deskripsi Singkat Profil Instansi',
+            hint: 'Jelaskan tugas utama instansi dalam mengayomi publik...',
+            maxLines: 3,
+            validator: (val) => (val == null || val.isEmpty) ? 'Deskripsi wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _tugasFungsiController,
+            label: 'Tugas Utama & Fungsi (Pisahkan Tiap Poin Dengan Baris Baru / Enter)',
+            hint: 'Poin 1: Penerbitan dokumen kependudukan\nPoin 2: Pencatatan perkawinan warga',
+            maxLines: 4,
+            validator: (val) => (val == null || val.isEmpty) ? 'Tugas & fungsi wajib diisi' : null,
+          ),
+          const SizedBox(height: 24),
+
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: _simpanInstansi,
+              icon: const Icon(Icons.save_rounded, color: primaryColor),
+              label: Text(
+                isEdit ? 'Simpan Perubahan Instansi' : 'Tambah Instansi Baru',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE8A33D),
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+        ],
+      ),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
@@ -134,152 +280,63 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionHeader('Identitas Instansi'),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _kodeController,
-                label: 'Kode Instansi (Unik, e.g. disdukcapil, disnaker)',
-                hint: 'Contoh: disdukcapil',
-                validator: (val) => (val == null || val.isEmpty) ? 'Kode instansi wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _namaSingkatController,
-                label: 'Nama Singkat (Akronim)',
-                hint: 'Contoh: DISDUKCAPIL',
-                onChanged: (val) => setState(() {}),
-                validator: (val) => (val == null || val.isEmpty) ? 'Nama singkat wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _namaLengkapController,
-                label: 'Nama Lengkap Instansi / Dinas',
-                hint: 'Contoh: Dinas Kependudukan dan Pencatatan Sipil',
-                validator: (val) => (val == null || val.isEmpty) ? 'Nama lengkap wajib diisi' : null,
-              ),
-              const SizedBox(height: 16),
-
-              _buildSectionHeader('Kontak & Operasional'),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _alamatController,
-                label: 'Alamat Kantor',
-                hint: 'Jl. Bhayangkara No. 202, Kota Sukabumi',
-                maxLines: 2,
-                validator: (val) => (val == null || val.isEmpty) ? 'Alamat wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _jamOperasionalController,
-                label: 'Jam Operasional Pelayanan',
-                hint: 'Senin - Jumat | 08.00 - 15.30 WIB',
-                validator: (val) => (val == null || val.isEmpty) ? 'Jam operasional wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _kontakController,
-                label: 'Kontak / WhatsApp / Email Resmi',
-                hint: '(0266) 221122 / WA: 081122334455',
-                validator: (val) => (val == null || val.isEmpty) ? 'Kontak wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              AdminImagePicker(
-                label: 'Logo / Foto Instansi OPD',
-                currentImagePath: _logoPathController.text,
-                onImageSelected: (path) {
-                  setState(() {
-                    _logoPathController.text = path;
-                  });
-                },
-              ),
-              _buildSectionHeader('Integrasi iFrame / Web Portal Resmi'),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _iframeUrlController,
-                label: 'URL Tautan iFrame Portal Resmi OPD (Opsional)',
-                hint: 'Contoh: https://disdukcapil.sukabumikota.go.id',
-                onChanged: (val) => setState(() {}),
-                validator: widget.isIframeMode
-                    ? (val) => (val == null || val.isEmpty) ? 'URL iFrame portal wajib diisi untuk Mode iFrame' : null
-                    : null,
-              ),
-              const SizedBox(height: 14),
-
-              // LIVE EMBEDDED IFRAME PREVIEW CONTAINER IN BODY
-              IframePreviewWidget(
-                url: _iframeUrlController.text,
-                title: _namaSingkatController.text.isNotEmpty
-                    ? 'Tampilan iFrame Live: ${_namaSingkatController.text}'
-                    : 'Pratinjau iFrame Web Portal Instansi',
-                height: 520,
-              ),
-              const SizedBox(height: 16),
-
-              _buildSectionHeader('Deskripsi & Tugas Fungsi'),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _deskripsiController,
-                label: 'Deskripsi Singkat Profil Instansi',
-                hint: 'Jelaskan tugas utama instansi dalam mengayomi publik...',
-                maxLines: 3,
-                validator: (val) => (val == null || val.isEmpty) ? 'Deskripsi wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _tugasFungsiController,
-                label: 'Tugas Utama & Fungsi (Pisahkan Tiap Poin Dengan Baris Baru / Enter)',
-                hint: 'Poin 1: Penerbitan dokumen kependudukan\nPoin 2: Pencatatan perkawinan warga',
-                maxLines: 4,
-                validator: (val) => (val == null || val.isEmpty) ? 'Tugas & fungsi wajib diisi' : null,
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  onPressed: _simpanInstansi,
-                  icon: const Icon(Icons.save_rounded, color: primaryColor),
-                  label: Text(
-                    isEdit ? 'Simpan Perubahan Instansi' : 'Tambah Instansi Baru',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
-                      fontFamily: 'Poppins',
-                    ),
+      body: isDesktop
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // LAYOUT KIRI (50%): FORM ISIAN TEKS SUPERADMIN
+                Expanded(
+                  flex: 5,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: formContent,
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE8A33D),
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                ),
+                const VerticalDivider(width: 1, color: Colors.black12),
+
+                // LAYOUT KANAN (50%): TAMPILAN LIVE IFRAME VIEWPORT
+                Expanded(
+                  flex: 7,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.desktop_windows_rounded, color: primaryColor, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Pratinjau Live iFrame Web Portal Instansi',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: IframePreviewWidget(
+                            url: _iframeUrlController.text,
+                            title: _namaSingkatController.text.isNotEmpty
+                                ? 'Tampilan iFrame Live: ${_namaSingkatController.text}'
+                                : 'Pratinjau iFrame Web Portal Instansi',
+                            height: double.infinity,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
-      ),
+              ],
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: formContent,
+            ),
     );
   }
 

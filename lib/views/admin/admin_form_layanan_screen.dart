@@ -670,6 +670,386 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     const Color accentColor = Color(0xFFE8A33D);
 
     final allInstansi = _opdService.getInstansiList();
+    final bool isDesktop = MediaQuery.of(context).size.width >= 900;
+    final String targetIframeUrl = _isIframeMode && _iframeUrlController.text.trim().isNotEmpty
+        ? _iframeUrlController.text.trim()
+        : _urlPortalController.text.trim();
+
+    Widget formContent = Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader('Pengelompokan Instansi & Sektor'),
+          const SizedBox(height: 12),
+
+          // DROPDOWN INSTANSI
+          const Text(
+            'Instansi OPD Pengelola',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedKodeInstansi,
+                isExpanded: true,
+                style: const TextStyle(fontSize: 13, color: primaryColor, fontFamily: 'Poppins'),
+                items: allInstansi.map((opd) {
+                  return DropdownMenuItem(
+                    value: opd.kodeInstansi,
+                    child: Text('${opd.namaSingkat} - ${opd.namaLengkap}'),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedKodeInstansi = val);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // DROPDOWN SEKTOR
+          const Text(
+            'Sektor Kategori Layanan',
+            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _selectedSektor,
+                isExpanded: true,
+                style: const TextStyle(fontSize: 13, color: primaryColor, fontFamily: 'Poppins'),
+                items: _opdService.getSektorList().map((s) {
+                  return DropdownMenuItem(
+                    value: s.title,
+                    child: Text('Sektor ${s.title}'),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _selectedSektor = val);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          _buildSectionHeader('Detail Layanan'),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _judulLayananController,
+            label: 'Judul Lengkap Layanan',
+            hint: 'Contoh: Pelayanan KTP Elektronik (KTP-el)',
+            validator: (val) => (val == null || val.isEmpty) ? 'Judul layanan wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _rawTitleController,
+            label: 'Nama Ringkas / Singkatan Layanan',
+            hint: 'Contoh: KTP Elektronik',
+            validator: (val) => (val == null || val.isEmpty) ? 'Nama ringkas wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _subjudulController,
+            label: 'Subjudul / Ringkasan Singkat',
+            hint: 'Contoh: Perekaman baru, penggantian KTP rusak/hilang...',
+            maxLines: 2,
+            validator: (val) => (val == null || val.isEmpty) ? 'Subjudul wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _deskripsiController,
+            label: 'Deskripsi Lengkap Layanan Publik',
+            hint: 'Jelaskan cakupan layanan, sasaran warga, dan manfaat...',
+            maxLines: 3,
+            validator: (val) => (val == null || val.isEmpty) ? 'Deskripsi wajib diisi' : null,
+          ),
+          const SizedBox(height: 12),
+
+          _buildInputField(
+            controller: _urlPortalController,
+            label: 'Link Web Portal Resmi Instansi',
+            hint: 'https://disdukcapil.sukabumikota.go.id',
+            validator: (val) => (val == null || val.isEmpty) ? 'Link portal wajib diisi' : null,
+          ),
+          const SizedBox(height: 18),
+
+          // ===============================================================
+          // SEKSI LOGIKA DYNAMIC TAMPILAN: MODE IFRAME VS MODE MANUAL
+          // ===============================================================
+          if (_isIframeMode) ...[
+            _buildSectionHeader('Tampilan iFrame Web Portal / Formulir Resmi Dinas'),
+            const SizedBox(height: 10),
+            const Text(
+              'URL / Link Embed Formulir Web Resmi Dinas:',
+              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+            ),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: _iframeUrlController,
+              style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+              onChanged: (val) => setState(() {}),
+              decoration: InputDecoration(
+                hintText: 'https://disdukcapil.sukabumikota.go.id/form-online',
+                prefixIcon: const Icon(Icons.code_rounded, color: primaryColor),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              validator: (val) {
+                if (_isIframeMode && (val == null || val.trim().isEmpty)) {
+                  return 'URL / iFrame Dinas wajib diisi pada Mode iFrame';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 14),
+
+            if (!isDesktop) ...[
+              IframePreviewWidget(
+                url: targetIframeUrl,
+                title: _rawTitleController.text.isNotEmpty
+                    ? 'Live iFrame Layanan: ${_rawTitleController.text}'
+                    : 'Live iFrame Web Dinas',
+                height: 520,
+              ),
+              const SizedBox(height: 20),
+            ],
+          ] else ...[
+            // SEKSI FORM BUILDER ENGINE DINAMIS MANUAL
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Form Builder Manual (Elemen Isian Warga)',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => _bukaModalTambahAtauEditField(),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text(
+                    '+ Tambah Field',
+                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accentColor,
+                    foregroundColor: primaryColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Admin dapat membuat & mengatur sendiri tipe field (Teks Pendek, Teks Panjang, Dropdown, Kalender, Angka, Upload).',
+              style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
+            ),
+            const SizedBox(height: 10),
+
+            _formFields.isEmpty
+                ? Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Belum ada field formulir. Klik "+ Tambah Field" untuk membuat.',
+                        style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
+                      ),
+                    ),
+                  )
+                : ReorderableListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _formFields.length,
+                    onReorder: (oldIdx, newIdx) {
+                      setState(() {
+                        if (newIdx > oldIdx) newIdx -= 1;
+                        final item = _formFields.removeAt(oldIdx);
+                        _formFields.insert(newIdx, item);
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      final f = _formFields[index];
+                      return Container(
+                        key: ValueKey(f.id),
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: primaryColor.withOpacity(0.2)),
+                        ),
+                        child: ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 12),
+                            ),
+                          ),
+                          title: Text(
+                            f.label,
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                          ),
+                          subtitle: Text(
+                            'Tipe: ${f.type.displayName}${f.isRequired ? " • (Wajib)" : " • (Opsional)"}',
+                            style: TextStyle(fontSize: 11, color: Colors.grey.shade700, fontFamily: 'Poppins'),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit_rounded, color: primaryColor, size: 20),
+                                onPressed: () => _bukaModalTambahAtauEditField(editField: f, index: index),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                                onPressed: () {
+                                  setState(() {
+                                    _formFields.removeAt(index);
+                                  });
+                                },
+                              ),
+                              const Icon(Icons.drag_handle_rounded, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+            const SizedBox(height: 20),
+          ],
+
+          // SEKSI SYARAT & DOKUMEN DINAMIS
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Persyaratan & Dokumen Syarat',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _tambahPersyaratanRow,
+                icon: const Icon(Icons.add_circle_outline_rounded, color: primaryColor, size: 18),
+                label: const Text(
+                  'Tambah Syarat',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(height: 4),
+          const SizedBox(height: 8),
+
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _persyaratanControllers.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  children: [
+                    Text(
+                      '${index + 1}.',
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _persyaratanControllers[index],
+                        style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
+                        decoration: InputDecoration(
+                          hintText: 'Contoh: Fotokopi Kartu Keluarga terbaru',
+                          hintStyle: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Poppins'),
+                          filled: true,
+                          fillColor: Colors.white,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_persyaratanControllers.length > 1)
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 22),
+                        onPressed: () => _hapusPersyaratanRow(index),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton.icon(
+              onPressed: _simpanLayanan,
+              icon: const Icon(Icons.save_rounded, color: primaryColor),
+              label: Text(
+                isEdit ? 'Simpan Perubahan Layanan' : 'Tambah Layanan Publik Baru',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Poppins',
+                  color: primaryColor,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 30),
+        ],
+      ),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
@@ -690,387 +1070,60 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-
-              _buildSectionHeader('Pengelompokan Instansi & Sektor'),
-              const SizedBox(height: 12),
-
-              // DROPDOWN INSTANSI
-              const Text(
-                'Instansi OPD Pengelola',
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _selectedKodeInstansi,
-                    isExpanded: true,
-                    style: const TextStyle(fontSize: 13, color: primaryColor, fontFamily: 'Poppins'),
-                    items: allInstansi.map((opd) {
-                      return DropdownMenuItem(
-                        value: opd.kodeInstansi,
-                        child: Text('${opd.namaSingkat} - ${opd.namaLengkap}'),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedKodeInstansi = val);
-                    },
+      body: isDesktop
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
+                    child: formContent,
                   ),
                 ),
-              ),
-              const SizedBox(height: 14),
-
-              // DROPDOWN SEKTOR FASE KEHIDUPAN
-              const Text(
-                'Sektor Kategori Layanan',
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _opdService.getSektorList().any((s) => s.title == _selectedSektor)
-                        ? _selectedSektor
-                        : (_opdService.getSektorList().isNotEmpty ? _opdService.getSektorList().first.title : 'Keluarga'),
-                    isExpanded: true,
-                    style: const TextStyle(fontSize: 13, color: primaryColor, fontFamily: 'Poppins'),
-                    items: _opdService.getSektorList().map((s) {
-                      return DropdownMenuItem(
-                        value: s.title,
-                        child: Text('Sektor ${s.title}'),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      if (val != null) setState(() => _selectedSektor = val);
-                    },
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              _buildSectionHeader('Detail Layanan'),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _judulLayananController,
-                label: 'Judul Lengkap Layanan',
-                hint: 'Contoh: Pelayanan KTP Elektronik (KTP-el)',
-                validator: (val) => (val == null || val.isEmpty) ? 'Judul layanan wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _rawTitleController,
-                label: 'Nama Ringkas / Singkatan Layanan',
-                hint: 'Contoh: KTP Elektronik',
-                validator: (val) => (val == null || val.isEmpty) ? 'Nama ringkas wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _subjudulController,
-                label: 'Subjudul / Ringkasan Singkat',
-                hint: 'Contoh: Perekaman baru, penggantian KTP rusak/hilang...',
-                maxLines: 2,
-                validator: (val) => (val == null || val.isEmpty) ? 'Subjudul wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _deskripsiController,
-                label: 'Deskripsi Lengkap Layanan Publik',
-                hint: 'Jelaskan cakupan layanan, sasaran warga, dan manfaat...',
-                maxLines: 3,
-                validator: (val) => (val == null || val.isEmpty) ? 'Deskripsi wajib diisi' : null,
-              ),
-              const SizedBox(height: 12),
-
-              _buildInputField(
-                controller: _urlPortalController,
-                label: 'Link Web Portal Resmi Instansi',
-                hint: 'https://disdukcapil.sukabumikota.go.id',
-                validator: (val) => (val == null || val.isEmpty) ? 'Link portal wajib diisi' : null,
-              ),
-              const SizedBox(height: 18),
-
-              // ===============================================================
-              // SEKSI LOGIKA DYNAMIC TAMPILAN: MODE IFRAME VS MODE MANUAL
-              // ===============================================================
-              if (_isIframeMode) ...[
-                _buildSectionHeader('Tampilan iFrame Web Portal / Formulir Resmi Dinas'),
-                const SizedBox(height: 10),
-                const Text(
-                  'URL / Link Embed Formulir Web Resmi Dinas:',
-                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
-                ),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _iframeUrlController,
-                  style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
-                  onChanged: (val) => setState(() {}),
-                  decoration: InputDecoration(
-                    hintText: 'https://disdukcapil.sukabumikota.go.id/form-online',
-                    prefixIcon: const Icon(Icons.code_rounded, color: primaryColor),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  validator: (val) {
-                    if (_isIframeMode && (val == null || val.trim().isEmpty)) {
-                      return 'URL / iFrame Dinas wajib diisi pada Mode iFrame';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 14),
-
-                // LIVE EMBEDDED IFRAME PREVIEW CONTAINER IN BODY
-                IframePreviewWidget(
-                  url: _iframeUrlController.text,
-                  title: _rawTitleController.text.isNotEmpty
-                      ? 'Live iFrame Layanan: ${_rawTitleController.text}'
-                      : 'Live iFrame Web Dinas',
-                  height: 550,
-                ),
-                const SizedBox(height: 20),
-              ] else ...[
-                // SEKSI FORM BUILDER ENGINE DINAMIS MANUAL
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Form Builder Manual (Elemen Isian Warga)',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () => _bukaModalTambahAtauEditField(),
-                      icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text(
-                        '+ Tambah Field',
-                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor,
-                        foregroundColor: primaryColor,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Admin dapat membuat & mengatur sendiri tipe field (Teks Pendek, Teks Panjang, Dropdown, Kalender, Angka, Upload).',
-                  style: TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins'),
-                ),
-                const SizedBox(height: 10),
-
-                _formFields.isEmpty
-                    ? Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Belum ada field formulir. Klik "+ Tambah Field" untuk membuat.',
-                            style: TextStyle(fontSize: 12, color: Colors.grey, fontFamily: 'Poppins'),
-                          ),
-                        ),
-                      )
-                    : ReorderableListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _formFields.length,
-                        onReorder: (oldIdx, newIdx) {
-                          setState(() {
-                            if (newIdx > oldIdx) newIdx -= 1;
-                            final item = _formFields.removeAt(oldIdx);
-                            _formFields.insert(newIdx, item);
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          final f = _formFields[index];
-                          return Container(
-                            key: ValueKey(f.id),
-                            margin: const EdgeInsets.only(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: primaryColor.withOpacity(0.2)),
-                            ),
-                            child: ListTile(
-                              leading: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(
-                                  '${index + 1}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 12),
-                                ),
-                              ),
-                              title: Text(
-                                f.label,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
-                              ),
-                              subtitle: Text(
-                                'Tipe: ${f.type.displayName}${f.isRequired ? " • (Wajib)" : " • (Opsional)"}',
-                                style: TextStyle(fontSize: 11, color: Colors.grey.shade700, fontFamily: 'Poppins'),
-                              ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit_rounded, color: primaryColor, size: 20),
-                                    onPressed: () => _bukaModalTambahAtauEditField(editField: f, index: index),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-                                    onPressed: () {
-                                      setState(() {
-                                        _formFields.removeAt(index);
-                                      });
-                                    },
-                                  ),
-                                  const Icon(Icons.drag_handle_rounded, color: Colors.grey),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                const SizedBox(height: 20),
-              ],
-
-              // SEKSI SYARAT & DOKUMEN DINAMIS
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Persyaratan & Dokumen Syarat',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  TextButton.icon(
-                    onPressed: _tambahPersyaratanRow,
-                    icon: const Icon(Icons.add_circle_outline_rounded, color: primaryColor, size: 18),
-                    label: const Text(
-                      'Tambah Syarat',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(height: 4),
-              const SizedBox(height: 8),
-
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _persyaratanControllers.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Row(
+                const VerticalDivider(width: 1, color: Colors.black12),
+                Expanded(
+                  flex: 7,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${index + 1}.',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _persyaratanControllers[index],
-                            style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
-                            decoration: InputDecoration(
-                              hintText: 'Contoh: Fotokopi Kartu Keluarga terbaru',
-                              hintStyle: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Poppins'),
-                              filled: true,
-                              fillColor: Colors.white,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                        const Row(
+                          children: [
+                            Icon(Icons.desktop_windows_rounded, color: primaryColor, size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'Pratinjau Live iFrame Web Portal / Formulir Resmi',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: primaryColor,
+                                fontFamily: 'Poppins',
                               ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: IframePreviewWidget(
+                            url: targetIframeUrl,
+                            title: _rawTitleController.text.isNotEmpty
+                                ? 'Live iFrame Layanan: ${_rawTitleController.text}'
+                                : 'Live iFrame Web Dinas',
+                            height: double.infinity,
                           ),
                         ),
-                        if (_persyaratanControllers.length > 1)
-                          IconButton(
-                            icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 22),
-                            onPressed: () => _hapusPersyaratanRow(index),
-                          ),
                       ],
                     ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton.icon(
-                  onPressed: _simpanLayanan,
-                  icon: const Icon(Icons.save_rounded, color: primaryColor),
-                  label: Text(
-                    isEdit ? 'Simpan Perubahan Layanan' : 'Tambah Layanan Publik Baru',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                      color: primaryColor,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
-              ),
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
-      ),
+              ],
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: formContent,
+            ),
     );
   }
 
