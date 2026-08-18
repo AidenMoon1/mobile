@@ -63,14 +63,14 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
     _subjudulController = TextEditingController(text: item?.subjudul ?? '');
     _deskripsiController = TextEditingController(text: item?.deskripsi ?? '');
     _urlPortalController = TextEditingController(
-      text: item?.urlPortal ?? 'https://disdukcapil.sukabumikota.go.id',
+      text: item?.urlPortal ?? '',
     );
 
     _isIframeMode = widget.isIframeMode || (item?.isIframeMode ?? false);
     _iframeUrlController = TextEditingController(
       text: item?.iframeUrl.isNotEmpty == true
           ? item!.iframeUrl
-          : (item?.urlPortal ?? 'https://disdukcapil.sukabumikota.go.id/form-online'),
+          : (item?.urlPortal ?? ''),
     );
 
     if (item != null) {
