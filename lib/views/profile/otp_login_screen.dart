@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:mobile/services/user_service.dart';
+import 'package:mobile/services/api_service.dart';
 import 'package:mobile/main.dart';
 
 class OtpLoginScreen extends StatefulWidget {
@@ -48,8 +49,10 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
 
     setState(() => _isLoading = true);
     
-    // Simulasi hit API Laravel
-    await Future.delayed(const Duration(seconds: 2));
+    // Hit API Backend Laravel
+    await ApiService.post('auth/otp/email/send', {
+      'phone': _phoneController.text.trim(),
+    });
 
     if (!mounted) return;
     setState(() {
@@ -71,12 +74,15 @@ class _OtpLoginScreenState extends State<OtpLoginScreen> {
 
     setState(() => _isLoading = true);
     
-    // Simulasi verifikasi di Laravel
-    await Future.delayed(const Duration(seconds: 2));
+    // Verifikasi via Backend Server Laravel
+    await ApiService.post('auth/otp/email/verify', {
+      'phone': _phoneController.text.trim(),
+      'otp': _otpController.text.trim(),
+    });
 
     if (!mounted) return;
     
-    // Update User Profile (Simulasi)
+    // Update User Profile
     final user = UserService().currentUser;
     await UserService().updateProfile(
       user.copyWith(

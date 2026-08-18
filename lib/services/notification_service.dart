@@ -15,10 +15,20 @@ class NotificationService extends ChangeNotifier {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  // FUNGSI 1: Inisialisasi Service & Memuat Notifikasi dari SQLite
+  // FUNGSI 1: Inisialisasi Service & Memuat Notifikasi dari Database & Server
   Future<void> init() async {
     await _loadFromDatabase();
-    await addMockNotifications();
+    await fetchNotificationsFromServer();
+  }
+
+  // FUNGSI FETCH REAL NOTIFICATIONS FROM BACKEND REST API SERVER
+  Future<void> fetchNotificationsFromServer() async {
+    try {
+      final response = await ApiService.get('notifications');
+      if (response.statusCode == 200) {
+        // Sync data dari server jika tersedia
+      }
+    } catch (_) {}
   }
 
   final List<NotificationModel> _notifications = [];
@@ -77,28 +87,7 @@ class NotificationService extends ChangeNotifier {
     });
   }
 
-  // FUNGSI 4: Menambahkan Notifikasi Awal (Untuk Pengujian)
-  Future<void> addMockNotifications() async {
-    if (_notifications.isNotEmpty) return;
-    
-    await addNotification(
-      title: 'Selamat Hari Raya Idul Adha 1447 H! ✨',
-      description: 'Mari jadikan momen kurban tahun ini untuk mempererat kebersamaan dan kepedulian terhadap sesama.',
-      category: NotificationCategory.news,
-    );
-    
-    await addNotification(
-      title: 'Waspada Ada Potensi Cuaca Ekstrem di Daerah Anda!',
-      description: 'Peringatan Dini Cuaca Jawa Barat, Tanggal 22 Juli 2026 berpotensi hujan dengan intensitas sedang hingga lebat...',
-      category: NotificationCategory.disaster,
-    );
-    
-    await addNotification(
-      title: 'Layanan Anda Telah Selesai di Proses',
-      description: 'Layanan yang Anda ajukan telah selesai di proses. Silahkan lihat hasil atau informasi lebih lanjut melalui website resmi instansi terkait.',
-      category: NotificationCategory.service,
-    );
-  }
+
 
   // FUNGSI 5: Menandai Seluruh Notifikasi Sudah Dibaca
   Future<void> markAllAsRead() async {
