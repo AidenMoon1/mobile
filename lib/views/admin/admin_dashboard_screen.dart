@@ -4046,7 +4046,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(height: 10),
               _buildSingleMetricCard('Sektor Portal', '$totalSektor', Icons.widgets_outlined, const Color(0xFFE8F5E9), const Color(0xFF2E7D32), 'Fase Kehidupan'),
               const SizedBox(height: 10),
-              _buildSingleMetricCard('Live Chat Warga', '3', Icons.mark_chat_unread_rounded, const Color(0xFFFFEBEE), Colors.redAccent, 'Perlu Balasan'),
+              _buildSingleMetricCard('Live Chat Warga', '0', Icons.mark_chat_unread_rounded, const Color(0xFFE8F5E9), const Color(0xFF2E7D32), 'Sistem Normal'),
             ],
           );
         }
@@ -4059,7 +4059,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             const SizedBox(width: 10),
             SizedBox(width: cardWidth, child: _buildSingleMetricCard('Sektor Portal', '$totalSektor', Icons.widgets_outlined, const Color(0xFFE8F5E9), const Color(0xFF2E7D32), 'Fase Kehidupan')),
             const SizedBox(width: 10),
-            SizedBox(width: cardWidth, child: _buildSingleMetricCard('Live Chat Warga', '3', Icons.mark_chat_unread_rounded, const Color(0xFFFFEBEE), Colors.redAccent, 'Perlu Balasan')),
+            SizedBox(width: cardWidth, child: _buildSingleMetricCard('Live Chat Warga', '0', Icons.mark_chat_unread_rounded, const Color(0xFFE8F5E9), const Color(0xFF2E7D32), 'Sistem Normal')),
           ],
         );
       },

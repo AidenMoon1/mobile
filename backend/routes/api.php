@@ -231,3 +231,30 @@ Route::delete('/warga/{id}', function ($id) {
     return response()->json(['status' => 'success']);
 });
 
+// FEEDBACK & SURVEI KRITIK SARAN ENDPOINTS (REAL DATABASE)
+Route::get('/feedback', function () {
+    try {
+        $feedbacks = \DB::table('feedbacks')->latest()->get();
+        return response()->json($feedbacks);
+    } catch (\Throwable $e) {
+        return response()->json([]);
+    }
+});
+
+Route::post('/feedback', function (Request $request) {
+    try {
+        $id = \DB::table('feedbacks')->insertGetId([
+            'user_id' => $request->input('user_id', 1),
+            'rating' => $request->input('rating', 5),
+            'factor' => $request->input('factor', 'Layanan Publik'),
+            'reason' => $request->input('reason', ''),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        return response()->json(['status' => 'success', 'id' => $id], 201);
+    } catch (\Throwable $e) {
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+    }
+});
+
+
