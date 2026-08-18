@@ -48,3 +48,8 @@ app.*.map.json
 /backend/storage/*.key
 /backend/public/storage
 /backend/.phpunit.result.cache
+
+# Binary downloads
+/download/
+*.apk
+

@@ -197,3 +197,37 @@ Route::post('/disdukcapil/ktp/rusak', function (Request $request) {
         'data' => $data
     ], 200);
 });
+
+// WARGA / USER MANAGEMENT ENDPOINTS (REAL DATABASE)
+Route::get('/warga', function () {
+    $users = \App\Models\User::where('role', 'user')->orWhereNull('role')->get();
+    return response()->json($users);
+});
+
+Route::post('/warga', function (Request $request) {
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email',
+    ]);
+
+    $user = \App\Models\User::create([
+        'name' => $validated['name'],
+        'username' => strtolower(explode('@', $validated['email'])[0]),
+        'email' => $validated['email'],
+        'phone' => $request->input('phone', '-'),
+        'role' => 'user',
+        'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+        'email_verified_at' => now(),
+    ]);
+
+    return response()->json([
+        'status' => 'success',
+        'data' => $user
+    ], 201);
+});
+
+Route::delete('/warga/{id}', function ($id) {
+    \App\Models\User::where('id', $id)->orWhere('email', $id)->delete();
+    return response()->json(['status' => 'success']);
+});
+

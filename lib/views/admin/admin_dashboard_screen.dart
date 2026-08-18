@@ -115,6 +115,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     }
     _opdService.addListener(_refresh);
     _adminService.addListener(_refresh);
+    UserService().addListener(_refresh);
 
     // Inisialisasi status kehadiran (Presence System)
     _initPresence();
@@ -151,6 +152,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   void dispose() {
     _opdService.removeListener(_refresh);
+    _adminService.removeListener(_refresh);
+    UserService().removeListener(_refresh);
     _instansiSearchController.dispose();
     _layananSearchController.dispose();
     _sektorSearchController.dispose();
@@ -2698,6 +2701,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  String _getBulan(int mon) {
+    const bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    return bulan[mon - 1];
+  }
+
   // ===========================================================================
   // VIEW: KELOLA PENGGUNA (PUSAT IDENTITAS WARGA - EXACT MATCH SCREENSHOT)
   // ===========================================================================
@@ -2705,27 +2713,34 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final allWarga = UserService().getRegisteredWarga();
     final filteredWarga = allWarga.where((item) {
       final q = _penggunaSearchQuery.toLowerCase();
-      final nama = item['nama'] ?? '';
-      final email = item['email'] ?? '';
-      final phone = item['phone'] ?? '';
-      final nik = item['nik'] ?? '';
-      return nama.toLowerCase().contains(q) ||
-          email.toLowerCase().contains(q) ||
-          phone.toLowerCase().contains(q) ||
-          nik.toLowerCase().contains(q);
+      final nama = (item['nama'] ?? '').toLowerCase();
+      final email = (item['email'] ?? '').toLowerCase();
+      final phone = (item['phone'] ?? '').toLowerCase();
+      final nik = (item['nik'] ?? '').toLowerCase();
+      final status = (item['status'] ?? '').toLowerCase();
+      final id = (item['id'] ?? '').toLowerCase();
+      return nama.contains(q) ||
+          email.contains(q) ||
+          phone.contains(q) ||
+          nik.contains(q) ||
+          status.contains(q) ||
+          id.contains(q);
     }).toList();
 
     final totalTerdaftar = allWarga.length;
     final totalTerverifikasi = allWarga.where((e) {
       final status = e['status'] ?? '';
-      return status == 'ACTIVE' || status.contains('IKD') || status.contains('SSO');
+      return status == 'ACTIVE' || status.contains('IKD') || status.contains('SSO') || status == 'TERVERIFIKASI';
     }).length;
-    const totalDitangguhkan = 0;
+    final totalDitangguhkan = allWarga.where((e) {
+      final status = e['status'] ?? '';
+      return status == 'DITANGGUHKAN' || status == 'SUSPENDED';
+    }).length;
 
     const int itemsPerPage = 5;
     final totalPages = (filteredWarga.length / itemsPerPage).ceil().clamp(1, 99);
-    final startIndex = (_penggunaCurrentPage - 1) * itemsPerPage;
-    final pageItems = filteredWarga.skip(startIndex).take(itemsPerPage).toList();
+    final startIndex = ((_penggunaCurrentPage - 1) * itemsPerPage).clamp(0, filteredWarga.isEmpty ? 0 : filteredWarga.length - 1);
+    final pageItems = filteredWarga.isEmpty ? <Map<String, String>>[] : filteredWarga.skip(startIndex).take(itemsPerPage).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2856,7 +2871,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         ),
         const SizedBox(height: 24),
 
-        // MASTER RECORD INDEX BAR WITH SEARCH INPUT
+        // MASTER RECORD INDEX BAR WITH SEARCH INPUT & TAMBAH USER BUTTON
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -2870,33 +2885,50 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
               ],
             ),
-            SizedBox(
-              width: 320,
-              height: 40,
-              child: TextFormField(
-                controller: _penggunaSearchController,
-                onChanged: (val) => setState(() {
-                  _penggunaSearchQuery = val;
-                  _penggunaCurrentPage = 1;
-                }),
-                style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
-                decoration: InputDecoration(
-                  hintText: 'Cari Nama, Email, atau Nomor WhatsApp...',
-                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12, fontFamily: 'Poppins'),
-                  prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400, size: 18),
-                  fillColor: Colors.white,
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.grey.shade200)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: Color(0xFF0F2942))),
+            Row(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () => _showTambahWargaDialog(context),
+                  icon: const Icon(Icons.person_add_rounded, size: 16),
+                  label: const Text('Tambah Pengguna', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F2942),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    elevation: 0,
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 320,
+                  height: 40,
+                  child: TextFormField(
+                    controller: _penggunaSearchController,
+                    onChanged: (val) => setState(() {
+                      _penggunaSearchQuery = val;
+                      _penggunaCurrentPage = 1;
+                    }),
+                    style: const TextStyle(fontSize: 12.5, fontFamily: 'Poppins'),
+                    decoration: InputDecoration(
+                      hintText: 'Cari Nama, Email, atau Nomor WhatsApp...',
+                      hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12, fontFamily: 'Poppins'),
+                      prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400, size: 18),
+                      fillColor: Colors.white,
+                      filled: true,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide(color: Colors.grey.shade200)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: const BorderSide(color: Color(0xFF0F2942))),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
         const SizedBox(height: 16),
 
-        // USER CARDS LISTING (FLOATING WHITE CARD WITH GREEN LEFT ACCENT BORDER)
+        // USER CARDS LISTING (FLOATING WHITE CARD WITH GREEN/RED LEFT ACCENT BORDER)
         if (filteredWarga.isEmpty)
           Container(
             width: double.infinity,
@@ -2923,14 +2955,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               final String email = item['email'] ?? 'warga@gmail.com';
               final String phone = item['phone'] ?? '628222222222';
               final String status = item['status'] ?? 'ACTIVE';
+              final bool isSuspended = status == 'DITANGGUHKAN' || status == 'SUSPENDED';
 
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: const Border(
-                    left: BorderSide(color: Color(0xFF00C853), width: 4),
+                  border: Border(
+                    left: BorderSide(
+                      color: isSuspended ? const Color(0xFFEF5350) : const Color(0xFF00C853),
+                      width: 4,
+                    ),
                   ),
                   boxShadow: const [
                     BoxShadow(
@@ -2957,9 +2993,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           height: 24,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF00C853), width: 1.5),
+                            border: Border.all(
+                              color: isSuspended ? const Color(0xFFEF5350) : const Color(0xFF00C853),
+                              width: 1.5,
+                            ),
                           ),
-                          child: const Icon(Icons.badge_outlined, color: Color(0xFF0F2942), size: 14),
+                          child: Icon(
+                            isSuspended ? Icons.block_rounded : Icons.badge_outlined,
+                            color: isSuspended ? const Color(0xFFEF5350) : const Color(0xFF0F2942),
+                            size: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -3003,9 +3046,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             children: [
                               const Icon(Icons.mail_outline_rounded, size: 13, color: Colors.grey),
                               const SizedBox(width: 6),
-                              Text(
-                                email,
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F2942), fontFamily: 'Poppins'),
+                              Expanded(
+                                child: Text(
+                                  email,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF0F2942), fontFamily: 'Poppins'),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ],
                           ),
@@ -3038,20 +3084,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE2F7E2),
+                              color: isSuspended ? const Color(0xFFFCE8E6) : const Color(0xFFE2F7E2),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: const Color(0xFF81C784)),
+                              border: Border.all(
+                                color: isSuspended ? const Color(0xFFEF5350) : const Color(0xFF81C784),
+                              ),
                             ),
                             child: Text(
-                              status,
-                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32), fontFamily: 'Poppins'),
+                              isSuspended ? 'DITANGGUHKAN' : status,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                color: isSuspended ? const Color(0xFFC62828) : const Color(0xFF2E7D32),
+                                fontFamily: 'Poppins',
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    // COLUMN 4: ACTION BUTTONS (INFO, SUSPEND, DELETE)
+                    // COLUMN 4: ACTION BUTTONS (INFO, SUSPEND/UNSUSPEND, EDIT, DELETE)
                     Row(
                       children: [
                         IconButton(
@@ -3062,23 +3115,40 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             child: const Icon(Icons.info_outline_rounded, color: Color(0xFF0F2942), size: 16),
                           ),
                           onPressed: () {
-                            _showDetailWargaDialog(context, nama, id, email, phone, status);
+                            _showDetailWargaDialog(context, item);
                           },
-                          tooltip: 'Detail Akun',
+                          tooltip: 'Detail Akun Warga',
                         ),
                         IconButton(
                           icon: Container(
                             width: 32,
                             height: 32,
-                            decoration: BoxDecoration(color: const Color(0xFFFFF3CD), borderRadius: BorderRadius.circular(8)),
-                            child: const Icon(Icons.block_rounded, color: Colors.orange, size: 16),
+                            decoration: BoxDecoration(
+                              color: isSuspended ? const Color(0xFFE2F7E2) : const Color(0xFFFFF3CD),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              isSuspended ? Icons.check_circle_outline_rounded : Icons.block_rounded,
+                              color: isSuspended ? Colors.green : Colors.orange,
+                              size: 16,
+                            ),
                           ),
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Akun $nama berhasil ditangguhkan sementara.')),
-                            );
+                            _konfirmasiTangguhkanWarga(context, item);
                           },
-                          tooltip: 'Tangguhkan Akun',
+                          tooltip: isSuspended ? 'Aktifkan Akun' : 'Tangguhkan Akun',
+                        ),
+                        IconButton(
+                          icon: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(color: const Color(0xFFE3F2FD), borderRadius: BorderRadius.circular(8)),
+                            child: const Icon(Icons.edit_outlined, color: Color(0xFF1E88E5), size: 16),
+                          ),
+                          onPressed: () {
+                            _showEditWargaDialog(context, item);
+                          },
+                          tooltip: 'Edit Data Warga',
                         ),
                         IconButton(
                           icon: Container(
@@ -3088,7 +3158,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             child: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 16),
                           ),
                           onPressed: () {
-                            _konfirmasiHapusWarga(context, nama);
+                            _konfirmasiHapusWarga(context, item);
                           },
                           tooltip: 'Hapus Akun Warga',
                         ),
@@ -3113,13 +3183,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  void _showDetailWargaDialog(BuildContext context, String nama, String id, String email, String phone, String status) {
+  // DIALOG DETIL AKUN WARGA DENGAN ACTION BUTTONS INTEGRASI
+  void _showDetailWargaDialog(BuildContext context, Map<String, String> item) {
+    final String nama = item['nama'] ?? 'Warga';
+    final String id = item['id'] ?? '-';
+    final String email = item['email'] ?? '-';
+    final String phone = item['phone'] ?? '-';
+    final String nik = item['nik'] ?? '-';
+    final String status = item['status'] ?? 'ACTIVE';
+    final String kecamatan = item['kecamatan'] ?? 'Cikole';
+    final String joinedDate = item['joined_date'] ?? '18 Agt 2026';
+    final bool isSuspended = status == 'DITANGGUHKAN' || status == 'SUSPENDED';
+
     showDialog(
       context: context,
       builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
-          width: 440,
+          width: 480,
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -3127,20 +3208,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Color(0xFF0F2942),
-                    child: Icon(Icons.person_rounded, color: Colors.white, size: 22),
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: const Color(0xFF0F2942),
+                    child: Text(
+                      nama.isNotEmpty ? nama[0].toUpperCase() : 'W',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(nama, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
-                      Text('ID: $id | Status: $status', style: const TextStyle(fontSize: 11, color: Colors.grey, fontFamily: 'Poppins')),
-                    ],
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(nama, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+                        Text('ID: $id | Status: ${isSuspended ? 'DITANGGUHKAN' : status}', style: TextStyle(fontSize: 11, color: isSuspended ? Colors.red : Colors.grey, fontFamily: 'Poppins')),
+                      ],
+                    ),
                   ),
-                  const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close_rounded, color: Colors.grey),
                     onPressed: () => Navigator.pop(context),
@@ -3148,24 +3233,61 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ],
               ),
               const Divider(height: 24),
+              _buildDetailInfoItem('NIK (Nomor Induk Kependudukan)', nik, Icons.badge_outlined),
+              const SizedBox(height: 10),
               _buildDetailInfoItem('Email Resmi', email, Icons.email_outlined),
               const SizedBox(height: 10),
-              _buildDetailInfoItem('Nomor WhatsApp', phone, Icons.chat_outlined),
+              _buildDetailInfoItem('Nomor WhatsApp / HP', phone, Icons.chat_outlined),
               const SizedBox(height: 10),
-              _buildDetailInfoItem('Tipe Otentikasi', 'Single Sign-On (SSO) & IKD', Icons.verified_user_outlined),
+              _buildDetailInfoItem('Kecamatan / Wilayah', '$kecamatan, Kota Sukabumi', Icons.location_city_outlined),
               const SizedBox(height: 10),
-              _buildDetailInfoItem('Wilayah', 'Kota Sukabumi, Jawa Barat', Icons.location_city_outlined),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0F2942),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              _buildDetailInfoItem('Tanggal Terdaftar', joinedDate, Icons.calendar_today_outlined),
+              const SizedBox(height: 10),
+              _buildDetailInfoItem('Tipe Otentikasi', 'Single Sign-On (SSO) & Identitas Kependudukan Digital (IKD)', Icons.verified_user_outlined),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showEditWargaDialog(context, item);
+                      },
+                      icon: const Icon(Icons.edit_outlined, size: 14),
+                      label: const Text('Edit Data', style: TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1E88E5),
+                        side: const BorderSide(color: Color(0xFF1E88E5)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
                   ),
-                  child: const Text('Tutup', style: TextStyle(color: Colors.white, fontFamily: 'Poppins')),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _konfirmasiTangguhkanWarga(context, item);
+                      },
+                      icon: Icon(isSuspended ? Icons.check_circle_outline : Icons.block, size: 14),
+                      label: Text(isSuspended ? 'Aktifkan' : 'Tangguhkan', style: const TextStyle(fontSize: 12, fontFamily: 'Poppins')),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: isSuspended ? Colors.green : Colors.orange,
+                        side: BorderSide(color: isSuspended ? Colors.green : Colors.orange),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F2942),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text('Tutup', style: TextStyle(color: Colors.white, fontFamily: 'Poppins', fontSize: 12)),
+                  ),
+                ],
               ),
             ],
           ),
@@ -3174,23 +3296,416 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  // DIALOG TAMBAH WARGA BARU
+  void _showTambahWargaDialog(BuildContext context) {
+    final formKey = GlobalKey<FormState>();
+    final namaController = TextEditingController();
+    final nikController = TextEditingController();
+    final emailController = TextEditingController();
+    final phoneController = TextEditingController();
+    String selectedKecamatan = 'Cikole';
+    String selectedStatus = 'ACTIVE';
+
+    final List<String> kecamatanList = ['Cikole', 'Citamiang', 'Warudoyong', 'Baros', 'Lembursitu', 'Cibeureum', 'Gunungpuyuh'];
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            width: 480,
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF0F2942)),
+                      const SizedBox(width: 10),
+                      const Text('Tambah Pengguna Warga Baru', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 20),
+                  TextFormField(
+                    controller: namaController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Lengkap Warga',
+                      hintText: 'Contoh: Ahmad Subagja',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Nama warga wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: nikController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'NIK',
+                            hintText: '3272...',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: phoneController,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: 'Nomor WhatsApp/HP',
+                            hintText: '0812...',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email Resmi Warga',
+                      hintText: 'warga@gmail.com',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Email wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedKecamatan,
+                          decoration: InputDecoration(
+                            labelText: 'Kecamatan',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          items: kecamatanList.map((k) => DropdownMenuItem(value: k, child: Text(k, style: const TextStyle(fontSize: 12, fontFamily: 'Poppins')))).toList(),
+                          onChanged: (val) {
+                            if (val != null) setModalState(() => selectedKecamatan = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedStatus,
+                          decoration: InputDecoration(
+                            labelText: 'Status Akun',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'ACTIVE', child: Text('ACTIVE (Aktif)', style: TextStyle(fontSize: 12, fontFamily: 'Poppins'))),
+                            DropdownMenuItem(value: 'DITANGGUHKAN', child: Text('DITANGGUHKAN', style: TextStyle(fontSize: 12, fontFamily: 'Poppins'))),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) setModalState(() => selectedStatus = val);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            final now = DateTime.now();
+                            final dateStr = "${now.day} ${_getBulan(now.month)} ${now.year}";
+                            
+                            await UserService().addWarga({
+                              'nama': namaController.text.trim(),
+                              'name': namaController.text.trim(),
+                              'nik': nikController.text.trim().isEmpty ? '3272010000000000' : nikController.text.trim(),
+                              'email': emailController.text.trim(),
+                              'phone': phoneController.text.trim().isEmpty ? '-' : phoneController.text.trim(),
+                              'kecamatan': selectedKecamatan,
+                              'status': selectedStatus,
+                              'joined_date': dateStr,
+                            });
+                            
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Akun warga "${namaController.text.trim()}" berhasil ditambahkan.')),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F2942),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Text('Simpan Pengguna', style: TextStyle(color: Colors.white, fontFamily: 'Poppins')),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // DIALOG EDIT DATA WARGA
+  void _showEditWargaDialog(BuildContext context, Map<String, String> item) {
+    final formKey = GlobalKey<FormState>();
+    final namaController = TextEditingController(text: item['nama']);
+    final nikController = TextEditingController(text: item['nik']);
+    final emailController = TextEditingController(text: item['email']);
+    final phoneController = TextEditingController(text: item['phone']);
+    String selectedKecamatan = item['kecamatan'] ?? 'Cikole';
+    String selectedStatus = (item['status'] == 'DITANGGUHKAN' || item['status'] == 'SUSPENDED') ? 'DITANGGUHKAN' : 'ACTIVE';
+
+    final List<String> kecamatanList = ['Cikole', 'Citamiang', 'Warudoyong', 'Baros', 'Lembursitu', 'Cibeureum', 'Gunungpuyuh'];
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            width: 480,
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.edit_note_rounded, color: Color(0xFF0F2942)),
+                      const SizedBox(width: 10),
+                      Text('Edit Data Warga (${item['id']})', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.grey),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 20),
+                  TextFormField(
+                    controller: namaController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama Lengkap Warga',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Nama warga wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: nikController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'NIK',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          controller: phoneController,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: 'Nomor WhatsApp/HP',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: 'Email Resmi Warga',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Email wajib diisi' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: kecamatanList.contains(selectedKecamatan) ? selectedKecamatan : 'Cikole',
+                          decoration: InputDecoration(
+                            labelText: 'Kecamatan',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          items: kecamatanList.map((k) => DropdownMenuItem(value: k, child: Text(k, style: const TextStyle(fontSize: 12, fontFamily: 'Poppins')))).toList(),
+                          onChanged: (val) {
+                            if (val != null) setModalState(() => selectedKecamatan = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: selectedStatus,
+                          decoration: InputDecoration(
+                            labelText: 'Status Akun',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'ACTIVE', child: Text('ACTIVE (Aktif)', style: TextStyle(fontSize: 12, fontFamily: 'Poppins'))),
+                            DropdownMenuItem(value: 'DITANGGUHKAN', child: Text('DITANGGUHKAN', style: TextStyle(fontSize: 12, fontFamily: 'Poppins'))),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) setModalState(() => selectedStatus = val);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            await UserService().updateWarga(item['id']!, {
+                              'nama': namaController.text.trim(),
+                              'name': namaController.text.trim(),
+                              'nik': nikController.text.trim(),
+                              'email': emailController.text.trim(),
+                              'phone': phoneController.text.trim(),
+                              'kecamatan': selectedKecamatan,
+                              'status': selectedStatus,
+                            });
+                            
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Data warga "${namaController.text.trim()}" berhasil diperbarui.')),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0F2942),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Text('Simpan Perubahan', style: TextStyle(color: Colors.white, fontFamily: 'Poppins')),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // DIALOG KONFIRMASI TANGGUHKAN / AKTIFKAN AKUN WARGA
+  void _konfirmasiTangguhkanWarga(BuildContext context, Map<String, String> item) {
+    final String nama = item['nama'] ?? 'Warga';
+    final String id = item['id'] ?? '';
+    final String status = item['status'] ?? 'ACTIVE';
+    final bool isSuspended = status == 'DITANGGUHKAN' || status == 'SUSPENDED';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(isSuspended ? Icons.check_circle_outline_rounded : Icons.warning_amber_rounded, color: isSuspended ? Colors.green : Colors.orange),
+            const SizedBox(width: 8),
+            Text(isSuspended ? 'Aktifkan Akun Warga?' : 'Tangguhkan Akun Warga?', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Poppins')),
+          ],
+        ),
+        content: Text(
+          isSuspended
+              ? 'Apakah Anda yakin ingin mengaktifkan kembali akun "$nama"? User akan dapat kembali mengakses seluruh portal & layanan.'
+              : 'Apakah Anda yakin ingin menangguhkan akun "$nama"? User tidak akan dapat mengakses portal secara sementara.',
+          style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await UserService().toggleSuspendWarga(id);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Akun $nama berhasil ${isSuspended ? 'diaktifkan kembali' : 'ditangguhkan'}.')),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: isSuspended ? Colors.green : Colors.orange),
+            child: Text(isSuspended ? 'Aktifkan' : 'Tangguhkan', style: const TextStyle(color: Colors.white, fontFamily: 'Poppins')),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDetailInfoItem(String label, String value, IconData icon) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, size: 16, color: Colors.grey),
         const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontFamily: 'Poppins')),
-            Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontFamily: 'Poppins')),
+              Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: Color(0xFF0F2942), fontFamily: 'Poppins')),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  void _konfirmasiHapusWarga(BuildContext context, String nama) {
+  void _konfirmasiHapusWarga(BuildContext context, Map<String, String> item) {
+    final String nama = item['nama'] ?? 'Warga';
+    final String id = item['id'] ?? '';
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -3209,11 +3724,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: const Text('Batal', style: TextStyle(color: Colors.grey, fontFamily: 'Poppins')),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Akun $nama telah dihapus.')),
-              );
+              await UserService().deleteWarga(id);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Akun $nama telah dihapus.')),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Hapus', style: TextStyle(color: Colors.white, fontFamily: 'Poppins')),

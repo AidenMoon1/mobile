@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mobile/services/api_service.dart';
 import 'package:mobile/models/user_model.dart';
 
-class UserService {
+class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._internal();
   
   factory UserService() {
@@ -34,26 +34,40 @@ class UserService {
 
   UserModel get currentUser => _currentUser;
 
-  // Daftar akun terdaftar (Simulasi Database User)
-  final List<Map<String, String>> _registeredUsers = [
-    {
-      'usernameOrEmail': 'warga@sukabumikota.go.id',
-      'nikOrPhone': '3272012508980002',
-      'password': 'password123',
-      'name': 'Ahmad Subagja',
-      'email': 'warga@sukabumikota.go.id',
-    },
-    {
-      'usernameOrEmail': 'dzakwan@gmail.com',
-      'nikOrPhone': '081234567890',
-      'password': 'password123',
-      'name': 'Muhammad Dzakwan',
-      'email': 'dzakwan@gmail.com',
-    },
-  ];
+  // Daftar akun terdaftar (Database User Real)
+  final List<Map<String, String>> _registeredUsers = [];
 
   Future<void> init() async {
     await _loadFromLocal();
+    await fetchWargaFromApi();
+  }
+
+  Future<void> fetchWargaFromApi() async {
+    try {
+      final response = await ApiService.get('warga');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        if (data.isNotEmpty) {
+          _registeredUsers.clear();
+          for (var item in data) {
+            _registeredUsers.add({
+              'id': 'SOA-${item['id'] ?? 1000}',
+              'nama': item['name'] ?? item['nama'] ?? 'Warga',
+              'name': item['name'] ?? item['nama'] ?? 'Warga',
+              'email': item['email'] ?? '-',
+              'phone': item['phone'] ?? '-',
+              'nik': item['nik'] ?? '-',
+              'status': item['status'] ?? 'ACTIVE',
+              'kecamatan': item['kecamatan'] ?? 'Cikole',
+              'joined_date': item['created_at'] != null ? item['created_at'].toString().split('T').first : '18 Agt 2026',
+            });
+          }
+          await _saveRegisteredUsersToLocal();
+        }
+      }
+    } catch (e) {
+      // Safe fallback ke storage lokal
+    }
   }
 
   // Load data dari Shared Preferences saat aplikasi dibuka
@@ -65,11 +79,9 @@ class UserService {
     final String? regUsersJson = prefs.getString('registered_users_db');
     if (regUsersJson != null) {
       final List<dynamic> list = jsonDecode(regUsersJson);
+      _registeredUsers.clear();
       for (var item in list) {
-        final map = Map<String, String>.from(item);
-        if (!_registeredUsers.any((u) => u['email'] == map['email'])) {
-          _registeredUsers.add(map);
-        }
+        _registeredUsers.add(Map<String, String>.from(item));
       }
     }
 
@@ -398,6 +410,12 @@ class UserService {
     await _saveToLocal(_currentUser);
   }
 
+  Future<void> _saveRegisteredUsersToLocal() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('registered_users_db', jsonEncode(_registeredUsers));
+    notifyListeners();
+  }
+
   // Master List Warga Terdaftar (Data Pengguna App)
   List<Map<String, String>> getRegisteredWarga() {
     final List<Map<String, String>> list = [];
@@ -411,8 +429,97 @@ class UserService {
         'status': u['status'] ?? 'ACTIVE',
         'nik': u['nik'] ?? u['nikOrPhone'] ?? '-',
         'kecamatan': u['kecamatan'] ?? 'Cikole',
+        'joined_date': u['joined_date'] ?? '18 Agt 2026',
       });
     }
     return list;
   }
+
+  Future<void> addWarga(Map<String, String> data) async {
+    final String id = data['id'] ?? 'SOA-${1000 + _registeredUsers.length + 1}';
+    final newUser = {
+      'id': id,
+      'name': data['nama'] ?? data['name'] ?? 'Warga Baru',
+      'nama': data['nama'] ?? data['name'] ?? 'Warga Baru',
+      'email': data['email'] ?? '',
+      'phone': data['phone'] ?? data['nikOrPhone'] ?? '-',
+      'nik': data['nik'] ?? data['nikOrPhone'] ?? '-',
+      'usernameOrEmail': data['email'] ?? '',
+      'nikOrPhone': data['phone'] ?? data['nik'] ?? '-',
+      'password': data['password'] ?? 'password123',
+      'status': data['status'] ?? 'ACTIVE',
+      'kecamatan': data['kecamatan'] ?? 'Cikole',
+      'joined_date': data['joined_date'] ?? '18 Agt 2026',
+    };
+    _registeredUsers.add(newUser);
+    await _saveRegisteredUsersToLocal();
+
+    try {
+      await ApiService.post('warga', {
+        'name': newUser['nama'],
+        'email': newUser['email'],
+        'phone': newUser['phone'],
+      });
+    } catch (_) {}
+  }
+
+  Future<void> updateWarga(String id, Map<String, String> updatedData) async {
+    final index = _registeredUsers.indexWhere((u) => u['id'] == id || u['email'] == id);
+    if (index != -1) {
+      final current = Map<String, String>.from(_registeredUsers[index]);
+      if (updatedData.containsKey('nama')) {
+        current['nama'] = updatedData['nama']!;
+        current['name'] = updatedData['nama']!;
+      }
+      if (updatedData.containsKey('name')) {
+        current['name'] = updatedData['name']!;
+        current['nama'] = updatedData['name']!;
+      }
+      if (updatedData.containsKey('email')) {
+        current['email'] = updatedData['email']!;
+        current['usernameOrEmail'] = updatedData['email']!;
+      }
+      if (updatedData.containsKey('phone')) {
+        current['phone'] = updatedData['phone']!;
+        current['nikOrPhone'] = updatedData['phone']!;
+      }
+      if (updatedData.containsKey('nik')) {
+        current['nik'] = updatedData['nik']!;
+      }
+      if (updatedData.containsKey('status')) {
+        current['status'] = updatedData['status']!;
+      }
+      if (updatedData.containsKey('kecamatan')) {
+        current['kecamatan'] = updatedData['kecamatan']!;
+      }
+      
+      _registeredUsers[index] = current;
+      await _saveRegisteredUsersToLocal();
+    }
+  }
+
+  Future<void> toggleSuspendWarga(String id) async {
+    final index = _registeredUsers.indexWhere((u) => u['id'] == id || u['email'] == id);
+    if (index != -1) {
+      final currentStatus = _registeredUsers[index]['status'] ?? 'ACTIVE';
+      final isCurrentlyActive = (currentStatus == 'ACTIVE' || currentStatus.contains('IKD') || currentStatus.contains('SSO') || currentStatus == 'TERVERIFIKASI');
+      _registeredUsers[index]['status'] = isCurrentlyActive ? 'DITANGGUHKAN' : 'ACTIVE';
+      await _saveRegisteredUsersToLocal();
+    }
+  }
+
+  Future<void> deleteWarga(String id) async {
+    final target = _registeredUsers.firstWhere(
+      (u) => u['id'] == id || u['email'] == id,
+      orElse: () => {},
+    );
+    final targetId = target['id'] ?? id;
+    _registeredUsers.removeWhere((u) => u['id'] == id || u['email'] == id);
+    await _saveRegisteredUsersToLocal();
+
+    try {
+      await ApiService.delete('warga/$targetId');
+    } catch (_) {}
+  }
 }
+
