@@ -227,7 +227,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       controller: _fullNameController,
                       style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
                       decoration: InputDecoration(
-                        hintText: 'Contoh: Ahmad Subagja',
+                        hintText: 'Masukkan nama lengkap sesuai KTP',
                         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5, fontFamily: 'Poppins'),
                         prefixIcon: const Icon(Icons.person_outline_rounded, color: primaryColor),
                         fillColor: const Color(0xFFF8FAFC),

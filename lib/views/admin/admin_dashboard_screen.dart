@@ -3339,7 +3339,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     controller: namaController,
                     decoration: InputDecoration(
                       labelText: 'Nama Lengkap Warga',
-                      hintText: 'Contoh: Ahmad Subagja',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     ),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Nama warga wajib diisi' : null,
@@ -4141,19 +4140,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          const Text('3 Warga memerlukan bantuan langsung petugas admin yang dialihkan oleh AI Bot SOA:', style: TextStyle(color: Colors.white70, fontSize: 11.5, fontFamily: 'Poppins')),
+          const Text('Warga yang memerlukan bantuan langsung petugas admin yang dialihkan oleh AI Bot SOA:', style: TextStyle(color: Colors.white70, fontSize: 11.5, fontFamily: 'Poppins')),
           const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(12),
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(color: Colors.white.withOpacity(0.08), borderRadius: BorderRadius.circular(12)),
-            child: Column(
-              children: [
-                _buildChatPreviewRow('mrn', 'Halo admin, mau tanya syarat cetak ulang KTP-el yang rusak...', '10 mnt lalu'),
-                const Divider(color: Colors.white12, height: 12),
-                _buildChatPreviewRow('Ahmad Fauzi', 'Bagaimana prosedur permohonan izin PBG gedung di DPMPTSP?', '25 mnt lalu'),
-                const Divider(color: Colors.white12, height: 12),
-                _buildChatPreviewRow('Siti Rahmawati', 'Nomor WhatsApp resmi layanan informasi PBB Sukabumi?', '1 jam lalu'),
-              ],
+            child: const Center(
+              child: Text(
+                'Belum ada antrean pesan/bantuan warga saat ini.',
+                style: TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Poppins'),
+              ),
             ),
           ),
         ],
@@ -4161,25 +4158,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildChatPreviewRow(String name, String message, String time) {
-    return Row(
-      children: [
-        const CircleAvatar(radius: 14, backgroundColor: Color(0xFFE8A33D), child: Icon(Icons.person_rounded, color: Color(0xFF0F2942), size: 16)),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12, fontFamily: 'Poppins')),
-              Text(message, style: const TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'Poppins'), maxLines: 1, overflow: TextOverflow.ellipsis),
-            ],
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(time, style: const TextStyle(color: Colors.white38, fontSize: 10, fontFamily: 'Poppins')),
-      ],
-    );
-  }
 
   Widget _buildInstansiTableCard(BuildContext context, Color sidebarBg, Color accentGold) {
     final instansiList = _opdService.getInstansiList();
