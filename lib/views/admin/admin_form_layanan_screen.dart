@@ -3,6 +3,7 @@ import 'package:mobile/models/custom_field_config.dart';
 import 'package:mobile/models/layanan_model.dart';
 import 'package:mobile/services/opd_service.dart';
 import '../berita_dan_fitur/mitra_webview_screen.dart';
+import 'package:mobile/widgets/iframe_preview_widget.dart';
 
 class AdminFormLayananScreen extends StatefulWidget {
   final LayananModel? layanan;
@@ -816,24 +817,20 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
               // SEKSI LOGIKA DYNAMIC TAMPILAN: MODE IFRAME VS MODE MANUAL
               // ===============================================================
               if (_isIframeMode) ...[
-                _buildSectionHeader('Pengaturan Form Mode iFrame Dinas'),
+                _buildSectionHeader('Tampilan iFrame Web Portal / Formulir Resmi Dinas'),
                 const SizedBox(height: 10),
                 const Text(
-                  'Masukkan URL / Link Embed Formulir Web Resmi Dinas:',
+                  'URL / Link Embed Formulir Web Resmi Dinas:',
                   style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: primaryColor, fontFamily: 'Poppins'),
                 ),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: _iframeUrlController,
                   style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+                  onChanged: (val) => setState(() {}),
                   decoration: InputDecoration(
                     hintText: 'https://disdukcapil.sukabumikota.go.id/form-online',
                     prefixIcon: const Icon(Icons.code_rounded, color: primaryColor),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.open_in_new_rounded, color: primaryColor),
-                      tooltip: 'Buka & Masuk ke iFrame Web',
-                      onPressed: () => _tampilkanNotifBeralihKeIframe(context),
-                    ),
                     filled: true,
                     fillColor: Colors.white,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -846,31 +843,15 @@ class _AdminFormLayananScreenState extends State<AdminFormLayananScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12),
-                InkWell(
-                  onTap: () => _tampilkanNotifBeralihKeIframe(context),
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFF6E5),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: accentColor),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.info_outline_rounded, color: primaryColor, size: 20),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            'Mode iFrame aktif: Klik di sini untuk menguji & berpindah langsung ke halaman Web iFrame resmi Dinas.',
-                            style: TextStyle(fontSize: 11.5, color: primaryColor, fontFamily: 'Poppins', fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Icon(Icons.chevron_right_rounded, color: primaryColor, size: 20),
-                      ],
-                    ),
-                  ),
+                const SizedBox(height: 14),
+
+                // LIVE EMBEDDED IFRAME PREVIEW CONTAINER IN BODY
+                IframePreviewWidget(
+                  url: _iframeUrlController.text,
+                  title: _rawTitleController.text.isNotEmpty
+                      ? 'Live iFrame Layanan: ${_rawTitleController.text}'
+                      : 'Live iFrame Web Dinas',
+                  height: 550,
                 ),
                 const SizedBox(height: 20),
               ] else ...[

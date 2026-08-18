@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile/models/instansi_model.dart';
 import 'package:mobile/services/opd_service.dart';
 import 'package:mobile/widgets/admin_image_picker.dart';
+import 'package:mobile/widgets/iframe_preview_widget.dart';
 
 class AdminFormInstansiScreen extends StatefulWidget {
   final InstansiModel? instansi;
@@ -113,7 +114,6 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
   @override
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF123457);
-    const Color accentColor = Color(0xFFE8A33D);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
@@ -156,6 +156,7 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
                 controller: _namaSingkatController,
                 label: 'Nama Singkat (Akronim)',
                 hint: 'Contoh: DISDUKCAPIL',
+                onChanged: (val) => setState(() {}),
                 validator: (val) => (val == null || val.isEmpty) ? 'Nama singkat wajib diisi' : null,
               ),
               const SizedBox(height: 12),
@@ -212,9 +213,20 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
                 controller: _iframeUrlController,
                 label: 'URL Tautan iFrame Portal Resmi OPD (Opsional)',
                 hint: 'Contoh: https://disdukcapil.sukabumikota.go.id',
+                onChanged: (val) => setState(() {}),
                 validator: widget.isIframeMode
                     ? (val) => (val == null || val.isEmpty) ? 'URL iFrame portal wajib diisi untuk Mode iFrame' : null
                     : null,
+              ),
+              const SizedBox(height: 14),
+
+              // LIVE EMBEDDED IFRAME PREVIEW CONTAINER IN BODY
+              IframePreviewWidget(
+                url: _iframeUrlController.text,
+                title: _namaSingkatController.text.isNotEmpty
+                    ? 'Tampilan iFrame Live: ${_namaSingkatController.text}'
+                    : 'Pratinjau iFrame Web Portal Instansi',
+                height: 520,
               ),
               const SizedBox(height: 16),
 
@@ -248,15 +260,18 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
                   label: Text(
                     isEdit ? 'Simpan Perubahan Instansi' : 'Tambah Instansi Baru',
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
                       color: primaryColor,
+                      fontFamily: 'Poppins',
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColor,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    backgroundColor: const Color(0xFFE8A33D),
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
               ),
@@ -291,6 +306,7 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
     required String label,
     required String hint,
     int maxLines = 1,
+    void Function(String)? onChanged,
     String? Function(String?)? validator,
   }) {
     return Column(
@@ -310,6 +326,7 @@ class _AdminFormInstansiScreenState extends State<AdminFormInstansiScreen> {
           controller: controller,
           maxLines: maxLines,
           style: const TextStyle(fontSize: 13, fontFamily: 'Poppins'),
+          onChanged: onChanged,
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,
