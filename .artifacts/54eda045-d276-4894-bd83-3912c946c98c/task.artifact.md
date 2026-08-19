@@ -1,8 +1,0 @@
-- [x] Implement Real-Time Maintenance for Sektor Fase Kehidupan
-- [/] Implement Real-Time Maintenance for Instansi OPD
-    - [/] Update `_buildInstansiItem` in `dashboard_screen.dart` with maintenance UI
-    - [ ] Make Instansi Row dynamic and real-time using `ListenableBuilder`
-    - [ ] Add maintenance visual markers in `instansi_screen.dart`
-    - [ ] Build & Deploy to Firebase Hosting
-- [ ] Verification
-    - [ ] Toggle instansi maintenance in Admin and see changes in User App instantly

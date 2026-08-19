@@ -53,3 +53,8 @@ app.*.map.json
 /download/
 *.apk
 
+# IDE & local build artifacts
+.artifacts/
+.firebase/
+.gradle_home/
+**/android/.gradle_home/
